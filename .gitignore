@@ -50,3 +50,6 @@ base44/.app.jsonc
 /Car images/
 /.claude/
 .env.example
+
+# Management web app lives in its own repo (Octapus-systems/Management-Repo)
+/management/

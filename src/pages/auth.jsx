@@ -91,7 +91,7 @@ export function Login() {
   const nav = useNavigate();
   const loc = useLocation();
   const [form, setForm] = useState({ email: '', password: '' });
-  const login = useAction((f) => api.post('/auth/login', f), {
+  const login = useAction((f) => api.post('/auth/login', { ...f, portal: 'app' }), {
     onSuccess: (data) => { signIn(data); nav(loc.state?.from || homeFor(data.user), { replace: true }); },
   });
   if (user) return <Navigate to={homeFor(user)} replace />;
@@ -161,6 +161,20 @@ export function Invite() {
         <GlassInput icon="lock" label="Choose a password" error={accept.fields.password} type="password" value={form.password} onChange={set('password')} autoComplete="new-password" />
         <GlowButton loading={accept.isPending}>Create account</GlowButton>
       </form>
+    </Shell>
+  );
+}
+
+/** Management accounts use the separate Command Center web app. */
+export function StaffNotice() {
+  const { signOut } = useAuth();
+  const url = import.meta.env.VITE_MANAGEMENT_URL || 'http://localhost:5180';
+  return (
+    <Shell eyebrow="Encore management" title="Command Center" subtitle="Management accounts sign in to the separate Encore Command Center web app.">
+      <a href={url} className="flex h-14 w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-primary-container via-button-mid to-tertiary-container text-headline-sm font-headline-sm text-white shadow-[0_14px_34px_rgba(255,113,15,0.45)]">
+        Open Command Center <Icon name="open_in_new" className="!text-[20px]" />
+      </a>
+      <button onClick={signOut} className="mt-3 flex h-12 w-full items-center justify-center rounded-full border border-white/15 text-label-lg font-label-lg text-white hover:bg-white/10">Sign out of the app</button>
     </Shell>
   );
 }

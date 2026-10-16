@@ -1,13 +1,14 @@
 # Encore Executive — Phase 1
 
 Premium chauffeur booking and management platform, built to the **Encore Executive BRD v1.0 (11 Oct 2026)**.
-One web app, three experiences:
+Customer and driver app. Management uses the separate **Command Center** web app ([Management-Repo](https://github.com/Octapus-systems/Management-Repo)); management accounts cannot sign in here.
+
+
 
 | Experience | Path | Who |
 |---|---|---|
 | Customer (mobile-first) | `/app` | Private and corporate customers |
 | Driver (mobile web portal) | `/driver` | Chauffeurs assigned by management |
-| Management Command Center | `/admin` | Admin / dispatcher / management |
 
 Stack: React 18 + Vite + Tailwind (Encore orange/black brand), Node 22+ Express API, SQLite via the built-in `node:sqlite` (no native build step). Every access rule is enforced on the server.
 
@@ -15,7 +16,8 @@ Stack: React 18 + Vite + Tailwind (Encore orange/black brand), Node 22+ Express 
 
 | Repo | Contents |
 |---|---|
-| [Encore-App-Repo](https://github.com/Octapus-systems/Encore-App-Repo) | Web app — customer, driver and management screens (this repo) |
+| [Encore-App-Repo](https://github.com/Octapus-systems/Encore-App-Repo) | Customer + driver app (this repo) |
+| [Management-Repo](https://github.com/Octapus-systems/Management-Repo) | Management Command Center — separate web app with its own sign-in |
 | [Backend-App-Management](https://github.com/Octapus-systems/Backend-App-Management) | API server, database, business rules — clone into `./server` |
 
 ```bash

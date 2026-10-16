@@ -39,7 +39,7 @@ export const useAuth = () => useContext(AuthContext);
 
 export function homeFor(user) {
   if (!user) return '/welcome';
-  if (user.role === 'admin') return '/admin';
+  if (user.role === 'admin') return '/staff';
   if (user.role === 'driver') return '/driver';
   return '/app';
 }

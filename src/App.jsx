@@ -3,24 +3,15 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { queryClientInstance } from '@/lib/query-client';
 import { AuthProvider, homeFor, useAuth } from '@/lib/auth';
-import { AdminLayout, CustomerLayout, DriverLayout, RequireRole } from '@/components/layouts';
+import { CustomerLayout, DriverLayout, RequireRole } from '@/components/layouts';
 import { PageLoader } from '@/components/common';
-import { Invite, Login, Register } from '@/pages/auth';
+import { Invite, Login, Register, StaffNotice } from '@/pages/auth';
 import { NewRequest, Account, Notifications, CustomerInvoices } from '@/pages/customer';
 import InvoiceView from '@/pages/InvoiceView';
 import { AppHome, CarDetails, FleetList, Onboarding } from '@/pages/app-screens';
 import { JourneyDetails, RequestSent } from '@/pages/app-journey';
 import { AppProfile, AppUpdates, MyBookings } from '@/pages/app-pages';
 import { DriverJobs, DriverJob } from '@/pages/driver';
-import AdminDashboard from '@/pages/admin/Dashboard';
-import AdminBookings from '@/pages/admin/Bookings';
-import AdminBooking from '@/pages/admin/BookingDetail';
-import AdminNewBooking from '@/pages/admin/NewBooking';
-import AdminCalendar from '@/pages/admin/Calendar';
-import { Fleet, Drivers, Operators } from '@/pages/admin/Resources';
-import AdminCustomers from '@/pages/admin/Customers';
-import { Payments, Invoices } from '@/pages/admin/Money';
-import { MessagesLog, ActivityLog, Settings } from '@/pages/admin/Control';
 
 function Home() {
   const { user, loading } = useAuth();
@@ -39,6 +30,7 @@ export default function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/invite/:token" element={<Invite />} />
+            <Route path="/staff" element={<StaffNotice />} />
 
             <Route element={<RequireRole roles={['customer', 'corporate']} />}>
               <Route path="/app" element={<CustomerLayout />}>
@@ -62,27 +54,6 @@ export default function App() {
                 <Route path="jobs/:id" element={<DriverJob />} />
                 <Route path="updates" element={<Notifications driver />} />
                 <Route path="account" element={<Account />} />
-              </Route>
-            </Route>
-
-            <Route element={<RequireRole roles={['admin']} />}>
-              <Route path="/admin" element={<AdminLayout />}>
-                <Route index element={<AdminDashboard />} />
-                <Route path="bookings" element={<AdminBookings />} />
-                <Route path="bookings/new" element={<AdminNewBooking />} />
-                <Route path="bookings/:id" element={<AdminBooking />} />
-                <Route path="calendar" element={<AdminCalendar />} />
-                <Route path="fleet" element={<Fleet />} />
-                <Route path="drivers" element={<Drivers />} />
-                <Route path="operators" element={<Operators />} />
-                <Route path="customers" element={<AdminCustomers />} />
-                <Route path="payments" element={<Payments />} />
-                <Route path="invoices" element={<Invoices />} />
-                <Route path="invoices/:id" element={<InvoiceView back="/admin/invoices" />} />
-                <Route path="messages" element={<MessagesLog />} />
-                <Route path="inbox" element={<Notifications admin />} />
-                <Route path="activity" element={<ActivityLog />} />
-                <Route path="settings" element={<Settings />} />
               </Route>
             </Route>
 
