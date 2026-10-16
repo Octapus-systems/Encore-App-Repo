@@ -1,0 +1,308 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 6%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 6%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 6%;
+    --primary: 16 100% 56%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 11% 96%;
+    --secondary-foreground: 0 0% 6%;
+    --muted: 240 11% 96%;
+    --muted-foreground: 240 4% 46%;
+    --accent: 240 11% 96%;
+    --accent-foreground: 0 0% 6%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 6%;
+    --ink: 0 0% 6%;
+    --charcoal: 240 4% 11%;
+    --surface: 240 11% 96%;
+    --border: 240 6% 91%;
+    --input: 240 6% 91%;
+    --ring: 16 100% 56%;
+    --chart-1: 16 100% 56%;
+    --chart-2: 142 71% 45%;
+    --chart-3: 38 92% 50%;
+    --chart-4: 240 4% 11%;
+    --chart-5: 0 84% 60%;
+    --radius: 1rem;
+    --font-heading: 'Poppins', ui-sans-serif, system-ui, sans-serif;
+    --font-body: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    --font-display: 'Poppins', ui-sans-serif, system-ui, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 240 4% 11%;
+    --sidebar-primary: 16 100% 56%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 11% 96%;
+    --sidebar-accent-foreground: 240 4% 11%;
+    --sidebar-border: 240 6% 91%;
+    --sidebar-ring: 16 100% 56%;
+  }
+
+  .dark {
+    --background: 0 0% 6%;
+    --foreground: 0 0% 98%;
+    --card: 240 4% 11%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 4% 11%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 16 100% 56%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 4% 16%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 4% 16%;
+    --muted-foreground: 240 5% 65%;
+    --accent: 240 4% 16%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 240 4% 18%;
+    --input: 240 4% 18%;
+    --ring: 16 100% 56%;
+    --sidebar-background: 240 4% 11%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 16 100% 56%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 4% 16%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 240 4% 18%;
+    --sidebar-ring: 16 100% 56%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html,
+  body {
+    @apply overflow-x-hidden;
+  }
+
+  body {
+    @apply bg-background text-foreground font-body antialiased;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-heading;
+  }
+}
+
+@layer utilities {
+  .safe-top {
+    padding-top: max(env(safe-area-inset-top), 1rem);
+  }
+
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .tap-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* Encore brand palette — declared here so every surface resolves reliably */
+  .bg-charcoal {
+    background-color: #1c1c1e;
+  }
+
+  .hover\:bg-charcoal:hover {
+    background-color: #1c1c1e;
+  }
+
+  .bg-ink {
+    background-color: #0f0f0f;
+  }
+
+  .bg-surface,
+  .hover\:bg-surface:hover {
+    background-color: #f5f5f7;
+  }
+
+  .text-ink,
+  .hover\:text-ink:hover {
+    color: #0f0f0f;
+  }
+
+  .text-success {
+    color: #22c55e;
+  }
+
+  .bg-success\/10 {
+    background-color: rgb(34 197 94 / 0.1);
+  }
+
+  .bg-success\/20 {
+    background-color: rgb(34 197 94 / 0.2);
+  }
+
+  .text-warning {
+    color: #f59e0b;
+  }
+
+  .bg-warning\/10 {
+    background-color: rgb(245 158 11 / 0.1);
+  }
+
+  .bg-warning\/20 {
+    background-color: rgb(245 158 11 / 0.2);
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.4s ease-out both;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+/* ---------- Encore customer app (Lovable design system) ---------- */
+@layer base {
+  .encore-app {
+    --encore-error-container: 255 218 214;
+    --encore-inverse-surface: 46 49 50;
+    --encore-outline: 141 113 100;
+    --encore-primary-fixed-dim: 255 182 146;
+    --encore-secondary-container: 229 226 225;
+    --encore-on-secondary-fixed-variant: 71 70 70;
+    --encore-on-secondary-container: 101 100 100;
+    --encore-error: 186 26 26;
+    --encore-inverse-on-surface: 240 241 242;
+    --encore-secondary: 95 94 94;
+    --encore-tertiary: 147 75 0;
+    --encore-on-secondary: 255 255 255;
+    --encore-secondary-fixed: 229 226 225;
+    --encore-on-tertiary-container: 83 40 0;
+    --encore-surface-container-low: 243 244 245;
+    --encore-on-background: 25 28 29;
+    --encore-on-error: 255 255 255;
+    --encore-surface-container-high: 231 232 233;
+    --encore-tertiary-container: 229 131 47;
+    --encore-on-surface-variant: 89 66 54;
+    --encore-background: 248 249 250;
+    --encore-surface-bright: 248 249 250;
+    --encore-on-primary: 255 255 255;
+    --encore-on-secondary-fixed: 28 27 27;
+    --encore-primary: 159 66 0;
+    --encore-primary-fixed: 255 219 203;
+    --encore-tertiary-fixed: 255 220 197;
+    --encore-surface-tint: 159 66 0;
+    --encore-on-primary-fixed-variant: 121 49 0;
+    --encore-on-primary-container: 90 34 0;
+    --encore-surface-dim: 217 218 219;
+    --encore-on-error-container: 147 0 10;
+    --encore-on-tertiary-fixed: 48 20 0;
+    --encore-surface-container-lowest: 255 255 255;
+    --encore-surface-variant: 225 227 228;
+    --encore-surface-container: 237 238 239;
+    --encore-on-tertiary-fixed-variant: 112 56 0;
+    --encore-on-primary-fixed: 52 17 0;
+    --encore-surface-container-highest: 225 227 228;
+    --encore-inverse-primary: 255 182 146;
+    --encore-primary-container: 255 113 15;
+    --encore-surface: 248 249 250;
+    --encore-outline-variant: 225 192 177;
+    --encore-on-surface: 25 28 29;
+    --encore-on-tertiary: 255 255 255;
+    --encore-secondary-fixed-dim: 200 198 197;
+    --encore-tertiary-fixed-dim: 255 183 130;
+    --encore-white: 255 255 255;
+    --encore-black: 0 0 0;
+    --encore-button-mid: 255 124 36;
+    --encore-button-end: 255 141 59;
+    --encore-visa: 26 31 113;
+    --primary: 25 100% 31%;
+    --secondary: 0 1% 37%;
+    --surface: 210 17% 98%;
+    --background: 210 17% 98%;
+    --radius: 2rem;
+  }
+}
+.encore-app { font-family: "Plus Jakarta Sans", sans-serif; background: rgb(var(--encore-surface)); color: rgb(var(--encore-on-surface)); }
+.encore-app h1, .encore-app h2, .encore-app h3, .encore-app h4 { font-family: "Plus Jakarta Sans", sans-serif; }
+.material-symbols-outlined { font-family: 'Material Symbols Outlined'; font-weight: 500; font-style: normal; font-size: 24px; line-height: 1; display: inline-block; white-space: nowrap; font-feature-settings: 'liga'; vertical-align: middle; -webkit-font-smoothing: antialiased; }
+.icon-fill { font-variation-settings: 'FILL' 1; }
+.encore-app .rounded-DEFAULT { border-radius: 1rem; }
+.encore-app .w-13 { width: 52px; } .encore-app .h-13 { height: 52px; }
+:root {
+  --encore-shadow-0-03: rgb(0 0 0 / .03); --encore-shadow-0-04: rgb(0 0 0 / .04); --encore-shadow-0-05: rgb(0 0 0 / .05);
+  --encore-shadow-0-06: rgb(0 0 0 / .06); --encore-shadow-0-08: rgb(0 0 0 / .08); --encore-shadow-0-12: rgb(0 0 0 / .12);
+  --encore-shadow-0-14: rgb(0 0 0 / .14); --encore-shadow-0-18: rgb(0 0 0 / .18); --encore-shadow-0-2: rgb(0 0 0 / .2); --encore-shadow-0-25: rgb(0 0 0 / .25);
+  --encore-orange-shadow-0-15: rgb(255 113 15 / .15); --encore-orange-shadow-0-32: rgb(255 113 15 / .32); --encore-orange-shadow-0-35: rgb(255 113 15 / .35);
+  --encore-orange-shadow-0-38: rgb(255 113 15 / .38); --encore-orange-shadow-0-4: rgb(255 113 15 / .4);
+}
+
+/* Request form + legacy panels inside the customer app adopt the Lovable look */
+.encore-app section.rounded-2xl, .encore-app .rounded-2xl.border.bg-white { border: 0; border-radius: 2rem; background: rgb(var(--encore-surface-container-lowest)); box-shadow: 0 8px 24px var(--encore-shadow-0-05); }
+.encore-app input.rounded-xl, .encore-app select.rounded-xl, .encore-app textarea.rounded-xl { border: 1px solid rgb(var(--encore-surface-container-high)); border-radius: 1.25rem; background: rgb(var(--encore-surface-container-lowest)); box-shadow: 0 4px 14px var(--encore-shadow-0-04); font-family: "Plus Jakarta Sans", sans-serif; }
+.encore-app input.rounded-xl, .encore-app select.rounded-xl { border-radius: 999px; padding-left: 1.25rem; }
+.encore-app input.rounded-xl:focus, .encore-app select.rounded-xl:focus, .encore-app textarea.rounded-xl:focus { border-color: rgb(var(--encore-primary-container)); box-shadow: 0 0 0 3px rgb(var(--encore-primary-container) / .18); }
+.encore-app section .bg-ink { background: rgb(var(--encore-primary-container)); }
+.encore-app div.h-11.rounded-xl.border.bg-white { border: 0; border-radius: 999px; background: rgb(var(--encore-surface-container-low)); box-shadow: none; }
+.encore-app button.rounded-xl.border { border-radius: 1.25rem; }
+.encore-app button[type="submit"].h-11 { border-radius: 999px; height: 3.25rem; background-image: linear-gradient(to right, rgb(var(--encore-primary-container)), rgb(var(--encore-button-end))); box-shadow: 0 10px 26px var(--encore-orange-shadow-0-38); }
+.encore-app .sticky.rounded-2xl { border: 0; border-radius: 2rem; box-shadow: 0 16px 36px var(--encore-shadow-0-14); }
+
+/* Photo blends into the card: soft fade on all four edges, no hard box */
+.fade-edges {
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 14%, #000 86%, transparent 100%), linear-gradient(to bottom, transparent 0%, #000 18%, #000 78%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(to right, transparent 0%, #000 14%, #000 86%, transparent 100%), linear-gradient(to bottom, transparent 0%, #000 18%, #000 78%, transparent 100%);
+  mask-composite: intersect;
+}
+
+/* Photo dissolves into the dark background below it — no hard edge */
+.fade-bottom {
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 58%, rgba(0,0,0,.6) 78%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 58%, rgba(0,0,0,.6) 78%, transparent 100%);
+}
+
+/* Sign-in background drifts slowly */
+@keyframes auth-kenburns { from { transform: scale(1.12) translateY(0); } to { transform: scale(1.02) translateY(-2%); } }
+.auth-kenburns { animation: auth-kenburns 18s ease-out both; }
+@media (prefers-reduced-motion: reduce) { .auth-kenburns { animation: none; } }
+
+/* Stop browser autofill from painting white/blue boxes on the glass sign-in fields */
+.glass-input:-webkit-autofill,
+.glass-input:-webkit-autofill:hover,
+.glass-input:-webkit-autofill:focus,
+.glass-input:-webkit-autofill:active {
+  -webkit-text-fill-color: #fff;
+  caret-color: #fff;
+  -webkit-box-shadow: 0 0 0 1000px transparent inset;
+  box-shadow: 0 0 0 1000px transparent inset;
+  transition: background-color 9999s ease-in-out 0s;
+}
+.glass-input:autofill { background: transparent; color: #fff; }
