@@ -53,3 +53,4 @@ base44/.app.jsonc
 
 # Management web app lives in its own repo (Octapus-systems/Management-Repo)
 /management/
+/docs/*.docx
