@@ -18,7 +18,7 @@ import {
 import { BookingProgress, LegRoute, LegTimes, MessageThread, RequestForm, emptyRequest } from '@/components/booking';
 import { Button } from '@/components/ui/button';
 
-const useBookings = (view) => useQuery({ queryKey: ['bookings', view], queryFn: () => api.get(`/bookings?view=${view}&sort=${view === 'past' ? 'pickup_desc' : 'pickup'}`), refetchInterval: 30000 });
+const useBookings = (view) => useQuery({ queryKey: ['bookings', view], queryFn: () => api.get(`/bookings?view=${view}&sort=${view === 'past' ? 'pickup_desc' : 'pickup'}`), refetchInterval: 10000 });
 
 function BookingRow({ b, to }) {
   return (
@@ -149,7 +149,7 @@ export function CustomerBooking() {
   const { user } = useAuth();
   const { data: s } = usePublicSettings();
   const qc = useQueryClient();
-  const q = useQuery({ queryKey: ['booking', id], queryFn: () => api.get(`/bookings/${id}`), refetchInterval: 20000 });
+  const q = useQuery({ queryKey: ['booking', id], queryFn: () => api.get(`/bookings/${id}`), refetchInterval: 8000 });
   const [dialog, setDialog] = useState(null);
   const [note, setNote] = useState('');
   const refresh = (b) => { qc.setQueryData(['booking', id], b); qc.invalidateQueries({ queryKey: ['bookings'] }); qc.invalidateQueries({ queryKey: ['notifications'] }); };

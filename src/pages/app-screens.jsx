@@ -148,7 +148,7 @@ export function AppHome() {
   const nav = useNavigate();
   const [chip, setChip] = useState('all');
   const [dest, setDest] = useState('');
-  const { data: bookings = [] } = useQuery({ queryKey: ['bookings', 'upcoming'], queryFn: () => api.get('/bookings?view=upcoming&sort=pickup'), refetchInterval: 30000 });
+  const { data: bookings = [] } = useQuery({ queryKey: ['bookings', 'upcoming'], queryFn: () => api.get('/bookings?view=upcoming&sort=pickup'), refetchInterval: 10000 });
   const attention = bookings.filter((b) => ['quote_sent', 'clarification_needed'].includes(b.status));
   const request = (params = {}) => {
     const p = new URLSearchParams(params);

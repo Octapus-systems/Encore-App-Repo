@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Accessibility, Baby, Briefcase, CheckCircle2, ChevronRight, Lock, MapPin, Navigation, Phone, Plane, Users } from 'lucide-react';
@@ -20,7 +20,7 @@ const NEXT = {
 const statusTone = (s) => ({ assigned: 'bg-neutral-100 text-neutral-700', on_the_way: 'bg-orange-100 text-orange-800', arrived: 'bg-orange-100 text-orange-800', started: 'bg-sky-100 text-sky-800', completed: 'bg-emerald-100 text-emerald-800' }[s] || 'bg-neutral-100');
 
 export function DriverJobs() {
-  const { data, isLoading, error } = useQuery({ queryKey: ['driver-legs'], queryFn: () => api.get('/driver/legs'), refetchInterval: 30000 });
+  const { data, isLoading, error } = useQuery({ queryKey: ['driver-legs'], queryFn: () => api.get('/driver/legs'), refetchInterval: 8000 });
   if (isLoading) return <PageLoader />;
   if (error) return <ErrorState error={error} />;
   const live = data.filter((l) => !['completed'].includes(l.status) && !l.booking_status.startsWith('cancelled'));
@@ -45,7 +45,7 @@ export function DriverJobs() {
           <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">{title}</h2>
           <div className="space-y-2">
             {items.map((l) => (
-              <Link key={l.id} to={`/driver/jobs/${l.booking_id}`} className={cn('block rounded-2xl border bg-white p-4 shadow-sm', ['on_the_way', 'arrived', 'started'].includes(l.status) && 'border-primary ring-2 ring-primary/15')}>
+              <Link key={l.id} to={`/driver/jobs/${l.booking_id}`} className={cn('press block animate-rise rounded-2xl border bg-white p-4 shadow-sm transition-shadow hover:shadow-md', ['on_the_way', 'arrived', 'started'].includes(l.status) && 'border-primary ring-2 ring-primary/15')}>
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <div className="flex items-baseline gap-2">
@@ -58,6 +58,7 @@ export function DriverJobs() {
                   </div>
                   <div className="flex shrink-0 flex-col items-end gap-2">
                     <span className={cn('rounded-full px-2.5 py-0.5 text-xs font-semibold', l.booking_status.startsWith('cancelled') ? 'bg-red-100 text-red-700' : statusTone(l.status))}>{l.booking_status.startsWith('cancelled') ? 'Cancelled' : LEG_STATUS[l.status]}</span>
+                    {l.status === 'assigned' && !l.driver_accepted_at && !l.booking_status.startsWith('cancelled') && <span className="animate-pulse rounded-full bg-primary px-2.5 py-0.5 text-xs font-bold text-white">New · tap to accept</span>}
                     {l.vehicle_registration && <span className="font-mono text-xs font-bold">{l.vehicle_registration}</span>}
                     <ChevronRight className="h-4 w-4 text-muted-foreground" />
                   </div>
@@ -75,7 +76,8 @@ export function DriverJob() {
   const { id } = useParams();
   const qc = useQueryClient();
   const { data: s } = usePublicSettings();
-  const q = useQuery({ queryKey: ['driver-job', id], queryFn: () => api.get(`/bookings/${id}`), refetchInterval: 20000 });
+  const q = useQuery({ queryKey: ['driver-job', id], queryFn: () => api.get(`/bookings/${id}`), refetchInterval: 8000 });
+  const nav = useNavigate();
   const [pending, setPending] = useState(null);
   const inFlight = useRef(false);
 
@@ -91,6 +93,34 @@ export function DriverJob() {
       else toast.success(`${LEG_STATUS[to]} — the customer has been informed.`);
     } catch (err) {
       // Never show false success: reload the authoritative state.
+      toast.error(err.message);
+      qc.invalidateQueries({ queryKey: ['driver-job', id] });
+    } finally {
+      inFlight.current = false;
+      setPending(null);
+    }
+  };
+
+  const respond = async (leg, accept) => {
+    if (inFlight.current) return;
+    let reason = '';
+    if (!accept) {
+      reason = window.prompt('Decline this journey? Dispatch will reassign it. Reason (optional):');
+      if (reason === null) return;
+    }
+    inFlight.current = true;
+    setPending(leg.id);
+    try {
+      const res = await api.post(`/bookings/${id}/legs/${leg.id}/respond`, { accept, reason });
+      qc.invalidateQueries({ queryKey: ['driver-legs'] });
+      if (accept) {
+        qc.setQueryData(['driver-job', id], res);
+        toast.success('Journey accepted — dispatch and the customer have been told.');
+      } else {
+        toast.info('Journey declined — dispatch will reassign it.');
+        nav('/driver');
+      }
+    } catch (err) {
       toast.error(err.message);
       qc.invalidateQueries({ queryKey: ['driver-job', id] });
     } finally {
@@ -143,7 +173,15 @@ export function DriverJob() {
             {leg.vehicle && <div className="mt-4 flex items-center justify-between rounded-xl bg-surface px-3 py-2 text-sm"><span>{leg.vehicle.make} {leg.vehicle.model}</span><span className="font-mono font-bold">{leg.vehicle.registration}</span></div>}
             <a href={leg.navigation_url} target="_blank" rel="noopener noreferrer" className="mt-3 flex h-12 items-center justify-center gap-2 rounded-xl border-2 border-ink text-sm font-bold"><MapPin className="h-4 w-4" />Open in Maps</a>
             <div className="mt-3"><LegTimes leg={leg} /></div>
-            {!b.cancelled && next && (
+            {!b.cancelled && leg.status === 'assigned' && !leg.driver_accepted_at ? (
+              <div className="mt-4 animate-rise rounded-2xl border-2 border-primary/40 bg-primary/5 p-3">
+                <div className="mb-3 text-center text-sm font-semibold">New assignment — accept this journey?</div>
+                <div className="grid grid-cols-[1fr_2fr] gap-2">
+                  <button type="button" disabled={pending === leg.id} onClick={() => respond(leg, false)} className="press h-14 rounded-xl border-2 border-ink/15 bg-white text-sm font-bold">Decline</button>
+                  <PrimaryButton className="h-14 w-full text-lg" loading={pending === leg.id} onClick={() => respond(leg, true)}>Accept journey</PrimaryButton>
+                </div>
+              </div>
+            ) : !b.cancelled && next && (
               <div className="mt-4">
                 <PrimaryButton className="h-14 w-full text-lg" loading={pending === leg.id} onClick={() => press(leg, next.to)}>{next.label}</PrimaryButton>
                 <p className="mt-1.5 text-center text-xs text-muted-foreground">{next.hint}</p>

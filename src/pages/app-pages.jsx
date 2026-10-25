@@ -36,7 +36,7 @@ const TYPE_ICON = { point_to_point: 'pin_drop', airport: 'flight', return: 'sync
 // ======================= My Bookings =======================
 export function MyBookings() {
   const [tab, setTab] = useState('upcoming');
-  const { data, isLoading } = useQuery({ queryKey: ['bookings', tab], queryFn: () => api.get(`/bookings?view=${tab}&sort=${tab === 'past' ? 'pickup_desc' : 'pickup'}`), refetchInterval: 30000 });
+  const { data, isLoading } = useQuery({ queryKey: ['bookings', tab], queryFn: () => api.get(`/bookings?view=${tab}&sort=${tab === 'past' ? 'pickup_desc' : 'pickup'}`), refetchInterval: 10000 });
   return (
     <div className="flex flex-col gap-space-md pt-space-xs">
       <Segmented value={tab} onChange={setTab} options={[['upcoming', 'Upcoming'], ['past', 'Past']]} />

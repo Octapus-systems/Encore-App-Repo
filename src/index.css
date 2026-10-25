@@ -306,3 +306,41 @@
   transition: background-color 9999s ease-in-out 0s;
 }
 .glass-input:autofill { background: transparent; color: #fff; }
+
+/* ---------- motion ---------- */
+@keyframes encore-rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes encore-page { from { opacity: 0; transform: translateY(6px) scale(.995); } to { opacity: 1; transform: none; } }
+@keyframes encore-shine { from { transform: translateX(-120%) skewX(-20deg); } to { transform: translateX(220%) skewX(-20deg); } }
+
+.page-enter { animation: encore-page .38s cubic-bezier(.2,.8,.2,1) both; }
+.animate-rise { animation: encore-rise .45s cubic-bezier(.2,.8,.2,1) both; }
+.page-enter > * { animation: encore-rise .5s cubic-bezier(.2,.8,.2,1) both; }
+.page-enter > *:nth-child(2) { animation-delay: .04s; }
+.page-enter > *:nth-child(3) { animation-delay: .08s; }
+.page-enter > *:nth-child(4) { animation-delay: .12s; }
+.page-enter > *:nth-child(n+5) { animation-delay: .16s; }
+
+/* Every button and link-button gets a tactile press and smooth hover. */
+button, a[role="button"], .press {
+  transition: transform .18s cubic-bezier(.2,.8,.2,1), box-shadow .2s ease, background-color .2s ease, color .2s ease, opacity .2s ease, border-color .2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+button:not(:disabled):active, a[role="button"]:active, .press:active { transform: scale(.96); }
+button:disabled { cursor: not-allowed; }
+
+/* Primary (brand-coloured) buttons get a light sweep on hover. */
+button.bg-primary, a.bg-primary { position: relative; overflow: hidden; }
+button.bg-primary::after, a.bg-primary::after {
+  content: ''; position: absolute; inset: 0; width: 40%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.28), transparent);
+  transform: translateX(-120%) skewX(-20deg); pointer-events: none;
+}
+button.bg-primary:hover::after, a.bg-primary:hover::after { animation: encore-shine .8s ease; }
+button.bg-primary:not(:disabled):hover, a.bg-primary:hover { box-shadow: 0 8px 24px -8px rgb(var(--encore-primary, 234 88 12) / .55); }
+
+/* Toasts slide softly. */
+[data-sonner-toast] { transition: transform .4s cubic-bezier(.2,.8,.2,1), opacity .4s ease, height .4s ease !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}

@@ -46,7 +46,7 @@ export function JourneyDetails() {
   const { user } = useAuth();
   const { data: s } = usePublicSettings();
   const qc = useQueryClient();
-  const q = useQuery({ queryKey: ['booking', id], queryFn: () => api.get(`/bookings/${id}`), refetchInterval: 20000 });
+  const q = useQuery({ queryKey: ['booking', id], queryFn: () => api.get(`/bookings/${id}`), refetchInterval: 8000 });
   const [legIdx, setLegIdx] = useState(0);
   const [dialog, setDialog] = useState(null);
   const [note, setNote] = useState('');
@@ -168,7 +168,7 @@ export function JourneyDetails() {
                 {leg.vehicle && <span className="rounded-full bg-primary-fixed px-1.5 py-0.5 font-label-sm text-[10px] font-bold uppercase text-on-primary-fixed">{LEG_STATUS[leg.status]}</span>}
               </div>
               <div className="mt-0.5 truncate text-body-sm font-body-sm text-secondary">
-                {leg.chauffeur ? `Chauffeur ${leg.chauffeur}` : ['confirmed', 'driver_assigned'].includes(b.status) ? 'Chauffeur to be assigned' : 'Selected by Encore after review'}
+                {leg.chauffeur ? <>Chauffeur {leg.chauffeur}{leg.driver_accepted_at && <span className="ml-1.5 inline-flex items-center gap-0.5 font-bold text-emerald-600"><Icon name="verified" className="text-[14px]" />confirmed</span>}</> : ['confirmed', 'driver_assigned'].includes(b.status) ? 'Chauffeur to be assigned' : 'Selected by Encore after review'}
               </div>
             </div>
           </div>

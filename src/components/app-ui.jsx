@@ -37,7 +37,7 @@ export function RoundButton({ children, className, label, ...props }) {
 }
 
 function useUnread() {
-  const { data = [] } = useQuery({ queryKey: ['notifications'], queryFn: () => api.get('/account/notifications'), refetchInterval: 30000 });
+  const { data = [] } = useQuery({ queryKey: ['notifications'], queryFn: () => api.get('/account/notifications'), refetchInterval: 10000 });
   return data.filter((n) => !n.read_at).length;
 }
 

@@ -8,6 +8,10 @@ import { homeFor, useAuth, usePublicSettings } from '@/lib/auth';
 import { cn } from '@/lib/utils';
 import { Logo, PageLoader } from '@/components/common';
 import { EncoreHeader, Icon } from '@/components/app-ui';
+import { useLiveUpdates } from '@/lib/live';
+
+const customerLink = (n) => `/app/bookings/${n.booking_id}`;
+const driverLink = (n) => `/driver/jobs/${n.booking_id}`;
 
 export function RequireRole({ roles }) {
   const { user, loading } = useAuth();
@@ -19,7 +23,7 @@ export function RequireRole({ roles }) {
 }
 
 function useUnread() {
-  const { data } = useQuery({ queryKey: ['notifications'], queryFn: () => api.get('/account/notifications'), refetchInterval: 30000 });
+  const { data } = useQuery({ queryKey: ['notifications'], queryFn: () => api.get('/account/notifications'), refetchInterval: 10000 });
   return (data || []).filter((n) => !n.read_at).length;
 }
 
@@ -45,6 +49,7 @@ const CUSTOMER_TITLES = [
 
 export function CustomerLayout() {
   const { user } = useAuth();
+  useLiveUpdates(customerLink);
   const loc = useLocation();
   const head = CUSTOMER_TITLES.find(([re]) => re.test(loc.pathname))?.[1] || { title: 'Encore' };
   const nav = [
@@ -57,7 +62,7 @@ export function CustomerLayout() {
     <div className="min-h-screen bg-[#ECEDEF]">
       <div className="encore-app relative mx-auto min-h-screen w-full max-w-[480px] overflow-x-clip shadow-[0_0_60px_rgba(0,0,0,0.08)]">
         <EncoreHeader title={head.title} back={head.back} subtitle={head.home ? (user.organisation?.name || 'Staffordshire · UK-wide') : null} />
-        <main className="px-margin pb-32 pt-space-sm"><Outlet /></main>
+        <main className="px-margin pb-32 pt-space-sm"><div key={loc.pathname} className="page-enter"><Outlet /></div></main>
         <div className="pointer-events-none fixed bottom-0 left-1/2 z-50 mb-space-sm w-full max-w-[480px] -translate-x-1/2 px-margin safe-bottom">
           <nav className="pointer-events-auto mx-auto flex max-w-md items-center justify-between rounded-full bg-surface-container-lowest/95 p-space-xs shadow-[0_16px_36px_var(--encore-shadow-0-12)] backdrop-blur-2xl">
             {nav.map((n) => (
@@ -77,8 +82,9 @@ export function CustomerLayout() {
 // ---------------- Driver ----------------
 export function DriverLayout() {
   const { user } = useAuth();
+  const loc = useLocation();
   const { data: s } = usePublicSettings();
-  const unread = useUnread();
+  const unread = useLiveUpdates(driverLink);
   return (
     <div className="min-h-screen bg-surface">
       <header className="sticky top-0 z-30 bg-ink safe-top">
@@ -93,7 +99,7 @@ export function DriverLayout() {
           </div>
         </div>
       </header>
-      <main className="mx-auto max-w-2xl px-4 pb-28 pt-5"><Outlet /></main>
+      <main className="mx-auto max-w-2xl px-4 pb-28 pt-5"><div key={loc.pathname} className="page-enter"><Outlet /></div></main>
       <nav className="fixed inset-x-0 bottom-0 z-30 border-t bg-white/95 backdrop-blur safe-bottom">
         <div className="mx-auto grid max-w-md grid-cols-3">
           {[{ to: '/driver', label: 'My journeys', icon: Car, end: true }, { to: '/driver/updates', label: 'Updates', icon: Bell, badge: unread }, { to: '/driver/account', label: user.name.split(' ')[0], icon: User }].map((n) => (
