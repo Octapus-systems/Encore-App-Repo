@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -78,6 +78,8 @@ export function DriverJob() {
   const { data: s } = usePublicSettings();
   const q = useQuery({ queryKey: ['driver-job', id], queryFn: () => api.get(`/bookings/${id}`), refetchInterval: 8000 });
   const nav = useNavigate();
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => { const t = setInterval(() => setNow(Date.now()), 15000); return () => clearInterval(t); }, []);
   const [pending, setPending] = useState(null);
   const inFlight = useRef(false);
 
@@ -183,8 +185,19 @@ export function DriverJob() {
               </div>
             ) : !b.cancelled && next && (
               <div className="mt-4">
-                <PrimaryButton className="h-14 w-full text-lg" loading={pending === leg.id} onClick={() => press(leg, next.to)}>{next.label}</PrimaryButton>
-                <p className="mt-1.5 text-center text-xs text-muted-foreground">{next.hint}</p>
+                {next.to === 'on_the_way' && b.payment_hold ? (
+                  <Banner tone="amber" title="Payment outstanding">Do not set off yet. Dispatch must confirm payment first — call the dispatcher.</Banner>
+                ) : next.to === 'on_the_way' && leg.start_available_at && now < new Date(leg.start_available_at).getTime() ? (
+                  <>
+                    <button type="button" disabled className="h-14 w-full rounded-xl bg-neutral-200 text-lg font-bold text-neutral-500">Starts at {timeOnly(leg.start_available_at)}</button>
+                    <p className="mt-1.5 text-center text-xs text-muted-foreground">You can start this journey from {timeOnly(leg.start_available_at)} ({dateOnly(leg.start_available_at)}).</p>
+                  </>
+                ) : (
+                  <>
+                    <PrimaryButton className="h-14 w-full text-lg" loading={pending === leg.id} onClick={() => press(leg, next.to)}>{next.label}</PrimaryButton>
+                    <p className="mt-1.5 text-center text-xs text-muted-foreground">{next.hint}</p>
+                  </>
+                )}
               </div>
             )}
             {leg.status === 'completed' && <div className="mt-4 flex items-center justify-center gap-2 rounded-xl bg-emerald-50 py-3 text-sm font-semibold text-emerald-700"><CheckCircle2 className="h-4 w-4" />Journey completed</div>}

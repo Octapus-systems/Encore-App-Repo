@@ -85,18 +85,71 @@ function GlowButton({ loading, children }) {
   );
 }
 
+
+/**
+ * Mobile number sign-in with a one-time code. New customers add their name on the code step.
+ * Used on the sign-in screen and when a guest sends a booking request.
+ */
+export function OtpSignIn({ defaultPhone = '', defaultName = '', onDone, cta = 'Continue' }) {
+  const [step, setStep] = useState('phone');
+  const [phone, setPhone] = useState(defaultPhone);
+  const [code, setCode] = useState('');
+  const [name, setName] = useState(defaultName);
+  const [needsName, setNeedsName] = useState(false);
+  const [demo, setDemo] = useState(null);
+  const send = useAction((p) => api.post('/auth/otp/request', { phone: p }), {
+    onSuccess: (d) => { setStep('code'); setDemo(d.demo_code || null); setCode(''); },
+  });
+  const verify = useAction((b) => api.post('/auth/otp/verify', b), {
+    onSuccess: (d) => onDone(d),
+    onError: (err) => { if (err.body?.code === 'needs_name') { setNeedsName(true); return true; } return false; },
+  });
+  if (step === 'phone') {
+    return (
+      <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); send.mutate(phone); }}>
+        <GlassInput icon="smartphone" label="Mobile number" type="tel" autoComplete="tel" required placeholder="07700 900123" value={phone} onChange={(e) => setPhone(e.target.value)} error={send.fields?.phone} />
+        <GlowButton loading={send.isPending}>Send code</GlowButton>
+        <p className="px-1 text-center text-body-sm text-white/50">We'll text you a 6-digit code. No password needed.</p>
+      </form>
+    );
+  }
+  return (
+    <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); verify.mutate({ phone, code, name: needsName ? name : undefined }); }}>
+      <p className="px-1 text-body-sm text-white/70">Code sent to <b className="text-white">{phone}</b>. <button type="button" className="font-semibold text-primary-container" onClick={() => setStep('phone')}>Change</button></p>
+      {demo && <div className="rounded-2xl border border-amber-300/30 bg-amber-400/10 px-4 py-2 text-body-sm text-amber-200">Demo mode — no SMS provider yet. Your code is <b className="tracking-widest">{demo}</b></div>}
+      <GlassInput icon="pin" label="6-digit code" inputMode="numeric" autoComplete="one-time-code" maxLength={6} required placeholder="••••••" value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))} error={verify.fields?.code} />
+      {needsName && <GlassInput icon="person" label="Your name" autoComplete="name" required placeholder="Full name" value={name} onChange={(e) => setName(e.target.value)} error={verify.fields?.name} />}
+      {needsName && <p className="px-1 text-body-sm text-white/60">Welcome to Encore — tell us your name to finish.</p>}
+      <GlowButton loading={verify.isPending}>{needsName ? 'Create my account' : cta}</GlowButton>
+      <button type="button" onClick={() => send.mutate(phone)} className="w-full text-center text-body-sm text-white/50 hover:text-white">Resend code</button>
+    </form>
+  );
+}
+
+
 export function Login() {
   const { user, signIn } = useAuth();
   const { data: s } = usePublicSettings();
   const nav = useNavigate();
   const loc = useLocation();
   const [form, setForm] = useState({ email: '', password: '' });
+  const [mode, setMode] = useState(null);
+  const useOtp = (mode ?? (s?.otp_login ? 'mobile' : 'email')) === 'mobile';
+  const done = (data) => { signIn(data); nav(loc.state?.from || homeFor(data.user), { replace: true }); };
   const login = useAction((f) => api.post('/auth/login', { ...f, portal: 'app' }), {
     onSuccess: (data) => { signIn(data); nav(loc.state?.from || homeFor(data.user), { replace: true }); },
   });
   if (user) return <Navigate to={homeFor(user)} replace />;
   return (
     <Shell title={<>Welcome<br /><span className="text-primary-container">back.</span></>} subtitle="Sign in to request journeys, review quotations and follow your chauffeur.">
+      {s?.otp_login && (
+        <div className="mb-4 grid grid-cols-2 rounded-full bg-black/30 p-1 text-label-md font-label-md">
+          {[['mobile', 'Mobile'], ['email', 'Email']].map(([k, l]) => (
+            <button key={k} type="button" onClick={() => setMode(k)} className={`rounded-full py-2 transition ${(useOtp ? 'mobile' : 'email') === k ? 'bg-white text-black shadow' : 'text-white/60 hover:text-white'}`}>{l}</button>
+          ))}
+        </div>
+      )}
+      {useOtp ? <OtpSignIn onDone={done} cta="Sign in" /> : (
       <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); login.mutate(form); }}>
         <GlassInput icon="mail" label="Email" type="email" autoComplete="email" required placeholder="you@company.com" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
         <GlassInput icon="lock" label="Password" type="password" autoComplete="current-password" required placeholder="••••••••" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
@@ -104,7 +157,8 @@ export function Login() {
           <a href={s ? `tel:${s.dispatcher_phone}` : undefined} className="text-body-sm font-body-sm text-white/60 hover:text-white">Forgot password? Call us</a>
         </div>
         <GlowButton loading={login.isPending}>Sign in</GlowButton>
-      </form>
+      </form>)}
+      {s?.guest_booking && <Link to="/book" className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-white/10 text-label-lg font-label-lg text-white transition hover:bg-white/15"><Icon name="directions_car" className="!text-[20px]" />Continue without signing in</Link>}
       <div className="mt-5 flex items-center gap-3 text-body-sm text-white/40"><span className="h-px flex-1 bg-white/10" />New to Encore?<span className="h-px flex-1 bg-white/10" /></div>
       {s?.admission_mode === 'invitation'
         ? <p className="mt-3 text-center text-body-sm text-white/70">Access is by invitation. Call {s.dispatcher_phone} to request one.</p>

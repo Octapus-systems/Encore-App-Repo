@@ -12,6 +12,7 @@ import { AppHome, CarDetails, FleetList, Onboarding } from '@/pages/app-screens'
 import { JourneyDetails, RequestSent } from '@/pages/app-journey';
 import { AppProfile, AppUpdates, MyBookings } from '@/pages/app-pages';
 import { DriverJobs, DriverJob } from '@/pages/driver';
+import { GuestBook } from '@/pages/guest';
 
 function Home() {
   const { user, loading } = useAuth();
@@ -28,6 +29,7 @@ export default function App() {
             <Route path="/" element={<Home />} />
             <Route path="/welcome" element={<Onboarding />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/book" element={<GuestBook />} />
             <Route path="/register" element={<Register />} />
             <Route path="/invite/:token" element={<Invite />} />
             <Route path="/staff" element={<StaffNotice />} />

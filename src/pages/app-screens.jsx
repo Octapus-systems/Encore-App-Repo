@@ -95,7 +95,7 @@ export function Onboarding() {
                 <Icon name="arrow_forward" className="!text-[22px] transition-transform duration-300 group-hover:translate-x-1.5" />
               </button>
               <div className="mt-4 text-center">
-                <Link to="/register" className="py-1 text-label-md font-label-md tracking-wide text-secondary-fixed transition-colors hover:text-white">New to Encore? Request access</Link>
+                <Link to="/book" className="py-1 text-label-md font-label-md tracking-wide text-secondary-fixed transition-colors hover:text-white">Book a journey without signing in →</Link>
               </div>
             </div>
           </div>

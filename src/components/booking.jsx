@@ -46,7 +46,11 @@ export function RequestForm({ initial, onSubmit, submitting, fields = {}, submit
   const bind = (k) => ({ value: f[k] ?? '', onChange: (e) => set(k, e.target.value), invalid: !!fields[k] });
   const addr = (k) => ({ value: f[k] ?? '', onChange: (v) => set(k, v), invalid: !!fields[k] });
   const isReturn = f.journey_type === 'return' || f.is_return;
-  const minDate = toLocalInput(new Date(Date.now() + 15 * 60000));
+  const bf = s?.booking_fields || {};
+  const on = (k) => bf[k] !== false; // fields management can switch off in Settings
+  const notice = Number(s?.min_notice_hours || 0);
+  const minHire = Number(s?.hourly_min_hours || 0);
+  const minDate = toLocalInput(new Date(Date.now() + Math.max(15, notice * 60) * 60000));
 
   const submit = (e) => {
     e.preventDefault();
@@ -82,20 +86,20 @@ export function RequestForm({ initial, onSubmit, submitting, fields = {}, submit
       <Section n={2} title="Where and when">
         <div className="space-y-4">
           <Field label="Pickup address" error={fields.pickup} required><AddressInput placeholder="Search address, station or airport" {...addr('pickup')} /></Field>
-          {f.stops.map((stop, i) => (
+          {on('stops') && f.stops.map((stop, i) => (
             <div key={i} className="flex items-end gap-2">
               <Field label={`Extra stop ${i + 1}`} className="flex-1"><AddressInput value={stop} onChange={(v) => set('stops', f.stops.map((x, j) => (j === i ? v : x)))} placeholder="Search additional pickup or stop" /></Field>
               <button type="button" className="mb-1 h-9 rounded-lg px-3 text-sm text-muted-foreground hover:bg-surface" onClick={() => set('stops', f.stops.filter((_, j) => j !== i))}>Remove</button>
             </div>
           ))}
-          {f.stops.length < 5 && <button type="button" onClick={() => set('stops', [...f.stops, ''])} className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary"><Plus className="h-4 w-4" />Add an extra pickup or stop</button>}
+          {on('stops') && f.stops.length < 5 && <button type="button" onClick={() => set('stops', [...f.stops, ''])} className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary"><Plus className="h-4 w-4" />Add an extra pickup or stop</button>}
           <Field label={f.journey_type === 'hourly' ? 'Final destination (if known)' : 'Destination'} error={fields.destination} required={f.journey_type !== 'hourly'}>
             <AddressInput placeholder={f.journey_type === 'hourly' ? 'As directed' : 'Search destination address'} {...addr('destination')} />
           </Field>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Pickup date and time" error={fields.pickup_at} required><TextInput type="datetime-local" min={minDate} {...bind('pickup_at')} /></Field>
-            {f.journey_type === 'airport' && <Field label="Flight number" error={fields.flight_number} required hint="So we can track your arrival"><TextInput placeholder="e.g. BA1427" {...bind('flight_number')} /></Field>}
-            {f.journey_type === 'hourly' && <Field label="Hours required" error={fields.duration_hours} required><TextInput type="number" min="1" step="0.5" {...bind('duration_hours')} /></Field>}
+            <Field label="Pickup date and time" error={fields.pickup_at} required hint={notice ? `At least ${notice} hour${notice === 1 ? '' : 's'} ahead — call us for anything sooner` : undefined}><TextInput type="datetime-local" min={minDate} {...bind('pickup_at')} /></Field>
+            {f.journey_type === 'airport' && on('flight_number') && <Field label="Flight number" error={fields.flight_number} required={!!s?.flight_number_required} hint={s?.flight_number_required ? 'So we can track your arrival' : 'Optional — helps us track your arrival'}><TextInput placeholder="e.g. BA1427" {...bind('flight_number')} /></Field>}
+            {f.journey_type === 'hourly' && <Field label="Hours required" error={fields.duration_hours} required hint={minHire ? `Minimum ${minHire} hours` : undefined}><TextInput type="number" min={minHire || 1} step="0.5" {...bind('duration_hours')} /></Field>}
           </div>
           {f.journey_type !== 'return' && (
             <label className="flex cursor-pointer items-center gap-3 rounded-xl border bg-surface px-4 py-3 text-sm font-medium">
@@ -121,29 +125,29 @@ export function RequestForm({ initial, onSubmit, submitting, fields = {}, submit
           <Field label="Lead passenger" error={fields.lead_passenger} required><TextInput autoComplete="name" {...bind('lead_passenger')} /></Field>
           <Field label="Contact mobile on the day" error={fields.contact_phone} required><TextInput type="tel" placeholder="+44" {...bind('contact_phone')} /></Field>
           <Field label="Number of passengers" error={fields.passenger_count}><Stepper value={Number(f.passenger_count)} min={1} onChange={(v) => set('passenger_count', v)} /></Field>
-          <Field label="Other passenger names" hint="Optional"><TextInput {...bind('passenger_names')} /></Field>
+          {on('passenger_names') && <Field label="Other passenger names" hint="Optional"><TextInput {...bind('passenger_names')} /></Field>}
         </div>
       </Section>
 
       <Section n={4} title="Luggage and requirements">
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-          <Field label="Large cases"><Stepper value={Number(f.luggage_large)} onChange={(v) => set('luggage_large', v)} /></Field>
-          <Field label="Small bags"><Stepper value={Number(f.luggage_small)} onChange={(v) => set('luggage_small', v)} /></Field>
-          <Field label={<span className="inline-flex items-center gap-1.5"><Baby className="h-4 w-4" />Child seats</span>}><Stepper value={Number(f.child_seats)} max={4} onChange={(v) => set('child_seats', v)} /></Field>
+          {on('luggage') && <Field label="Large cases"><Stepper value={Number(f.luggage_large)} onChange={(v) => set('luggage_large', v)} /></Field>}
+          {on('luggage') && <Field label="Small bags"><Stepper value={Number(f.luggage_small)} onChange={(v) => set('luggage_small', v)} /></Field>}
+          {on('child_seats') && <Field label={<span className="inline-flex items-center gap-1.5"><Baby className="h-4 w-4" />Child seats</span>}><Stepper value={Number(f.child_seats)} max={4} onChange={(v) => set('child_seats', v)} /></Field>}
         </div>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
-          <Field label={<span className="inline-flex items-center gap-1.5"><Car className="h-4 w-4" />Preferred vehicle</span>} hint="You may request a larger vehicle than your party needs">
+          {on('preferred_category') && <Field label={<span className="inline-flex items-center gap-1.5"><Car className="h-4 w-4" />Preferred vehicle</span>} hint="You may request a larger vehicle than your party needs">
             <SelectInput {...bind('preferred_category')}>
               <option value="">No preference — Encore to advise</option>
               {(s?.vehicle_categories || []).map((c) => <option key={c}>{c}</option>)}
             </SelectInput>
-          </Field>
-          <Field label={<span className="inline-flex items-center gap-1.5"><Accessibility className="h-4 w-4" />Accessibility needs</span>}><TextInput placeholder="e.g. wheelchair, step assistance" {...bind('accessibility_needs')} /></Field>
+          </Field>}
+          {on('accessibility_needs') && <Field label={<span className="inline-flex items-center gap-1.5"><Accessibility className="h-4 w-4" />Accessibility needs</span>}><TextInput placeholder="e.g. wheelchair, step assistance" {...bind('accessibility_needs')} /></Field>}
         </div>
         {suggestBigger && <Banner tone="blue" className="mt-4">With this much luggage we may recommend a larger vehicle such as an MPV — we will advise when we quote.</Banner>}
         <div className="mt-4 grid gap-4">
-          <Field label="Special instructions" hint="Meet-and-greet, refreshments, preferred route, event details"><TextArea {...bind('special_instructions')} /></Field>
-          <Field label="Private notes for your chauffeur" hint="Shared only with Encore management and your assigned chauffeur"><TextArea rows={2} {...bind('sensitive_notes')} /></Field>
+          {on('special_instructions') && <Field label="Special instructions" hint="Meet-and-greet, refreshments, preferred route, event details"><TextArea {...bind('special_instructions')} /></Field>}
+          {on('sensitive_notes') && <Field label="Private notes for your chauffeur" hint="Shared only with Encore management and your assigned chauffeur"><TextArea rows={2} {...bind('sensitive_notes')} /></Field>}
         </div>
       </Section>
 
