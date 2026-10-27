@@ -256,12 +256,6 @@ export function AppHome() {
             <h1 className="font-headline-lg text-headline-lg tracking-tight text-on-surface">Hello {user.name.split(' ')[0]}!</h1>
             <p className="text-body-md font-body-md text-secondary">Where would you like to travel today?</p>
           </div>
-          <div className="relative flex-shrink-0">
-            <div className="h-12 w-12 overflow-hidden rounded-full shadow-md ring-2 ring-primary-container/20">
-              <Img k="martin" alt="" className="h-full w-full object-cover" placeholderClassName="h-full w-full rounded-full" />
-            </div>
-            <span className="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full bg-primary-container ring-2 ring-surface" />
-          </div>
         </div>
       </section>
 

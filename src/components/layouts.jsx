@@ -53,8 +53,8 @@ export function CustomerLayout() {
   const loc = useLocation();
   const head = CUSTOMER_TITLES.find(([re]) => re.test(loc.pathname))?.[1] || { title: 'Encore' };
   const nav = [
-    { to: '/app', label: 'Home', icon: 'directions_car', end: true },
-    { to: '/app/request', label: 'Book', icon: 'search' },
+    { to: '/app', label: 'Home', icon: 'home', end: true },
+    { to: '/app/request', label: 'Book', icon: 'add_circle' },
     { to: '/app/bookings', label: 'Bookings', icon: 'calendar_today' },
     { to: '/app/account', label: 'Profile', icon: 'person' },
   ];
@@ -62,18 +62,25 @@ export function CustomerLayout() {
     <div className="min-h-screen bg-[#ECEDEF]">
       <div className="encore-app relative mx-auto min-h-screen w-full max-w-[480px] overflow-x-clip shadow-[0_0_60px_rgba(0,0,0,0.08)]">
         <EncoreHeader title={head.title} back={head.back} subtitle={head.home ? (user.organisation?.name || 'Staffordshire · UK-wide') : null} />
-        <main className="px-margin pb-32 pt-space-sm"><div key={loc.pathname} className="page-enter"><Outlet /></div></main>
-        <div className="pointer-events-none fixed bottom-0 left-1/2 z-50 mb-space-sm w-full max-w-[480px] -translate-x-1/2 px-margin safe-bottom">
-          <nav className="pointer-events-auto mx-auto flex max-w-md items-center justify-between rounded-full bg-surface-container-lowest/95 p-space-xs shadow-[0_16px_36px_var(--encore-shadow-0-12)] backdrop-blur-2xl">
+        <main className="px-margin pb-[calc(92px+env(safe-area-inset-bottom))] pt-space-sm"><div key={loc.pathname} className="page-enter"><Outlet /></div></main>
+        {/* Docked tab bar: content scrolls above it, never under it. */}
+        <nav className="fixed bottom-0 left-1/2 z-50 w-full max-w-[480px] -translate-x-1/2 border-t border-black/5 bg-white/90 pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_30px_rgba(0,0,0,0.06)] backdrop-blur-2xl">
+          <div className="grid h-[68px] grid-cols-4">
             {nav.map((n) => (
               <NavLink key={n.to} to={n.to} end={n.end}
-                className={({ isActive }) => cn('flex min-h-[44px] flex-1 items-center justify-center gap-1 rounded-full px-1.5 py-space-xs text-on-surface-variant transition-all duration-200 hover:text-on-surface',
-                  isActive && 'bg-primary-container font-bold text-on-primary shadow-[0_8px_20px_var(--encore-orange-shadow-0-35)] hover:text-on-primary')}>
-                <Icon name={n.icon} className="!text-[20px]" /><span className="text-label-sm font-label-sm">{n.label}</span>
+                className={({ isActive }) => cn('group flex flex-col items-center justify-center gap-0.5 text-on-surface-variant transition-colors', isActive && 'text-primary-container')}>
+                {({ isActive }) => (
+                  <>
+                    <span className={cn('flex h-8 w-14 items-center justify-center rounded-full transition-all duration-300', isActive ? 'bg-primary-container/[0.12] scale-100' : 'scale-90 group-hover:bg-surface-container')}>
+                      <Icon name={n.icon} fill={isActive} className="!text-[22px]" />
+                    </span>
+                    <span className={cn('text-[11px] leading-none', isActive ? 'font-bold' : 'font-medium')}>{n.label}</span>
+                  </>
+                )}
               </NavLink>
             ))}
-          </nav>
-        </div>
+          </div>
+        </nav>
       </div>
     </div>
   );
