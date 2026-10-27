@@ -416,3 +416,21 @@ a.rounded-2xl, a.rounded-3xl, a[class*="rounded-[2rem]"] { transition: transform
 /* Light veil so text under the bar reads as frosted, fading out with the blur. */
 .lens-blur::after { content: ''; position: absolute; inset: 0; pointer-events: none;
   background: linear-gradient(to bottom, rgba(248,249,250,.35) 0%, rgba(248,249,250,.2) 55%, rgba(248,249,250,0) 100%); }
+
+/* ---------- journey builder ---------- */
+.road-fill { transition: width .6s cubic-bezier(.3,1.2,.5,1); }
+.road-car { transition: left .6s cubic-bezier(.3,1.2,.5,1); }
+.road-car > span { animation: road-bob 1.6s ease-in-out infinite; }
+@keyframes road-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+@keyframes step-in-right { from { opacity: 0; transform: translateX(28px); } to { opacity: 1; transform: none; } }
+@keyframes step-in-left { from { opacity: 0; transform: translateX(-28px); } to { opacity: 1; transform: none; } }
+.step-in-right { animation: step-in-right .38s cubic-bezier(.2,.8,.2,1) backwards; }
+.step-in-left { animation: step-in-left .38s cubic-bezier(.2,.8,.2,1) backwards; }
+.step-summary { animation: encore-rise .4s cubic-bezier(.2,.8,.2,1) backwards; }
+/* route preview */
+.route-card { animation: encore-rise .45s cubic-bezier(.2,.8,.2,1) backwards; }
+.route-draw { stroke-dasharray: 1; stroke-dashoffset: 1; animation: route-draw 1.4s cubic-bezier(.4,0,.2,1) forwards; }
+@keyframes route-draw { to { stroke-dashoffset: 0; } }
+.route-ping { transform-origin: 24px 82px; animation: route-ping 1.8s ease-out infinite; }
+@keyframes route-ping { from { transform: scale(.6); opacity: .5; } to { transform: scale(2); opacity: 0; } }
+.route-pin { transform-origin: 296px 28px; animation: fx-pop .5s 1.3s cubic-bezier(.2,.9,.3,1.3) backwards; }
