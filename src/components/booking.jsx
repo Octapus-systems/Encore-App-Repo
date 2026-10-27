@@ -346,13 +346,21 @@ export function RequestForm({ initial, onSubmit, submitting, fields = {}, submit
         {panes[step]}
       </section>
 
-      <div className="sticky bottom-28 z-10 rounded-2xl border bg-white/95 p-3 shadow-lg backdrop-blur sm:bottom-4">
-        {last && <p className="mb-2 px-1 text-xs text-muted-foreground">This is a request, not a confirmed booking. Encore Executive will review it and send a tailored quotation.</p>}
-        <div className="flex gap-2">
-          {step > 0 && <button type="button" onClick={() => go(step - 1)} className="grid h-12 w-12 flex-shrink-0 place-items-center rounded-xl border bg-white" aria-label="Back"><ArrowLeft className="h-5 w-5" /></button>}
-          <PrimaryButton type="submit" className="cta-glow h-12 flex-1" loading={last && submitting}>
-            {last ? <><Send className="h-4 w-4" />{submitLabel}</> : <>Continue<ArrowRight className="h-4 w-4" /></>}
-          </PrimaryButton>
+      <div className="sticky bottom-28 z-10 sm:bottom-4">
+        {last && <p className="mb-2 rounded-2xl bg-white/90 px-3 py-2 text-center text-xs text-muted-foreground shadow-sm backdrop-blur">This is a request, not a confirmed booking — we'll send a tailored quotation.</p>}
+        <div className="flex items-center gap-2 rounded-full bg-white/90 p-1.5 shadow-[0_14px_34px_rgba(0,0,0,0.14)] ring-1 ring-black/5 backdrop-blur">
+          {step > 0 && (
+            <button type="button" onClick={() => go(step - 1)} aria-label="Back"
+              className="grid h-12 w-12 flex-shrink-0 place-items-center rounded-full bg-neutral-100 text-ink transition hover:bg-neutral-200 active:scale-95">
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+          )}
+          <button type="submit" disabled={last && submitting}
+            className="cta-glow group flex h-12 flex-1 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#FF8A3D] via-[#FF710F] to-[#FF5A1F] text-[15px] font-bold tracking-wide text-white disabled:opacity-70">
+            {last && submitting ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" /> : last ? <Send className="h-4 w-4" /> : null}
+            {last ? submitLabel : 'Continue'}
+            {!last && <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />}
+          </button>
         </div>
       </div>
     </form>
