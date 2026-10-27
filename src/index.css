@@ -312,9 +312,9 @@
 @keyframes encore-page { from { opacity: 0; transform: translateY(6px) scale(.995); } to { opacity: 1; transform: none; } }
 @keyframes encore-shine { from { transform: translateX(-120%) skewX(-20deg); } to { transform: translateX(220%) skewX(-20deg); } }
 
-.page-enter { animation: encore-page .38s cubic-bezier(.2,.8,.2,1) both; }
-.animate-rise { animation: encore-rise .45s cubic-bezier(.2,.8,.2,1) both; }
-.page-enter > * { animation: encore-rise .5s cubic-bezier(.2,.8,.2,1) both; }
+.page-enter { animation: encore-page .38s cubic-bezier(.2,.8,.2,1) backwards; }
+.animate-rise { animation: encore-rise .45s cubic-bezier(.2,.8,.2,1) backwards; }
+.page-enter > * { animation: encore-rise .5s cubic-bezier(.2,.8,.2,1) backwards; }
 .page-enter > *:nth-child(2) { animation-delay: .04s; }
 .page-enter > *:nth-child(3) { animation-delay: .08s; }
 .page-enter > *:nth-child(4) { animation-delay: .12s; }
@@ -368,7 +368,7 @@ a.rounded-2xl, a.rounded-3xl, a[class*="rounded-[2rem]"] { transition: transform
 .hero-drift { animation: hero-drift 18s ease-in-out infinite alternate; }
 @keyframes hero-orb { 0%, 100% { transform: translate(0,0) scale(1); opacity: .9; } 50% { transform: translate(-24px, 18px) scale(1.15); opacity: .6; } }
 .hero-orb { animation: hero-orb 9s ease-in-out infinite; }
-.stagger > * { animation: encore-rise .6s cubic-bezier(.2,.8,.2,1) both; }
+.stagger > * { animation: encore-rise .6s cubic-bezier(.2,.8,.2,1) backwards; }
 .stagger > *:nth-child(2) { animation-delay: .05s; } .stagger > *:nth-child(3) { animation-delay: .1s; }
 .stagger > *:nth-child(4) { animation-delay: .15s; } .stagger > *:nth-child(5) { animation-delay: .2s; }
 .stagger > *:nth-child(6) { animation-delay: .25s; } .stagger > *:nth-child(n+7) { animation-delay: .3s; }
@@ -404,10 +404,11 @@ a.rounded-2xl, a.rounded-3xl, a[class*="rounded-[2rem]"] { transition: transform
 .encore-app h2.section-title { position: relative; padding-left: 12px; }
 .encore-app h2.section-title::before { content: ''; position: absolute; left: 0; top: 18%; bottom: 18%; width: 4px; border-radius: 4px; background: linear-gradient(#FF8A3D, #FF5A1F); }
 
-/* Lens blur band behind the pinned search: blurred page content that fades out downwards. */
-.lens-blur {
-  -webkit-backdrop-filter: blur(16px) saturate(150%); backdrop-filter: blur(16px) saturate(150%);
-  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 50%, rgba(0,0,0,.6) 70%, transparent 100%);
-  mask-image: linear-gradient(to bottom, #000 0%, #000 50%, rgba(0,0,0,.6) 70%, transparent 100%);
-  animation: encore-fade .3s ease both;
-}
+/* Lens blur band behind the pinned search: stacked bands of decreasing blur (masks break backdrop-filter in Chrome). */
+.lens-blur { animation: encore-fade .3s ease backwards; }
+.lens-blur > i { position: absolute; left: 0; right: 0; display: block; }
+.lens-blur > i:nth-child(1) { top: 0; height: 74px; -webkit-backdrop-filter: blur(18px) saturate(150%); backdrop-filter: blur(18px) saturate(150%); }
+.lens-blur > i:nth-child(2) { top: 74px; height: 16px; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+.lens-blur > i:nth-child(3) { top: 90px; height: 14px; -webkit-backdrop-filter: blur(5px); backdrop-filter: blur(5px); }
+.lens-blur > i:nth-child(4) { top: 104px; height: 13px; -webkit-backdrop-filter: blur(2.5px); backdrop-filter: blur(2.5px); }
+.lens-blur > i:nth-child(5) { top: 117px; height: 13px; -webkit-backdrop-filter: blur(1px); backdrop-filter: blur(1px); }
