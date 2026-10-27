@@ -383,3 +383,16 @@ a.rounded-2xl, a.rounded-3xl, a[class*="rounded-[2rem]"] { transition: transform
   -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
   -webkit-mask-image: linear-gradient(to bottom, #000 55%, transparent); mask-image: linear-gradient(to bottom, #000 55%, transparent);
 }
+
+/* ---------- customer dock ---------- */
+.dock-indicator { transition: left .45s cubic-bezier(.3,1.4,.5,1); }
+.dock-shell::before { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background: linear-gradient(180deg, rgba(255,255,255,.08), transparent 40%); }
+@keyframes dock-breathe { 0%, 100% { box-shadow: 0 12px 30px rgba(255,113,15,.5), 0 0 0 0 rgba(255,113,15,.35); } 50% { box-shadow: 0 14px 34px rgba(255,113,15,.65), 0 0 0 10px rgba(255,113,15,0); } }
+.dock-fab { animation: dock-breathe 3s ease-in-out infinite; }
+.dock-fab .material-symbols-outlined { transition: transform .35s cubic-bezier(.3,1.4,.5,1); }
+.dock-tab:active .material-symbols-outlined { transform: scale(.85); }
+
+/* ---------- section titles with a brand tick ---------- */
+.encore-app h2.section-title { position: relative; padding-left: 12px; }
+.encore-app h2.section-title::before { content: ''; position: absolute; left: 0; top: 18%; bottom: 18%; width: 4px; border-radius: 4px; background: linear-gradient(#FF8A3D, #FF5A1F); }

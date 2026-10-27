@@ -337,7 +337,7 @@ export function AppHome() {
       <section className="pt-space-md">
         <div className="mb-space-sm flex items-center justify-between px-margin">
           <div className="flex items-center gap-2">
-            <h2 className="font-headline-sm text-headline-sm tracking-tight text-on-surface">Featured Fleet</h2>
+            <h2 className="section-title font-headline-sm text-headline-sm tracking-tight text-on-surface">Featured Fleet</h2>
             <span className="rounded-full bg-tertiary-fixed px-2 py-0.5 text-label-sm font-label-sm text-on-tertiary-fixed">Company owned</span>
           </div>
           <Link to="/app/fleet" className="flex items-center text-label-md font-label-md font-bold text-primary hover:text-primary-container">View All<Icon name="chevron_right" className="!text-[18px]" /></Link>
@@ -361,7 +361,7 @@ export function AppHome() {
       {bookings.length > 0 && (
         <section className="flex flex-col gap-space-sm px-margin pt-space-xs">
           <div className="flex items-center justify-between">
-            <h2 className="font-headline-sm text-headline-sm tracking-tight text-on-surface">Upcoming Journeys</h2>
+            <h2 className="section-title font-headline-sm text-headline-sm tracking-tight text-on-surface">Upcoming Journeys</h2>
             <Link to="/app/bookings" className="text-label-sm font-label-sm text-primary">See all</Link>
           </div>
           {bookings.slice(0, 3).map((b) => (
@@ -382,7 +382,7 @@ export function AppHome() {
 
       <section className="flex flex-col gap-space-sm px-margin pb-space-lg pt-space-md">
         <div className="flex items-center justify-between">
-          <h2 className="font-headline-sm text-headline-sm tracking-tight text-on-surface">Express Travel</h2>
+          <h2 className="section-title font-headline-sm text-headline-sm tracking-tight text-on-surface">Express Travel</h2>
           <span className="text-label-sm font-label-sm text-secondary">Tailored quotes</span>
         </div>
         {itineraries.map((it) => (
