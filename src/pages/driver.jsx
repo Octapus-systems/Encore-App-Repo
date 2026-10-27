@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { Accessibility, Baby, Briefcase, CheckCircle2, ChevronRight, Lock, MapPin, Navigation, Phone, Plane, Users } from 'lucide-react';
 import { api } from '@/lib/api';
 import { usePublicSettings } from '@/lib/auth';
+import { celebrate, sparkle } from '@/lib/fx';
 import { driveTime, miles, JOURNEY_TYPES, LEG_STATUS, dateOnly, shortDateTime, timeOnly } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import { Banner, Empty, ErrorState, KV, PageLoader, Panel, PrimaryButton } from '@/components/common';
@@ -92,7 +93,10 @@ export function DriverJob() {
       qc.setQueryData(['driver-job', id], res.booking);
       qc.invalidateQueries({ queryKey: ['driver-legs'] });
       if (res.unchanged) toast.info('Already recorded — nothing changed.');
-      else toast.success(`${LEG_STATUS[to]} — the customer has been informed.`);
+      else {
+        toast.success(`${LEG_STATUS[to]} — the customer has been informed.`);
+        if (to === 'completed') celebrate(); else sparkle(document.activeElement);
+      }
     } catch (err) {
       // Never show false success: reload the authoritative state.
       toast.error(err.message);
@@ -118,6 +122,7 @@ export function DriverJob() {
       if (accept) {
         qc.setQueryData(['driver-job', id], res);
         toast.success('Journey accepted — dispatch and the customer have been told.');
+        celebrate();
       } else {
         toast.info('Journey declined — dispatch will reassign it.');
         nav('/driver');
@@ -194,7 +199,7 @@ export function DriverJob() {
                   </>
                 ) : (
                   <>
-                    <PrimaryButton className="h-14 w-full text-lg" loading={pending === leg.id} onClick={() => press(leg, next.to)}>{next.label}</PrimaryButton>
+                    <PrimaryButton className="cta-glow h-14 w-full text-lg" loading={pending === leg.id} onClick={() => press(leg, next.to)}>{next.label}</PrimaryButton>
                     <p className="mt-1.5 text-center text-xs text-muted-foreground">{next.hint}</p>
                   </>
                 )}

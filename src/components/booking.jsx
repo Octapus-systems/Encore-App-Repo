@@ -153,7 +153,7 @@ export function RequestForm({ initial, onSubmit, submitting, fields = {}, submit
 
       <div className="sticky bottom-24 z-10 rounded-2xl border bg-white/95 p-4 shadow-lg backdrop-blur sm:bottom-4">
         <p className="mb-3 text-xs text-muted-foreground">This is a request, not a confirmed booking. Encore Executive will review it and send a tailored quotation.</p>
-        <PrimaryButton type="submit" className="w-full" loading={submitting}><Send className="h-4 w-4" />{submitLabel}</PrimaryButton>
+        <PrimaryButton type="submit" className="cta-glow w-full" loading={submitting}><Send className="h-4 w-4" />{submitLabel}</PrimaryButton>
       </div>
     </form>
   );

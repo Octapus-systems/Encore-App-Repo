@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -10,6 +10,7 @@ import { ErrorState, Field, Modal, PageLoader, PaymentBadge, TextArea, TextInput
 import { MessageThread } from '@/components/booking';
 import { Icon, Img } from '@/components/app-ui';
 import { VEHICLES } from '@/lib/showcase';
+import { celebrate } from '@/lib/fx';
 
 const TERMINAL = ['closed', 'rejected', 'cancelled_customer', 'cancelled_management', 'expired', 'quote_declined'];
 const STEPS = [
@@ -53,7 +54,7 @@ export function JourneyDetails() {
   const refresh = (b) => { qc.setQueryData(['booking', id], b); qc.invalidateQueries({ queryKey: ['bookings'] }); qc.invalidateQueries({ queryKey: ['notifications'] }); };
   const respond = useAction(({ qid, action, note: n }) => api.post(`/bookings/${id}/quotes/${qid}/respond`, { action, note: n }), {
     success: (_d, v) => ({ accept: 'Accepted — Encore will now confirm your booking.', decline: 'Quotation declined.', change: 'Change request sent.' }[v.action]),
-    onSuccess: (b) => { refresh(b); setDialog(null); setNote(''); },
+    onSuccess: (b, v) => { refresh(b); setDialog(null); setNote(''); if (v.action === 'accept') celebrate(); },
   });
   const cancel = useAction(() => api.post(`/bookings/${id}/cancel`, { reason: note }), { success: 'Booking cancelled.', onSuccess: (b) => { refresh(b); setDialog(null); setNote(''); } });
   const message = useAction(({ body }) => api.post(`/bookings/${id}/messages`, { body }), { onSuccess: (b, v) => { refresh(b); v.done(); } });
@@ -217,7 +218,7 @@ export function JourneyDetails() {
         {/* Primary actions */}
         {openQuote && b.status === 'quote_sent' && (
           <div className="flex flex-col gap-3 pt-2">
-            <button disabled={respond.isPending} onClick={() => respond.mutate({ qid: openQuote.id, action: 'accept' })} className="flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-primary-container to-button-end px-6 py-4 font-headline-sm text-headline-sm font-bold text-on-primary shadow-[0_10px_26px_var(--encore-orange-shadow-0-38)] transition-transform active:scale-[0.98] disabled:opacity-60">
+            <button disabled={respond.isPending} onClick={() => respond.mutate({ qid: openQuote.id, action: 'accept' })} className="cta-glow flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-primary-container to-button-end px-6 py-4 font-headline-sm text-headline-sm font-bold text-on-primary shadow-[0_10px_26px_var(--encore-orange-shadow-0-38)] transition-transform active:scale-[0.98] disabled:opacity-60">
               <span>Accept Quotation</span><Icon name="arrow_forward" className="!text-[20px]" />
             </button>
             <div className="flex gap-3">
@@ -280,6 +281,8 @@ export function RequestSent() {
   const { id } = useParams();
   const nav = useNavigate();
   const { data: b, isLoading, error } = useQuery({ queryKey: ['booking', id], queryFn: () => api.get(`/bookings/${id}`) });
+  const loaded = !!b;
+  useEffect(() => { if (loaded) celebrate(); }, [loaded]);
   if (isLoading) return <PageLoader />;
   if (error) return <ErrorState error={error} />;
   const leg = b.legs[0];
