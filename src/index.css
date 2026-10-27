@@ -376,12 +376,20 @@ a.rounded-2xl, a.rounded-3xl, a[class*="rounded-[2rem]"] { transition: transform
 .stagger > .sticky { animation-name: encore-fade; }
 @keyframes encore-fade { from { opacity: 0; } to { opacity: 1; } }
 
-/* Pinned search: soft frosted fade that melts into the page instead of a hard edge. */
+/* Pinned search: progressive "lens" glass blur — strongest at the top, melting to nothing below. */
+.sticky-fade::before, .sticky-fade::after {
+  content: ''; position: absolute; left: 0; right: 0; top: 0; z-index: -1; pointer-events: none;
+}
 .sticky-fade::before {
-  content: ''; position: absolute; inset: 0 0 -36px 0; z-index: -1; pointer-events: none;
-  background: linear-gradient(to bottom, rgba(248,249,250,.96) 0%, rgba(248,249,250,.85) 55%, rgba(248,249,250,0) 100%);
-  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
-  -webkit-mask-image: linear-gradient(to bottom, #000 55%, transparent); mask-image: linear-gradient(to bottom, #000 55%, transparent);
+  bottom: -18px;
+  background: linear-gradient(to bottom, rgba(255,255,255,.18), rgba(255,255,255,.04));
+  -webkit-backdrop-filter: blur(22px) saturate(180%); backdrop-filter: blur(22px) saturate(180%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 45%, transparent); mask-image: linear-gradient(to bottom, #000 45%, transparent);
+}
+.sticky-fade::after {
+  bottom: -44px;
+  -webkit-backdrop-filter: blur(6px) saturate(140%); backdrop-filter: blur(6px) saturate(140%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 30%, transparent); mask-image: linear-gradient(to bottom, #000 30%, transparent);
 }
 
 /* ---------- customer dock ---------- */
