@@ -403,3 +403,11 @@ a.rounded-2xl, a.rounded-3xl, a[class*="rounded-[2rem]"] { transition: transform
 /* ---------- section titles with a brand tick ---------- */
 .encore-app h2.section-title { position: relative; padding-left: 12px; }
 .encore-app h2.section-title::before { content: ''; position: absolute; left: 0; top: 18%; bottom: 18%; width: 4px; border-radius: 4px; background: linear-gradient(#FF8A3D, #FF5A1F); }
+
+/* Lens blur band behind the pinned search: blurred page content that fades out downwards. */
+.lens-blur {
+  -webkit-backdrop-filter: blur(16px) saturate(150%); backdrop-filter: blur(16px) saturate(150%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 50%, rgba(0,0,0,.6) 70%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 50%, rgba(0,0,0,.6) 70%, transparent 100%);
+  animation: encore-fade .3s ease both;
+}

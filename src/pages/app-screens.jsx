@@ -297,8 +297,9 @@ export function AppHome() {
       <HomeHero user={user} here={here} />
 
       {/* Only the destination search stays pinned while scrolling. */}
+      {stuck && <div aria-hidden className="lens-blur pointer-events-none fixed left-1/2 top-0 z-30 h-[130px] w-full max-w-[480px] -translate-x-1/2" />}
       <div ref={sentinel} className="h-px" />
-      <section className={cn('sticky top-0 z-40 -mt-9 px-margin pb-space-xs pt-space-xs transition-all duration-300', stuck && 'sticky-fade safe-top')}>
+      <section className={cn('sticky top-0 z-40 -mt-9 px-margin pb-space-xs pt-space-xs transition-all duration-300', stuck && 'safe-top')}>
         <form onSubmit={(e) => { e.preventDefault(); request(); }} className={cn('flex w-full items-center gap-space-xs rounded-full bg-surface-container-lowest p-2 ring-1 ring-black/5 transition-all duration-300 focus-within:shadow-[0_12px_32px_var(--encore-orange-shadow-0-15)] focus-within:ring-primary-container/40', stuck ? 'shadow-[0_10px_28px_rgba(0,0,0,0.14)]' : 'shadow-[0_18px_40px_rgba(0,0,0,0.18)]')}>
           <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary-container to-button-end text-white shadow-[0_6px_14px_var(--encore-orange-shadow-0-35)]"><Icon name="search" className="!text-[20px]" /></div>
           <AddressInput value={dest} onChange={(v) => { setDest(v); if (place && v !== place.text) setPlace(null); }} onSelect={setPlace} placeholder="Where to?" className="min-w-0 flex-1" inputClassName="w-full min-w-0 bg-transparent px-1 py-2 text-body-lg font-semibold text-on-surface placeholder:font-medium placeholder:text-secondary focus:outline-none" />
