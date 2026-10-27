@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import { StatusBadge } from '@/components/common';
 import { Icon, Img } from '@/components/app-ui';
 import { AddressInput } from '@/components/address';
+import { useCurrentLocation } from '@/lib/location';
 
 // ======================= Welcome (Lovable screen 1) =======================
 export function Onboarding() {
@@ -158,20 +159,48 @@ function whenOptions() {
 }
 
 /** Appears after the customer picks a destination: choose trip type and time, then continue. */
-function TripSheet({ place, onClose, onGo }) {
+function TripSheet({ place, here, onClose, onGo }) {
   const [type, setType] = useState(place.airport ? 'airport' : 'point_to_point');
   const [when, setWhen] = useState('');
+  const [pickup, setPickup] = useState(here.place?.text || '');
+  const [editing, setEditing] = useState(false);
   const opts = useMemo(whenOptions, []);
+  const isHere = !!here.place && pickup === here.place.text;
+  // Fill in the current location when it arrives, unless the customer already chose a pickup.
+  useEffect(() => { if (here.place && !pickup && !editing) setPickup(here.place.text); }, [here.place, pickup, editing]);
   return (
     <div className="animate-rise mt-3 rounded-[2rem] bg-surface-container-lowest p-4 shadow-[0_16px_40px_var(--encore-shadow-0-06)] ring-1 ring-black/5">
-      <div className="flex items-start gap-3">
-        <span className={cn('pop-in grid h-11 w-11 flex-shrink-0 place-items-center rounded-full', place.airport ? 'bg-primary-fixed text-primary' : 'bg-surface-container text-on-surface')}><Icon name={place.airport ? 'flight' : 'location_on'} /></span>
-        <div className="min-w-0 flex-1">
-          <div className="text-label-sm font-label-sm uppercase tracking-wider text-secondary">Going to</div>
-          <div className="truncate text-body-lg font-bold text-on-surface">{place.main}</div>
-          {place.secondary && <div className="truncate text-body-sm text-secondary">{place.secondary}</div>}
+      <div className="relative">
+        <span className="absolute bottom-[34px] left-[21px] top-[34px] w-0.5 rounded-full bg-gradient-to-b from-emerald-400 to-primary-container" />
+        <div className="flex items-start gap-3">
+          <span className="pop-in grid h-11 w-11 flex-shrink-0 place-items-center rounded-full bg-emerald-50 text-emerald-600"><Icon name={isHere ? 'my_location' : 'trip_origin'} /></span>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2 text-label-sm font-label-sm uppercase tracking-wider text-secondary">
+              Pickup{isHere && <span className="rounded-full bg-emerald-50 px-1.5 py-0.5 text-[10px] font-bold normal-case tracking-normal text-emerald-700">Current location</span>}
+            </div>
+            {editing ? (
+              <AddressInput autoFocus value={pickup} onChange={setPickup} onSelect={(it) => { setPickup(it.text); setEditing(false); }} placeholder="Search pickup address"
+                inputClassName="mt-1 w-full rounded-xl bg-surface-container px-3 py-2 text-body-md text-on-surface focus:outline-none focus:ring-2 focus:ring-primary-container/30" />
+            ) : here.status === 'loading' && !pickup ? (
+              <div className="mt-1 flex items-center gap-2 text-body-md text-secondary"><span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-neutral-300 border-t-[#FF710F]" />Finding your location…</div>
+            ) : (
+              <button type="button" onClick={() => setEditing(true)} className="block w-full truncate text-left text-body-lg font-bold text-on-surface">{pickup || <span className="font-semibold text-primary">Add pickup address</span>}</button>
+            )}
+            {!editing && here.status === 'error' && !pickup && <div className="text-body-sm text-secondary">{here.error}</div>}
+          </div>
+          {!editing && !isHere && (
+            <button type="button" onClick={() => (here.place ? setPickup(here.place.text) : here.fetchNow().then((p) => p && setPickup(p.text)))} aria-label="Use my current location" className="grid h-8 w-8 flex-shrink-0 place-items-center rounded-full bg-surface-container text-emerald-600"><Icon name="my_location" className="!text-[18px]" /></button>
+          )}
         </div>
-        <button type="button" onClick={onClose} aria-label="Clear destination" className="grid h-8 w-8 place-items-center rounded-full bg-surface-container text-secondary"><Icon name="close" className="!text-[18px]" /></button>
+        <div className="mt-4 flex items-start gap-3">
+          <span className={cn('pop-in grid h-11 w-11 flex-shrink-0 place-items-center rounded-full', place.airport ? 'bg-primary-fixed text-primary' : 'bg-surface-container text-on-surface')}><Icon name={place.airport ? 'flight' : 'location_on'} /></span>
+          <div className="min-w-0 flex-1">
+            <div className="text-label-sm font-label-sm uppercase tracking-wider text-secondary">Going to</div>
+            <div className="truncate text-body-lg font-bold text-on-surface">{place.main}</div>
+            {place.secondary && <div className="truncate text-body-sm text-secondary">{place.secondary}</div>}
+          </div>
+          <button type="button" onClick={onClose} aria-label="Clear destination" className="grid h-8 w-8 flex-shrink-0 place-items-center rounded-full bg-surface-container text-secondary"><Icon name="close" className="!text-[18px]" /></button>
+        </div>
       </div>
       <div className="mt-4 grid grid-cols-4 gap-2">
         {TRIP_TYPES.map(([k, l, icon]) => (
@@ -190,7 +219,7 @@ function TripSheet({ place, onClose, onGo }) {
           <input type="datetime-local" className="absolute inset-0 opacity-0" min={localInput(new Date())} onChange={(e) => setWhen(e.target.value)} />
         </label>
       </div>
-      <button type="button" onClick={() => onGo({ type, when })} className="cta-glow mt-4 flex h-13 w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-primary-container to-button-end py-3.5 font-headline-sm text-headline-sm text-on-primary">
+      <button type="button" onClick={() => onGo({ type, when, pickup })} className="cta-glow mt-4 flex h-13 w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-primary-container to-button-end py-3.5 font-headline-sm text-headline-sm text-on-primary">
         Continue booking<Icon name="arrow_forward" className="!text-[20px]" />
       </button>
     </div>
@@ -203,6 +232,7 @@ export function AppHome() {
   const [chip, setChip] = useState('all');
   const [dest, setDest] = useState('');
   const [place, setPlace] = useState(null);
+  const here = useCurrentLocation({ auto: true });
   const { data: bookings = [] } = useQuery({ queryKey: ['bookings', 'upcoming'], queryFn: () => api.get('/bookings?view=upcoming&sort=pickup'), refetchInterval: 10000 });
   const attention = bookings.filter((b) => ['quote_sent', 'clarification_needed'].includes(b.status));
   const request = (params = {}) => {
@@ -241,7 +271,7 @@ export function AppHome() {
           <AddressInput value={dest} onChange={(v) => { setDest(v); if (place && v !== place.text) setPlace(null); }} onSelect={setPlace} placeholder="Enter destination, airport or venue..." className="min-w-0 flex-1" inputClassName="w-full min-w-0 bg-transparent px-1 py-2 text-body-md font-body-md text-on-surface placeholder:text-secondary focus:outline-none" />
           <button type="submit" aria-label="Continue" className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-surface-container text-on-surface shadow-sm transition-colors hover:bg-surface-container-high"><Icon name="tune" className="!text-[18px]" /></button>
         </form>
-        {place && <TripSheet place={place} onClose={() => { setPlace(null); setDest(''); }} onGo={({ type, when }) => request({ type, ...(when ? { when } : {}) })} />}
+        {place && <TripSheet place={place} onClose={() => { setPlace(null); setDest(''); }} here={here} onGo={({ type, when, pickup }) => request({ type, ...(when ? { when } : {}), ...(pickup ? { pickup } : {}) })} />}
       </section>
 
       <section className="pb-space-xs pt-space-md">

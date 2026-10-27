@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import { ArrowDown, Baby, Briefcase, Clock, MapPin, Minus, Plane, Plus, Repeat, Send, Users, Accessibility, Car } from 'lucide-react';
+import { ArrowDown, Baby, Briefcase, Clock, MapPin, Minus, Plane, Plus, Repeat, Send, Users, Accessibility, Car, LocateFixed } from 'lucide-react';
+import { toast } from 'sonner';
+import { locate } from '@/lib/location';
 import { usePublicSettings } from '@/lib/auth';
 import { JOURNEY_TYPES, LEG_STATUS, dateTime, shortDateTime, toLocalInput } from '@/lib/format';
 import { cn } from '@/lib/utils';
@@ -46,6 +48,11 @@ export function RequestForm({ initial, onSubmit, submitting, fields = {}, submit
   const bind = (k) => ({ value: f[k] ?? '', onChange: (e) => set(k, e.target.value), invalid: !!fields[k] });
   const addr = (k) => ({ value: f[k] ?? '', onChange: (v) => set(k, v), invalid: !!fields[k] });
   const isReturn = f.journey_type === 'return' || f.is_return;
+  const [locating, setLocating] = useState(false);
+  const useMyLocation = () => {
+    setLocating(true);
+    locate().then((p) => set('pickup', p.text)).catch((e) => toast.error(e.message)).finally(() => setLocating(false));
+  };
   const bf = s?.booking_fields || {};
   const on = (k) => bf[k] !== false; // fields management can switch off in Settings
   const notice = Number(s?.min_notice_hours || 0);
@@ -85,7 +92,12 @@ export function RequestForm({ initial, onSubmit, submitting, fields = {}, submit
 
       <Section n={2} title="Where and when">
         <div className="space-y-4">
-          <Field label="Pickup address" error={fields.pickup} required><AddressInput placeholder="Search address, station or airport" {...addr('pickup')} /></Field>
+          <Field label="Pickup address" error={fields.pickup} required>
+            <AddressInput placeholder="Search address, station or airport" {...addr('pickup')} />
+            <button type="button" disabled={locating} onClick={useMyLocation} className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-700 disabled:opacity-60">
+              {locating ? <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-emerald-200 border-t-emerald-600" /> : <LocateFixed className="h-4 w-4" />}Use my current location
+            </button>
+          </Field>
           {on('stops') && f.stops.map((stop, i) => (
             <div key={i} className="flex items-end gap-2">
               <Field label={`Extra stop ${i + 1}`} className="flex-1"><AddressInput value={stop} onChange={(v) => set('stops', f.stops.map((x, j) => (j === i ? v : x)))} placeholder="Search additional pickup or stop" /></Field>
