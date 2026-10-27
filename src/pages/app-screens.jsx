@@ -111,10 +111,10 @@ function FleetCard({ v, onBook }) {
     <article className="relative flex w-[84%] max-w-[340px] flex-shrink-0 snap-start flex-col overflow-hidden rounded-[2rem] bg-[#050505] text-inverse-on-surface shadow-[0_16px_36px_var(--encore-shadow-0-18)]">
       <div className={cn('pointer-events-none absolute -right-12 -top-12 h-48 w-48 rounded-full bg-gradient-to-br to-transparent blur-2xl', v.glow)} />
       <Link to={`/app/fleet/${v.slug}`} className="relative z-10 flex flex-col gap-space-xs p-space-lg">
-        <div className="flex items-start justify-between">
-          <div>
-            <span className="text-label-sm font-label-sm font-extrabold uppercase tracking-wider text-primary-fixed">{v.label}</span>
-            <h3 className="font-headline-md text-headline-md font-extrabold tracking-tight text-inverse-on-surface">{v.name}</h3>
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <span className="block truncate text-label-sm font-label-sm font-extrabold uppercase tracking-wider text-primary-fixed">{v.label}</span>
+            <h3 className="line-clamp-2 min-h-[2lh] font-headline-md text-headline-md font-extrabold tracking-tight text-inverse-on-surface">{v.name}</h3>
           </div>
           <div className="flex items-center gap-1 rounded-full bg-surface-container-highest/20 px-2.5 py-1 text-white backdrop-blur-md">
             <Icon name="group" className="!text-[15px] text-primary-container" />
