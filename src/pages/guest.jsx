@@ -24,6 +24,7 @@ export function GuestBook() {
     ...(type && JOURNEY_TYPES[type] ? { journey_type: type } : {}),
     ...(params.get('destination') ? { destination: params.get('destination') } : {}),
     ...(params.get('category') ? { preferred_category: params.get('category') } : {}),
+    ...(params.get('when') ? { pickup_at: params.get('when') } : {}),
   };
   const create = useAction((body) => api.post('/bookings', body), {
     success: 'Request sent — we will be in touch with a quotation.',

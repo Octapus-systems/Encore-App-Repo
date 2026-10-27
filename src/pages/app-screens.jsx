@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -143,11 +143,66 @@ function FleetCard({ v, onBook }) {
   );
 }
 
+
+const TRIP_TYPES = [['point_to_point', 'One way', 'east'], ['return', 'Return', 'sync_alt'], ['airport', 'Airport', 'flight'], ['hourly', 'By the hour', 'schedule']];
+const localInput = (d) => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+function whenOptions() {
+  const now = new Date();
+  const soon = new Date(now.getTime() + 3 * 3600000); soon.setMinutes(soon.getMinutes() < 30 ? 30 : 60, 0, 0);
+  const tomorrow = new Date(now); tomorrow.setDate(now.getDate() + 1); tomorrow.setHours(9, 0, 0, 0);
+  const evening = new Date(now); evening.setHours(19, 0, 0, 0);
+  const opts = [['Later today', soon]];
+  if (evening > soon) opts.push(['This evening', evening]);
+  opts.push(['Tomorrow 9am', tomorrow]);
+  return opts.map(([l, d]) => [l, localInput(d)]);
+}
+
+/** Appears after the customer picks a destination: choose trip type and time, then continue. */
+function TripSheet({ place, onClose, onGo }) {
+  const [type, setType] = useState(place.airport ? 'airport' : 'point_to_point');
+  const [when, setWhen] = useState('');
+  const opts = useMemo(whenOptions, []);
+  return (
+    <div className="animate-rise mt-3 rounded-[2rem] bg-surface-container-lowest p-4 shadow-[0_16px_40px_var(--encore-shadow-0-06)] ring-1 ring-black/5">
+      <div className="flex items-start gap-3">
+        <span className={cn('pop-in grid h-11 w-11 flex-shrink-0 place-items-center rounded-full', place.airport ? 'bg-primary-fixed text-primary' : 'bg-surface-container text-on-surface')}><Icon name={place.airport ? 'flight' : 'location_on'} /></span>
+        <div className="min-w-0 flex-1">
+          <div className="text-label-sm font-label-sm uppercase tracking-wider text-secondary">Going to</div>
+          <div className="truncate text-body-lg font-bold text-on-surface">{place.main}</div>
+          {place.secondary && <div className="truncate text-body-sm text-secondary">{place.secondary}</div>}
+        </div>
+        <button type="button" onClick={onClose} aria-label="Clear destination" className="grid h-8 w-8 place-items-center rounded-full bg-surface-container text-secondary"><Icon name="close" className="!text-[18px]" /></button>
+      </div>
+      <div className="mt-4 grid grid-cols-4 gap-2">
+        {TRIP_TYPES.map(([k, l, icon]) => (
+          <button key={k} type="button" onClick={() => setType(k)} className={cn('flex flex-col items-center gap-1 rounded-2xl py-2.5 text-[11px] font-bold transition', type === k ? 'bg-primary-container text-on-primary shadow-[0_8px_20px_var(--encore-orange-shadow-0-15)]' : 'bg-surface-container text-on-surface')}>
+            <Icon name={icon} className="!text-[20px]" />{l}
+          </button>
+        ))}
+      </div>
+      <div className="mt-4 text-label-sm font-label-sm uppercase tracking-wider text-secondary">When?</div>
+      <div className="no-scrollbar mt-2 flex gap-2 overflow-x-auto">
+        {opts.map(([l, v]) => (
+          <button key={l} type="button" onClick={() => setWhen(v)} className={cn('whitespace-nowrap rounded-full px-3.5 py-2 text-body-sm font-semibold transition', when === v ? 'bg-on-surface text-surface' : 'bg-surface-container text-on-surface')}>{l}</button>
+        ))}
+        <label className={cn('relative flex cursor-pointer items-center gap-1 whitespace-nowrap rounded-full px-3.5 py-2 text-body-sm font-semibold', when && !opts.some(([, v]) => v === when) ? 'bg-on-surface text-surface' : 'bg-surface-container text-on-surface')}>
+          <Icon name="calendar_month" className="!text-[16px]" />Pick date
+          <input type="datetime-local" className="absolute inset-0 opacity-0" min={localInput(new Date())} onChange={(e) => setWhen(e.target.value)} />
+        </label>
+      </div>
+      <button type="button" onClick={() => onGo({ type, when })} className="cta-glow mt-4 flex h-13 w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-primary-container to-button-end py-3.5 font-headline-sm text-headline-sm text-on-primary">
+        Continue booking<Icon name="arrow_forward" className="!text-[20px]" />
+      </button>
+    </div>
+  );
+}
+
 export function AppHome() {
   const { user } = useAuth();
   const nav = useNavigate();
   const [chip, setChip] = useState('all');
   const [dest, setDest] = useState('');
+  const [place, setPlace] = useState(null);
   const { data: bookings = [] } = useQuery({ queryKey: ['bookings', 'upcoming'], queryFn: () => api.get('/bookings?view=upcoming&sort=pickup'), refetchInterval: 10000 });
   const attention = bookings.filter((b) => ['quote_sent', 'clarification_needed'].includes(b.status));
   const request = (params = {}) => {
@@ -183,9 +238,10 @@ export function AppHome() {
       <section className="px-margin py-space-xs">
         <form onSubmit={(e) => { e.preventDefault(); request(); }} className="flex w-full items-center gap-space-xs rounded-full bg-surface-container-lowest p-2 shadow-[0_10px_28px_var(--encore-shadow-0-06)] transition-shadow duration-300 focus-within:shadow-[0_12px_32px_var(--encore-orange-shadow-0-15)]">
           <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-surface-container-low text-primary-container"><Icon name="search" className="!text-[20px]" /></div>
-          <AddressInput value={dest} onChange={setDest} placeholder="Enter destination, airport or venue..." className="min-w-0 flex-1" inputClassName="w-full min-w-0 bg-transparent px-1 py-2 text-body-md font-body-md text-on-surface placeholder:text-secondary focus:outline-none" />
+          <AddressInput value={dest} onChange={(v) => { setDest(v); if (place && v !== place.text) setPlace(null); }} onSelect={setPlace} placeholder="Enter destination, airport or venue..." className="min-w-0 flex-1" inputClassName="w-full min-w-0 bg-transparent px-1 py-2 text-body-md font-body-md text-on-surface placeholder:text-secondary focus:outline-none" />
           <button type="submit" aria-label="Continue" className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-surface-container text-on-surface shadow-sm transition-colors hover:bg-surface-container-high"><Icon name="tune" className="!text-[18px]" /></button>
         </form>
+        {place && <TripSheet place={place} onClose={() => { setPlace(null); setDest(''); }} onGo={({ type, when }) => request({ type, ...(when ? { when } : {}) })} />}
       </section>
 
       <section className="pb-space-xs pt-space-md">
@@ -223,7 +279,7 @@ export function AppHome() {
           </div>
           <Link to="/app/fleet" className="flex items-center text-label-md font-label-md font-bold text-primary hover:text-primary-container">View All<Icon name="chevron_right" className="!text-[18px]" /></Link>
         </div>
-        <div className="no-scrollbar flex snap-x snap-mandatory gap-space-md overflow-x-auto px-margin pb-space-sm">
+        <div className="no-scrollbar flex snap-x snap-mandatory scroll-px-margin gap-space-md overflow-x-auto px-margin pb-space-sm">
           {VEHICLES.map((v) => <FleetCard key={v.slug} v={v} onBook={() => request({ category: v.category })} />)}
         </div>
       </section>

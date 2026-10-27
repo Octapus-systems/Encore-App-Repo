@@ -9,7 +9,7 @@ const newSession = () => (crypto.randomUUID ? crypto.randomUUID() : String(Math.
  * Text input with UK address / place suggestions (Google Places via our server).
  * Free text is always allowed — suggestions only help.
  */
-export function AddressInput({ value, onChange, placeholder, invalid, className, inputClassName, autoFocus, name }) {
+export function AddressInput({ value, onChange, onSelect, placeholder, invalid, className, inputClassName, autoFocus, name }) {
   const [items, setItems] = useState([]);
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(-1);
@@ -38,7 +38,7 @@ export function AddressInput({ value, onChange, placeholder, invalid, className,
     return () => document.removeEventListener('pointerdown', close);
   }, []);
 
-  const pick = (it) => { typed.current = false; onChange(it.text); setOpen(false); setItems([]); };
+  const pick = (it) => { typed.current = false; onChange(it.text); setOpen(false); setItems([]); onSelect?.(it); };
   const onKey = (e) => {
     if (!open || !items.length) return;
     if (e.key === 'ArrowDown') { e.preventDefault(); setActive((a) => Math.min(items.length - 1, a + 1)); }
