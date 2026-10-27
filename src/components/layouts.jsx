@@ -82,10 +82,11 @@ function AppDock({ items }) {
         {left.map(Tab)}
         <div className="relative flex justify-center">
           <NavLink to="/app/request" aria-label="Book a journey"
-            className={cn('dock-fab absolute -top-7 grid h-[62px] w-[62px] place-items-center rounded-full bg-gradient-to-br from-primary-container via-button-mid to-tertiary-container text-white shadow-[0_12px_30px_rgba(255,113,15,0.55)] ring-[6px] ring-background transition-transform duration-300 active:scale-90', booking && 'rotate-45')}>
+            className={cn('dock-fab absolute -top-7 grid h-[62px] w-[62px] place-items-center rounded-full bg-gradient-to-br from-primary-container via-button-mid to-tertiary-container text-white shadow-[0_12px_30px_rgba(255,113,15,0.55)] ring-[6px] ring-background transition-transform duration-300 active:scale-90', booking && 'dock-fab-away')}>
             <Icon name="add" className="!text-[32px]" />
           </NavLink>
-          <span className={cn('mt-auto pb-2.5 text-[10.5px] font-semibold tracking-wide', booking ? 'text-white' : 'text-white/55')}>Book</span>
+          <span className={cn('dock-slot-icon pointer-events-none absolute top-[14px] text-primary-container', booking && 'is-on')}><Icon name="edit_road" fill className="!text-[24px]" /></span>
+          <span className={cn('mt-auto pb-2.5 text-[10.5px] font-semibold tracking-wide transition-colors', booking ? 'text-white' : 'text-white/55')}>{booking ? 'Booking' : 'Book'}</span>
         </div>
         {right.map(Tab)}
       </div>

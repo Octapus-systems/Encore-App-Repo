@@ -434,3 +434,9 @@ a.rounded-2xl, a.rounded-3xl, a[class*="rounded-[2rem]"] { transition: transform
 .route-ping { transform-origin: 24px 82px; animation: route-ping 1.8s ease-out infinite; }
 @keyframes route-ping { from { transform: scale(.6); opacity: .5; } to { transform: scale(2); opacity: 0; } }
 .route-pin { transform-origin: 296px 28px; animation: fx-pop .5s 1.3s cubic-bezier(.2,.9,.3,1.3) backwards; }
+
+/* Book button sinks into the dock while the customer is on the booking page. */
+.dock-fab { transition: transform .45s cubic-bezier(.5,-0.4,.3,1.4), opacity .3s ease; }
+.dock-fab.dock-fab-away { transform: translateY(46px) scale(.35) rotate(90deg); opacity: 0; pointer-events: none; animation: none; }
+.dock-slot-icon { opacity: 0; transform: translateY(10px) scale(.6); transition: transform .4s .15s cubic-bezier(.3,1.5,.5,1), opacity .25s .15s; }
+.dock-slot-icon.is-on { opacity: 1; transform: none; }
