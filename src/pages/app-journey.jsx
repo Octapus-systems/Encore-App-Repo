@@ -304,7 +304,12 @@ export function RequestSent() {
           <div className="relative flex h-16 w-16 items-center justify-center rounded-full bg-primary-container text-on-primary shadow-[0_10px_25px_var(--encore-orange-shadow-0-35)]"><Icon name="check" className="!text-[32px] font-bold" /></div>
         </div>
         <h2 className="mb-2 font-headline-lg text-headline-lg text-on-surface">Request Received</h2>
-        <p className="max-w-[310px] text-body-md font-body-md leading-relaxed text-secondary">Thank you. This is not yet a confirmed booking — Encore will review your journey and send you a tailored quotation.</p>
+        <div className="max-w-[320px] space-y-2 text-body-md font-body-md leading-relaxed text-secondary">
+          <p className="font-semibold text-on-surface">Thank you for choosing Encore!</p>
+          <p>A member of our team will be in touch to review your journey details and provide a personalised quotation.</p>
+          <p>We usually respond promptly, but during busier periods, please allow up to 24 hours for a response.</p>
+          <p className="rounded-2xl bg-primary-fixed/60 px-3 py-2 text-body-sm font-semibold text-on-primary-fixed">Your booking is not yet confirmed. We'll guide you through the next steps once you've received your quotation.</p>
+        </div>
       </div>
 
       <div className="mb-6 w-full overflow-hidden rounded-[2rem] bg-surface-container-lowest shadow-[0_10px_30px_var(--encore-shadow-0-06)]">
