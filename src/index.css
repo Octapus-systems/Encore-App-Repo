@@ -407,8 +407,5 @@ a.rounded-2xl, a.rounded-3xl, a[class*="rounded-[2rem]"] { transition: transform
 /* Lens blur band behind the pinned search: stacked bands of decreasing blur (masks break backdrop-filter in Chrome). */
 .lens-blur { animation: encore-fade .3s ease backwards; }
 .lens-blur > i { position: absolute; left: 0; right: 0; display: block; }
-.lens-blur > i:nth-child(1) { top: 0; height: 74px; -webkit-backdrop-filter: blur(18px) saturate(150%); backdrop-filter: blur(18px) saturate(150%); }
-.lens-blur > i:nth-child(2) { top: 74px; height: 16px; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
-.lens-blur > i:nth-child(3) { top: 90px; height: 14px; -webkit-backdrop-filter: blur(5px); backdrop-filter: blur(5px); }
-.lens-blur > i:nth-child(4) { top: 104px; height: 13px; -webkit-backdrop-filter: blur(2.5px); backdrop-filter: blur(2.5px); }
-.lens-blur > i:nth-child(5) { top: 117px; height: 13px; -webkit-backdrop-filter: blur(1px); backdrop-filter: blur(1px); }
+.lens-blur::after { content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(to bottom, rgba(248,249,250,.55) 0%, rgba(248,249,250,.35) 50%, rgba(248,249,250,0) 100%); }
