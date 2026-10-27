@@ -227,12 +227,6 @@ function TripSheet({ place, here, onClose, onGo }) {
 }
 
 
-// Progressive blur: solid 18px blur behind the bar, then 16 thin bands easing to zero.
-const LENS_BANDS = [[0, 72, 18], ...Array.from({ length: 16 }, (_, i) => {
-  const t = (i + 1) / 17;
-  return [72 + i * 4, 4, +(18 * (1 - t) ** 2.2).toFixed(2)];
-})];
-
 /** Home header: scrolls away with the page; the search bar below it is the only pinned element. */
 function HomeHero({ user, here }) {
   const unread = useUnread();
@@ -282,11 +276,13 @@ export function AppHome() {
   const sentinel = useRef(null);
   const [stuck, setStuck] = useState(false);
   useEffect(() => {
-    const el = sentinel.current;
-    if (!el) return undefined;
-    const io = new IntersectionObserver(([e]) => setStuck(!e.isIntersecting), { threshold: 0 });
-    io.observe(el);
-    return () => io.disconnect();
+    // Checked on every scroll frame so the blur appears exactly as the bar pins.
+    let raf = 0;
+    const check = () => { raf = 0; const el = sentinel.current; if (el) setStuck(el.getBoundingClientRect().top < 0); };
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(check); };
+    check();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => { window.removeEventListener('scroll', onScroll); cancelAnimationFrame(raf); };
   }, []);
   const { data: bookings = [] } = useQuery({ queryKey: ['bookings', 'upcoming'], queryFn: () => api.get('/bookings?view=upcoming&sort=pickup'), refetchInterval: 10000 });
   const attention = bookings.filter((b) => ['quote_sent', 'clarification_needed'].includes(b.status));
@@ -303,7 +299,9 @@ export function AppHome() {
       <HomeHero user={user} here={here} />
 
       {/* Only the destination search stays pinned while scrolling. */}
-      {stuck && <div aria-hidden className="lens-blur pointer-events-none fixed left-1/2 top-0 z-30 h-[140px] w-full max-w-[480px] -translate-x-1/2">{LENS_BANDS.map(([top, h, b]) => <i key={top} style={{ top, height: h, backdropFilter: `blur(${b}px)`, WebkitBackdropFilter: `blur(${b}px)` }} />)}</div>}
+      <div aria-hidden className={cn('lens-blur pointer-events-none fixed left-1/2 top-0 z-30 h-[140px] w-full max-w-[480px] -translate-x-1/2', stuck && 'is-on')}>
+        <i />
+      </div>
       <div ref={sentinel} className="h-px" />
       <section className={cn('sticky top-0 z-40 -mt-9 px-margin pb-space-xs pt-space-xs transition-all duration-300', stuck && 'safe-top')}>
         <form onSubmit={(e) => { e.preventDefault(); request(); }} className={cn('flex w-full items-center gap-space-xs rounded-full bg-surface-container-lowest p-2 ring-1 ring-black/5 transition-all duration-300 focus-within:shadow-[0_12px_32px_var(--encore-orange-shadow-0-15)] focus-within:ring-primary-container/40', stuck ? 'shadow-[0_10px_28px_rgba(0,0,0,0.14)]' : 'shadow-[0_18px_40px_rgba(0,0,0,0.18)]')}>

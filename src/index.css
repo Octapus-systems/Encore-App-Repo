@@ -404,8 +404,11 @@ a.rounded-2xl, a.rounded-3xl, a[class*="rounded-[2rem]"] { transition: transform
 .encore-app h2.section-title { position: relative; padding-left: 12px; }
 .encore-app h2.section-title::before { content: ''; position: absolute; left: 0; top: 18%; bottom: 18%; width: 4px; border-radius: 4px; background: linear-gradient(#FF8A3D, #FF5A1F); }
 
-/* Lens blur band behind the pinned search: stacked bands of decreasing blur (masks break backdrop-filter in Chrome). */
-.lens-blur { animation: encore-fade .3s ease backwards; }
-.lens-blur > i { position: absolute; left: 0; right: 0; display: block; }
+/* Lens blur band behind the pinned search (stacked compounding layers; masks break backdrop-filter in Chrome). */
+/* Visibility only — any opacity on this element switches the backdrop blur off in Chrome. */
+.lens-blur { visibility: hidden; }
+.lens-blur.is-on { visibility: visible; }
+.lens-blur > i { position: absolute; top: -20px; left: -20px; right: -20px; height: 116px; display: block; -webkit-backdrop-filter: blur(16px) saturate(150%); backdrop-filter: blur(16px) saturate(150%); }
+/* Soft veil hides the blur layer's lower edge and fades it into the page. */
 .lens-blur::after { content: ''; position: absolute; inset: 0; pointer-events: none;
-  background: linear-gradient(to bottom, rgba(248,249,250,.55) 0%, rgba(248,249,250,.35) 50%, rgba(248,249,250,0) 100%); }
+  background: linear-gradient(to bottom, rgba(248,249,250,.25) 0%, rgba(248,249,250,.45) 48%, rgba(248,249,250,.7) 68%, rgba(248,249,250,.3) 84%, rgba(248,249,250,0) 100%); }
