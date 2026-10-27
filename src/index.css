@@ -408,7 +408,11 @@ a.rounded-2xl, a.rounded-3xl, a[class*="rounded-[2rem]"] { transition: transform
 /* Visibility only — any opacity on this element switches the backdrop blur off in Chrome. */
 .lens-blur { visibility: hidden; }
 .lens-blur.is-on { visibility: visible; }
-.lens-blur > i { position: absolute; top: -20px; left: -20px; right: -20px; height: 116px; display: block; -webkit-backdrop-filter: blur(16px) saturate(150%); backdrop-filter: blur(16px) saturate(150%); }
-/* Soft veil hides the blur layer's lower edge and fades it into the page. */
+.lens-blur { overflow: hidden; }
+.lens-blur > i { position: absolute; inset: 0; display: block;
+  -webkit-backdrop-filter: blur(16px) saturate(150%); backdrop-filter: blur(16px) saturate(150%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 45%, rgba(0,0,0,.75) 60%, rgba(0,0,0,.35) 78%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 45%, rgba(0,0,0,.75) 60%, rgba(0,0,0,.35) 78%, transparent 100%); }
+/* Light veil so text under the bar reads as frosted, fading out with the blur. */
 .lens-blur::after { content: ''; position: absolute; inset: 0; pointer-events: none;
-  background: linear-gradient(to bottom, rgba(248,249,250,.25) 0%, rgba(248,249,250,.45) 48%, rgba(248,249,250,.7) 68%, rgba(248,249,250,.3) 84%, rgba(248,249,250,0) 100%); }
+  background: linear-gradient(to bottom, rgba(248,249,250,.35) 0%, rgba(248,249,250,.2) 55%, rgba(248,249,250,0) 100%); }
