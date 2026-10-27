@@ -8,7 +8,7 @@ import { AMENITIES, CHIPS, ITINERARIES, ONBOARDING, VEHICLES } from '@/lib/showc
 import { gbp, shortDateTime } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import { StatusBadge } from '@/components/common';
-import { Icon, Img } from '@/components/app-ui';
+import { Icon, Img, useUnread } from '@/components/app-ui';
 import { AddressInput } from '@/components/address';
 import { useCurrentLocation } from '@/lib/location';
 
@@ -226,6 +226,46 @@ function TripSheet({ place, here, onClose, onGo }) {
   );
 }
 
+
+/** Home header: scrolls away with the page; the search bar below it is the only pinned element. */
+function HomeHero({ user, here }) {
+  const unread = useUnread();
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+  const where = here.place?.secondary?.split(',').slice(-1)[0]?.replace(/\s[A-Z]{1,2}\d.*$/, '') || user.organisation?.name || 'Staffordshire · UK-wide';
+  return (
+    <section className="relative overflow-hidden rounded-b-[2.5rem] bg-[#0b0b0c] px-margin pb-16 text-white safe-top">
+      <Img k="hero" alt="" className="hero-drift absolute inset-0 h-full w-full object-cover opacity-35" placeholderClassName="absolute inset-0 h-full w-full !bg-transparent !border-0 !text-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-[#0b0b0c]" />
+      <div className="hero-orb pointer-events-none absolute -right-16 -top-20 h-64 w-64 rounded-full bg-primary-container/40 blur-3xl" />
+      <div className="relative flex items-center justify-between pt-4">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <Img k="logo" alt="Encore" className="h-9 w-9 flex-shrink-0 object-contain drop-shadow-[0_6px_16px_rgba(255,113,15,0.5)]" placeholderClassName="h-9 w-9 rounded-full" />
+          <span className="flex min-w-0 items-center gap-1 rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-white/80 backdrop-blur-md">
+            <Icon name={here.place ? 'near_me' : 'location_on'} className="!text-[14px] text-primary-container" /><span className="truncate">{where}</span>
+          </span>
+        </div>
+        <div className="flex flex-shrink-0 items-center gap-2">
+          <Link to="/app/notifications" aria-label="Notifications" className="relative grid h-10 w-10 place-items-center rounded-full bg-white/10 backdrop-blur-md transition hover:bg-white/20">
+            <Icon name="notifications" className="!text-[20px]" />
+            {unread > 0 && <span className="absolute -right-0.5 -top-0.5 grid h-5 min-w-5 place-items-center rounded-full bg-primary-container px-1 text-[10px] font-bold ring-2 ring-[#0b0b0c]">{unread > 9 ? '9+' : unread}</span>}
+          </Link>
+          <Link to="/app/account" aria-label="Profile" className="rounded-full bg-gradient-to-br from-primary-container to-button-end p-[2px]">
+            <Img k="profile" alt="" className="h-9 w-9 rounded-full object-cover" placeholderClassName="h-9 w-9 rounded-full" />
+          </Link>
+        </div>
+      </div>
+      <div className="relative mt-7">
+        <span className="inline-flex items-center gap-1 rounded-full bg-primary-container/20 px-2.5 py-0.5 text-[11px] font-bold tracking-wide text-primary-fixed-dim ring-1 ring-primary-container/30">
+          <Icon name="verified" className="!text-[12px]" />{user.organisation ? 'CORPORATE ACCOUNT' : 'PRIVATE CLIENT'}
+        </span>
+        <h1 className="mt-2 text-[30px] font-extrabold leading-tight tracking-tight">{greeting},<br /><span className="text-gradient-brand">{user.name.split(' ')[0]}</span></h1>
+        <p className="mt-1 text-body-md text-white/65">Where would you like to travel today?</p>
+      </div>
+    </section>
+  );
+}
+
 export function AppHome() {
   const { user } = useAuth();
   const nav = useNavigate();
@@ -233,6 +273,15 @@ export function AppHome() {
   const [dest, setDest] = useState('');
   const [place, setPlace] = useState(null);
   const here = useCurrentLocation({ auto: true });
+  const sentinel = useRef(null);
+  const [stuck, setStuck] = useState(false);
+  useEffect(() => {
+    const el = sentinel.current;
+    if (!el) return undefined;
+    const io = new IntersectionObserver(([e]) => setStuck(!e.isIntersecting), { threshold: 0 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
   const { data: bookings = [] } = useQuery({ queryKey: ['bookings', 'upcoming'], queryFn: () => api.get('/bookings?view=upcoming&sort=pickup'), refetchInterval: 10000 });
   const attention = bookings.filter((b) => ['quote_sent', 'clarification_needed'].includes(b.status));
   const request = (params = {}) => {
@@ -244,26 +293,16 @@ export function AppHome() {
   const itineraries = chip === 'all' ? ITINERARIES : ITINERARIES.filter((i) => i.type === chip);
 
   return (
-    <div className="-mx-margin flex flex-col">
-      <section className="flex flex-col gap-space-xs px-margin pb-space-sm pt-space-xs">
-        <div className="flex items-center justify-between">
-          <div className="flex flex-col">
-            <div className="mb-1 flex items-center gap-space-xs">
-              <span className="inline-flex items-center gap-1 rounded-full bg-primary-fixed px-2.5 py-0.5 font-label-sm text-[11px] font-bold tracking-wide text-on-primary-fixed">
-                <Icon name="verified" className="!text-[12px] text-primary" />{user.organisation ? 'CORPORATE ACCOUNT' : 'PRIVATE CLIENT'}
-              </span>
-            </div>
-            <h1 className="font-headline-lg text-headline-lg tracking-tight text-on-surface">Hello {user.name.split(' ')[0]}!</h1>
-            <p className="text-body-md font-body-md text-secondary">Where would you like to travel today?</p>
-          </div>
-        </div>
-      </section>
+    <div className="stagger -mx-margin -mt-space-sm flex flex-col">
+      <HomeHero user={user} here={here} />
 
-      <section className="px-margin py-space-xs">
-        <form onSubmit={(e) => { e.preventDefault(); request(); }} className="flex w-full items-center gap-space-xs rounded-full bg-surface-container-lowest p-2 shadow-[0_10px_28px_var(--encore-shadow-0-06)] transition-shadow duration-300 focus-within:shadow-[0_12px_32px_var(--encore-orange-shadow-0-15)]">
-          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-surface-container-low text-primary-container"><Icon name="search" className="!text-[20px]" /></div>
-          <AddressInput value={dest} onChange={(v) => { setDest(v); if (place && v !== place.text) setPlace(null); }} onSelect={setPlace} placeholder="Enter destination, airport or venue..." className="min-w-0 flex-1" inputClassName="w-full min-w-0 bg-transparent px-1 py-2 text-body-md font-body-md text-on-surface placeholder:text-secondary focus:outline-none" />
-          <button type="submit" aria-label="Continue" className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-surface-container text-on-surface shadow-sm transition-colors hover:bg-surface-container-high"><Icon name="tune" className="!text-[18px]" /></button>
+      {/* Only the destination search stays pinned while scrolling. */}
+      <div ref={sentinel} className="h-px" />
+      <section className={cn('sticky top-0 z-40 -mt-9 px-margin pb-space-xs pt-space-xs transition-all duration-300', stuck && 'bg-background/80 shadow-[0_8px_24px_rgba(0,0,0,0.06)] backdrop-blur-xl safe-top')}>
+        <form onSubmit={(e) => { e.preventDefault(); request(); }} className={cn('flex w-full items-center gap-space-xs rounded-full bg-surface-container-lowest p-2 ring-1 ring-black/5 transition-all duration-300 focus-within:shadow-[0_12px_32px_var(--encore-orange-shadow-0-15)] focus-within:ring-primary-container/40', stuck ? 'shadow-none' : 'shadow-[0_18px_40px_rgba(0,0,0,0.18)]')}>
+          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary-container to-button-end text-white shadow-[0_6px_14px_var(--encore-orange-shadow-0-35)]"><Icon name="search" className="!text-[20px]" /></div>
+          <AddressInput value={dest} onChange={(v) => { setDest(v); if (place && v !== place.text) setPlace(null); }} onSelect={setPlace} placeholder="Where to?" className="min-w-0 flex-1" inputClassName="w-full min-w-0 bg-transparent px-1 py-2 text-body-lg font-semibold text-on-surface placeholder:font-medium placeholder:text-secondary focus:outline-none" />
+          <button type="submit" aria-label="Continue" className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-surface-container text-on-surface transition-colors hover:bg-surface-container-high"><Icon name="arrow_forward" className="!text-[18px]" /></button>
         </form>
         {place && <TripSheet place={place} onClose={() => { setPlace(null); setDest(''); }} here={here} onGo={({ type, when, pickup }) => request({ type, ...(when ? { when } : {}), ...(pickup ? { pickup } : {}) })} />}
       </section>

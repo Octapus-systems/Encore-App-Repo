@@ -36,7 +36,7 @@ export function RoundButton({ children, className, label, ...props }) {
   );
 }
 
-function useUnread() {
+export function useUnread() {
   const { data = [] } = useQuery({ queryKey: ['notifications'], queryFn: () => api.get('/account/notifications'), refetchInterval: 10000 });
   return data.filter((n) => !n.read_at).length;
 }
@@ -47,8 +47,8 @@ export function EncoreHeader({ title, subtitle, back }) {
   const unread = useUnread();
   return (
     <>
-      <header className="fixed left-1/2 top-0 z-50 w-full max-w-[480px] -translate-x-1/2 bg-surface/85 shadow-[0_1px_8px_var(--encore-shadow-0-03)] backdrop-blur-xl safe-top">
-        <div className="flex h-20 items-center justify-between gap-space-sm px-margin">
+      <header className="animate-rise relative z-20 safe-top">
+        <div className="flex h-[72px] items-center justify-between gap-space-sm px-margin">
           <div className="flex min-w-0 items-center gap-space-sm">
             {back && <RoundButton label="Go back" onClick={() => (typeof back === 'string' ? nav(back) : nav(-1))}><Icon name="arrow_back" className="!text-[20px]" /></RoundButton>}
             <Img k="logo" alt="Encore Chauffeurs" className="h-8 w-auto flex-shrink-0 object-contain" placeholderClassName="h-8 w-8 rounded-full border" />
@@ -73,7 +73,6 @@ export function EncoreHeader({ title, subtitle, back }) {
           </div>
         </div>
       </header>
-      <div className="h-20" />
     </>
   );
 }

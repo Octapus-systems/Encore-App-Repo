@@ -61,7 +61,7 @@ export function CustomerLayout() {
   return (
     <div className="min-h-screen bg-[#ECEDEF]">
       <div className="encore-app relative mx-auto min-h-screen w-full max-w-[480px] overflow-x-clip shadow-[0_0_60px_rgba(0,0,0,0.08)]">
-        <EncoreHeader title={head.title} back={head.back} subtitle={head.home ? (user.organisation?.name || 'Staffordshire · UK-wide') : null} />
+        {!head.home && <EncoreHeader title={head.title} back={head.back} />}
         <main className="px-margin pb-[calc(92px+env(safe-area-inset-bottom))] pt-space-sm"><div key={loc.pathname} className="page-enter"><Outlet /></div></main>
         {/* Docked tab bar: content scrolls above it, never under it. */}
         <nav className="fixed bottom-0 left-1/2 z-50 w-full max-w-[480px] -translate-x-1/2 border-t border-black/5 bg-white/90 pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_30px_rgba(0,0,0,0.06)] backdrop-blur-2xl">

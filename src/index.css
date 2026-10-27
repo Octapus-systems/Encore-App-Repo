@@ -88,7 +88,7 @@
 
   html,
   body {
-    @apply overflow-x-hidden;
+    overflow-x: clip; /* clip (not hidden) so position: sticky still works */
   }
 
   body {
@@ -360,3 +360,18 @@ a.rounded-2xl, a.rounded-3xl, a[class*="rounded-[2rem]"] { transition: transform
 @media (hover: hover) {
   a.rounded-2xl:hover, a.rounded-3xl:hover, a[class*="rounded-[2rem]"]:hover { transform: translateY(-2px); box-shadow: 0 18px 40px -18px rgba(0,0,0,.35); }
 }
+
+
+/* ---------- home hero & list choreography ---------- */
+.text-gradient-brand { background: linear-gradient(90deg, #FF8A3D, #FFB692 60%, #FFD9C4); -webkit-background-clip: text; background-clip: text; color: transparent; }
+@keyframes hero-drift { from { transform: scale(1.08) translate3d(0,0,0); } to { transform: scale(1.18) translate3d(-2%, -2%, 0); } }
+.hero-drift { animation: hero-drift 18s ease-in-out infinite alternate; }
+@keyframes hero-orb { 0%, 100% { transform: translate(0,0) scale(1); opacity: .9; } 50% { transform: translate(-24px, 18px) scale(1.15); opacity: .6; } }
+.hero-orb { animation: hero-orb 9s ease-in-out infinite; }
+.stagger > * { animation: encore-rise .6s cubic-bezier(.2,.8,.2,1) both; }
+.stagger > *:nth-child(2) { animation-delay: .05s; } .stagger > *:nth-child(3) { animation-delay: .1s; }
+.stagger > *:nth-child(4) { animation-delay: .15s; } .stagger > *:nth-child(5) { animation-delay: .2s; }
+.stagger > *:nth-child(6) { animation-delay: .25s; } .stagger > *:nth-child(n+7) { animation-delay: .3s; }
+/* sticky children must not keep a transform after their entrance */
+.stagger > .sticky { animation-name: encore-fade; }
+@keyframes encore-fade { from { opacity: 0; } to { opacity: 1; } }
