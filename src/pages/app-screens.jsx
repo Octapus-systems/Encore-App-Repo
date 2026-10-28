@@ -234,11 +234,11 @@ function HomeHero({ user, here }) {
   const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
   const where = here.place?.secondary?.split(',').slice(-1)[0]?.replace(/\s[A-Z]{1,2}\d.*$/, '') || user.organisation?.name || 'Staffordshire · UK-wide';
   return (
-    <section className="relative overflow-hidden rounded-b-[2.5rem] bg-[#0b0b0c] px-margin pb-16 text-white safe-top">
+    <section className="relative isolate overflow-hidden rounded-b-[2.5rem] bg-[#0b0b0c] px-margin pb-16 text-white safe-top">
       <Img k="hero" alt="" className="hero-drift absolute inset-0 h-full w-full object-cover opacity-35" placeholderClassName="absolute inset-0 h-full w-full !bg-transparent !border-0 !text-transparent" />
       <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-[#0b0b0c]" />
       <div className="hero-orb pointer-events-none absolute -right-16 -top-20 h-64 w-64 rounded-full bg-primary-container/40 blur-3xl" />
-      <div className="relative flex items-center justify-between pt-4">
+      <div className="hero-layer relative z-10 flex items-center justify-between pt-4">
         <div className="flex min-w-0 items-center gap-2.5">
           <Img k="logo" alt="Encore" className="h-9 w-9 flex-shrink-0 object-contain drop-shadow-[0_6px_16px_rgba(255,113,15,0.5)]" placeholderClassName="h-9 w-9 rounded-full" />
           <span className="flex min-w-0 items-center gap-1 rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-white/80 backdrop-blur-md">
@@ -255,7 +255,7 @@ function HomeHero({ user, here }) {
           </Link>
         </div>
       </div>
-      <div className="relative mt-7">
+      <div className="hero-layer relative z-10 mt-7">
         <span className="inline-flex items-center gap-1 rounded-full bg-primary-container/20 px-2.5 py-0.5 text-[11px] font-bold tracking-wide text-primary-fixed-dim ring-1 ring-primary-container/30">
           <Icon name="verified" className="!text-[12px]" />{user.organisation ? 'CORPORATE ACCOUNT' : 'PRIVATE CLIENT'}
         </span>

@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 export function Logo({ dark = false, className }) {
   return (
     <div className={cn('flex items-center gap-2.5 select-none', className)}>
-      <img src="/images/logo.png" alt="Encore" className="h-9 w-9 rounded-xl object-contain" />
+      <img src="/images/logo.svg" alt="Encore" className="h-9 w-9 object-contain" />
       <div className="leading-none">
         <div className={cn('font-heading text-[15px] font-bold tracking-wide', dark ? 'text-white' : 'text-ink')}>ENCORE</div>
         <div className={cn('text-[10px] font-semibold tracking-[0.22em]', dark ? 'text-white/60' : 'text-muted-foreground')}>EXECUTIVE</div>
