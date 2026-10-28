@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import { StatusBadge } from '@/components/common';
 import { Icon, Img, useUnread } from '@/components/app-ui';
 import { AddressInput } from '@/components/address';
+import { ShineText, SplitText, TypeRotator } from '@/components/motion-text';
 import { useCurrentLocation } from '@/lib/location';
 
 // ======================= Welcome (Lovable screen 1) =======================
@@ -259,8 +260,8 @@ function HomeHero({ user, here }) {
         <span className="inline-flex items-center gap-1 rounded-full bg-primary-container/20 px-2.5 py-0.5 text-[11px] font-bold tracking-wide text-primary-fixed-dim ring-1 ring-primary-container/30">
           <Icon name="verified" className="!text-[12px]" />{user.organisation ? 'CORPORATE ACCOUNT' : 'PRIVATE CLIENT'}
         </span>
-        <h1 className="mt-2 text-[30px] font-extrabold leading-tight tracking-tight">{greeting},<br /><span className="text-gradient-brand">{user.name.split(' ')[0]}</span></h1>
-        <p className="mt-1 text-body-md text-white/65">Where would you like to travel today?</p>
+        <h1 className="mt-2 text-[30px] font-extrabold leading-tight tracking-tight"><SplitText text={`${greeting},`} delay={150} /><br /><ShineText><SplitText text={user.name.split(' ')[0]} delay={150 + (greeting.length + 1) * 28} /></ShineText></h1>
+        <p className="mt-1 text-body-md text-white/65">Your chauffeur for <TypeRotator words={['the airport run', 'the big meeting', 'a night at the theatre', 'the wedding day', 'anywhere in the UK']} className="font-semibold text-[#FFB692]" /></p>
       </div>
     </section>
   );

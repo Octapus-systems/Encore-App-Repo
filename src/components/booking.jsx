@@ -6,6 +6,7 @@ import { api } from '@/lib/api';
 import { haptic } from '@/lib/fx';
 import { VEHICLES } from '@/lib/showcase';
 import { Img } from '@/components/app-ui';
+import { SplitText } from '@/components/motion-text';
 import { usePublicSettings } from '@/lib/auth';
 import { JOURNEY_TYPES, LEG_STATUS, dateTime, shortDateTime, toLocalInput } from '@/lib/format';
 import { cn } from '@/lib/utils';
@@ -491,7 +492,7 @@ export function RequestForm({ initial, onSubmit, submitting, fields = {}, submit
           <span className="grid h-9 w-9 place-items-center rounded-full bg-ink text-white"><StepIcon className="h-4 w-4" /></span>
           <div>
             <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Step {step + 1} of {STEPS.length}</div>
-            <h2 className="font-heading text-lg font-bold leading-tight">{STEPS[step].title}</h2>
+            <h2 className="font-heading text-lg font-bold leading-tight"><SplitText key={step} text={STEPS[step].title} delay={120} step={24} /></h2>
           </div>
         </div>
         {panes[step]}

@@ -11,6 +11,7 @@ import { MessageThread } from '@/components/booking';
 import { Icon, Img } from '@/components/app-ui';
 import { VEHICLES } from '@/lib/showcase';
 import { celebrate } from '@/lib/fx';
+import { SplitText } from '@/components/motion-text';
 
 const TERMINAL = ['closed', 'rejected', 'cancelled_customer', 'cancelled_management', 'expired', 'quote_declined'];
 const STEPS = [
@@ -303,7 +304,7 @@ export function RequestSent() {
           <div className="absolute h-20 w-20 animate-pulse rounded-full bg-primary-container/20 blur-xl" />
           <div className="relative flex h-16 w-16 items-center justify-center rounded-full bg-primary-container text-on-primary shadow-[0_10px_25px_var(--encore-orange-shadow-0-35)]"><Icon name="check" className="!text-[32px] font-bold" /></div>
         </div>
-        <h2 className="mb-2 font-headline-lg text-headline-lg text-on-surface">Request Received</h2>
+        <h2 className="mb-2 font-headline-lg text-headline-lg text-on-surface"><SplitText text="Request Received" delay={250} step={35} /></h2>
         <div className="max-w-[320px] space-y-2 text-body-md font-body-md leading-relaxed text-secondary">
           <p className="font-semibold text-on-surface">Thank you for choosing Encore!</p>
           <p>A member of our team will be in touch to review your journey details and provide a personalised quotation.</p>

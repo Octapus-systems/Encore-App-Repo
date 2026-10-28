@@ -457,3 +457,15 @@ a.rounded-2xl, a.rounded-3xl, a[class*="rounded-[2rem]"] { transition: transform
 .hero-drift { will-change: transform; backface-visibility: hidden; }
 .hero-layer { transform: translateZ(0); backface-visibility: hidden; }
 @media (max-width: 640px) { .hero-orb { animation: none; } }
+
+/* ---------- typographic motion ---------- */
+@keyframes split-rise { from { opacity: 0; transform: translateY(.55em) rotate(4deg); filter: blur(4px); } to { opacity: 1; transform: none; filter: blur(0); } }
+.split-char { animation: split-rise .55s cubic-bezier(.2,.8,.2,1) backwards; }
+.type-caret { display: inline-block; width: 2px; height: 1em; margin-left: 2px; vertical-align: -0.12em; background: currentColor; animation: caret-blink 1s steps(1) infinite; }
+@keyframes caret-blink { 50% { opacity: 0; } }
+.shine-text { background: linear-gradient(100deg, #FF8A3D 0%, #FFB692 35%, #fff 50%, #FFB692 65%, #FF5A1F 100%); background-size: 250% 100%;
+  -webkit-background-clip: text; background-clip: text; color: transparent; animation: shine-sweep 4s ease-in-out infinite; }
+@keyframes shine-sweep { 0%, 100% { background-position: 100% 0; } 50% { background-position: 0 0; } }
+.encore-app h2.section-title::after { content: ''; position: absolute; left: 12px; bottom: -3px; height: 2px; width: 0; border-radius: 2px; background: linear-gradient(90deg, #FF8A3D, transparent); animation: title-underline .9s .3s cubic-bezier(.2,.8,.2,1) forwards; }
+@keyframes title-underline { to { width: 46px; } }
+@media (prefers-reduced-motion: reduce) { .split-char, .shine-text { animation: none; } .shine-text { color: #FF8A3D; } }

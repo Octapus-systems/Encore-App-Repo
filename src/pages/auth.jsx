@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { CheckCircle2 } from 'lucide-react';
 import { api } from '@/lib/api';
 import { Icon, Img } from '@/components/app-ui';
+import { ShineText, SplitText } from '@/components/motion-text';
 import { homeFor, useAuth, usePublicSettings } from '@/lib/auth';
 import { Banner, ErrorState, PageLoader, useAction } from '@/components/common';
 
@@ -141,7 +142,7 @@ export function Login() {
   });
   if (user) return <Navigate to={homeFor(user)} replace />;
   return (
-    <Shell title={<>Welcome<br /><span className="text-primary-container">back.</span></>} subtitle="Sign in to request journeys, review quotations and follow your chauffeur.">
+    <Shell title={<><SplitText text="Welcome" delay={200} step={40} /><br /><ShineText><SplitText text="back." delay={500} step={40} /></ShineText></>} subtitle="Sign in to request journeys, review quotations and follow your chauffeur.">
       {s?.otp_login && (
         <div className="mb-4 grid grid-cols-2 rounded-full bg-black/30 p-1 text-label-md font-label-md">
           {[['mobile', 'Mobile'], ['email', 'Email']].map(([k, l]) => (
