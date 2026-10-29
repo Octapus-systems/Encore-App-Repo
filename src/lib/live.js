@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { api } from '@/lib/api';
 import { celebrate } from '@/lib/fx';
+import { initNativeNotifications, isNative, showNativeNotification } from '@/lib/native';
 
 // Good news worth a small celebration when it arrives.
 const CELEBRATE = ['booking_confirmed', 'driver_accepted', 'journey_completed', 'quote_response', 'new_request'];
@@ -17,6 +18,8 @@ export function useLiveUpdates(linkFor) {
   const qc = useQueryClient();
   const nav = useNavigate();
   const seen = useRef(null);
+  // Installed app: ask for notification permission on first launch and open the right screen on tap.
+  useEffect(() => { initNativeNotifications((extra) => extra?.to && nav(extra.to)); }, [nav]);
   const { data } = useQuery({
     queryKey: ['notifications'],
     queryFn: () => api.get('/account/notifications'),
@@ -34,13 +37,18 @@ export function useLiveUpdates(linkFor) {
         if (fresh.some((n) => CELEBRATE.includes(n.event))) celebrate();
         fresh.slice(0, 3).reverse().forEach((n) => {
           const to = n.booking_id && linkFor ? linkFor(n) : null;
+          if (isNative()) {
+            // Installed app: a real phone notification, no in-app banner.
+            showNativeNotification({ id: n.id, title: n.title, body: n.body, extra: { to } });
+            return;
+          }
           toast(n.title, {
             description: n.body,
             duration: 6000,
             action: to ? { label: 'View', onClick: () => nav(to) } : undefined,
           });
         });
-        if (navigator.vibrate) navigator.vibrate(60);
+        if (!isNative() && navigator.vibrate) navigator.vibrate(60);
       }
     }
     seen.current = ids;

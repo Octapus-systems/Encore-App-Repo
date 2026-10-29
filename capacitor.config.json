@@ -8,5 +8,15 @@
   },
   "android": {
     "allowMixedContent": true
+  },
+  "plugins": {
+    "LocalNotifications": {
+      "smallIcon": "ic_stat_encore",
+      "iconColor": "#FF6B00"
+    },
+    "SplashScreen": {
+      "launchShowDuration": 800,
+      "backgroundColor": "#0B0B0C"
+    }
   }
 }
