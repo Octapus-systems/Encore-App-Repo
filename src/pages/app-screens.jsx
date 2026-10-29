@@ -241,7 +241,7 @@ function HomeHero({ user, here }) {
   const where = here.place?.secondary?.split(',').slice(-1)[0]?.replace(/\s[A-Z]{1,2}\d.*$/, '') || user.organisation?.name || 'Staffordshire · UK-wide';
   return (
     <section className="relative isolate overflow-hidden rounded-b-[2.5rem] bg-[#0b0b0c] px-margin pb-16 text-white safe-top">
-      <Img k="hero" alt="" className="hero-drift absolute inset-0 h-full w-full object-cover opacity-35" placeholderClassName="absolute inset-0 h-full w-full !bg-transparent !border-0 !text-transparent" />
+      <Img k="homeHero" alt="" className="absolute inset-0 h-full w-full object-cover object-[center_62%] opacity-60" placeholderClassName="absolute inset-0 h-full w-full !bg-transparent !border-0 !text-transparent" />
       <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-[#0b0b0c]" />
       <div className="hero-orb pointer-events-none absolute -right-16 -top-20 h-64 w-64 rounded-full bg-primary-container/40 blur-3xl" />
       <div className="hero-layer relative z-10 flex items-center justify-between pt-4">
