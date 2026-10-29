@@ -1,6 +1,7 @@
 import { forwardRef, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { haptic } from '@/lib/fx';
 import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PAYMENT_STATUS, STATUS } from '@/lib/format';
@@ -153,12 +154,13 @@ export function useAction(fn, { success, invalidate = [], onSuccess, onError } =
     mutationFn: fn,
     onMutate: () => setFields({}),
     onSuccess: (data, vars) => {
-      if (success) toast.success(typeof success === 'function' ? success(data, vars) : success);
+      if (success) { toast.success(typeof success === 'function' ? success(data, vars) : success); haptic('success'); }
       invalidate.forEach((k) => qc.invalidateQueries({ queryKey: Array.isArray(k) ? k : [k] }));
       onSuccess?.(data, vars);
     },
     onError: (err, vars) => {
       setFields(err.fields || {});
+      haptic('error');
       if (onError?.(err, vars) !== true) toast.error(err.message);
     },
   });

@@ -140,7 +140,7 @@ const recommended = (f) => [...VEHICLES].sort((a, b) => a.seats - b.seats || a.b
 function VehiclePicker({ f, value, onChange }) {
   const rec = recommended(f);
   const pax = Number(f.passenger_count || 1);
-  const pick = (cat) => { onChange(cat); haptic(10); };
+  const pick = (cat) => { onChange(cat); haptic('select'); };
   return (
     <div>
       <div className="mb-2 flex items-baseline justify-between">
@@ -187,9 +187,9 @@ function IconStepper({ label, value, onChange, min = 0, max = 60, icon: I, shake
       <div className="mb-2 flex items-center justify-between">
         <span className="text-sm font-semibold">{label}</span>
         <div className="flex items-center gap-1">
-          <button type="button" aria-label={`Fewer ${label}`} disabled={value <= min} onClick={() => onChange(Math.max(min, value - 1))} className="grid h-8 w-8 place-items-center rounded-full bg-neutral-100 disabled:opacity-30"><Minus className="h-4 w-4" /></button>
+          <button type="button" aria-label={`Fewer ${label}`} disabled={value <= min} onClick={() => { onChange(Math.max(min, value - 1)); haptic('select'); }} className="grid h-8 w-8 place-items-center rounded-full bg-neutral-100 disabled:opacity-30"><Minus className="h-4 w-4" /></button>
           <span key={value} className="pop-in w-7 text-center text-lg font-bold tabular-nums">{value}</span>
-          <button type="button" aria-label={`More ${label}`} disabled={value >= max} onClick={() => { onChange(Math.min(max, value + 1)); haptic(8); }} className="grid h-8 w-8 place-items-center rounded-full bg-ink text-white disabled:opacity-30"><Plus className="h-4 w-4" /></button>
+          <button type="button" aria-label={`More ${label}`} disabled={value >= max} onClick={() => { onChange(Math.min(max, value + 1)); haptic('select'); }} className="grid h-8 w-8 place-items-center rounded-full bg-ink text-white disabled:opacity-30"><Plus className="h-4 w-4" /></button>
         </div>
       </div>
       <div className="flex min-h-[26px] flex-wrap items-end gap-1">
@@ -262,7 +262,7 @@ export function RequestForm({ initial, onSubmit, submitting, fields = {}, submit
     // Arriving: collect 30 min after landing (bags, passport control). Departing: arrive 2 h before take-off.
     const pickup = fl.dir === 'arriving' ? t + 30 * 60000 : t - (120 + drive) * 60000;
     set('pickup_at', localIso(new Date(pickup)));
-    haptic(12);
+    haptic('medium');
   };
   const largest = [...VEHICLES].sort((a, b) => b.seats - a.seats)[0];
   const chosen = VEHICLES.find((v) => v.category === f.preferred_category);
@@ -419,7 +419,7 @@ export function RequestForm({ initial, onSubmit, submitting, fields = {}, submit
         <div className="mb-2 text-sm font-semibold">Quick pick</div>
         <div className="no-scrollbar flex gap-2 overflow-x-auto pb-1">
           {quick.map(([l, v]) => (
-            <button key={l} type="button" onClick={() => { set('pickup_at', v); haptic(8); }}
+            <button key={l} type="button" onClick={() => { set('pickup_at', v); haptic('select'); }}
               className={cn('whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition', f.pickup_at === v ? 'bg-ink text-white shadow' : 'bg-neutral-100 text-ink hover:bg-neutral-200')}>{l}</button>
           ))}
         </div>

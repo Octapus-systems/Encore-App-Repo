@@ -481,3 +481,11 @@ a.rounded-2xl, a.rounded-3xl, a[class*="rounded-[2rem]"] { transition: transform
 @keyframes car-floor { 0%, 100% { opacity: .55; transform: translateX(-50%) scaleX(.85); } 50% { opacity: 1; transform: translateX(-50%) scaleX(1.1); } }
 .car-floor { animation: car-floor 4.5s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { .car-float, .car-glint::before, .car-floor { animation: none; } }
+
+/* ---------- fluid press feel ---------- */
+html { touch-action: manipulation; }
+.chip-pill { transition: transform .5s cubic-bezier(.34,1.45,.5,1), width .5s cubic-bezier(.34,1.45,.5,1), opacity .2s; will-change: transform, width; }
+/* Press down fast, release with a springy overshoot. */
+button:not(:disabled), a[role="button"], .press { transition: transform .35s cubic-bezier(.34,1.56,.64,1), box-shadow .2s ease, background-color .2s ease, color .2s ease, opacity .2s ease; }
+button:not(:disabled):active, a[role="button"]:active, .press:active { transform: scale(.94); transition-duration: .08s; }
+.chip-btn:not(:disabled):active { transform: scale(.9); }

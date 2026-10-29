@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -280,6 +280,12 @@ export function AppHome() {
   const [place, setPlace] = useState(null);
   const here = useCurrentLocation({ auto: true });
   const sentinel = useRef(null);
+  const chipRow = useRef(null);
+  const [pill, setPill] = useState({ x: 0, w: 0 });
+  useLayoutEffect(() => {
+    const btn = chipRow.current?.querySelector(`[data-chip="${chip}"]`);
+    if (btn) setPill({ x: btn.offsetLeft, w: btn.offsetWidth });
+  }, [chip]);
   const [stuck, setStuck] = useState(false);
   useEffect(() => {
     // Checked on every scroll frame so the blur appears exactly as the bar pins.
@@ -319,14 +325,19 @@ export function AppHome() {
       </section>
 
       <section className="pb-space-xs pt-space-md">
-        <div className="no-scrollbar flex items-center gap-space-xs overflow-x-auto scroll-smooth px-margin">
-          {CHIPS.map((c) => (
-            <button key={c.key} onClick={() => setChip(c.key)}
-              className={cn('flex flex-shrink-0 items-center gap-1.5 rounded-full py-2.5 text-label-md font-label-md transition-all active:scale-95',
-                chip === c.key ? 'bg-primary-container px-5 text-on-primary shadow-[0_6px_16px_var(--encore-orange-shadow-0-32)]' : 'bg-surface-container-lowest px-4 text-secondary shadow-[0_2px_8px_var(--encore-shadow-0-04)] hover:text-on-surface')}>
-              <Icon name={c.icon} className="!text-[16px]" />{c.label}
-            </button>
-          ))}
+        <div className="no-scrollbar overflow-x-auto scroll-smooth px-margin">
+          <div ref={chipRow} className="relative flex w-max items-center gap-space-xs">
+            {/* One orange pill slides (and stretches) to whichever chip is selected. */}
+            <span aria-hidden className="chip-pill absolute left-0 top-0 h-full rounded-full bg-primary-container shadow-[0_6px_16px_var(--encore-orange-shadow-0-32)]"
+              style={{ transform: `translateX(${pill.x}px)`, width: pill.w, opacity: pill.w ? 1 : 0 }} />
+            {CHIPS.map((c) => (
+              <button key={c.key} data-chip={c.key} data-haptic="select" onClick={(e) => { setChip(c.key); e.currentTarget.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' }); }}
+                className={cn('chip-btn relative z-10 flex flex-shrink-0 items-center gap-1.5 rounded-full px-4 py-2.5 text-label-md font-label-md transition-colors duration-300',
+                  chip === c.key ? 'text-on-primary' : 'bg-surface-container-lowest text-secondary shadow-[0_2px_8px_var(--encore-shadow-0-04)] hover:text-on-surface')}>
+                <Icon name={c.icon} className={cn('!text-[16px] transition-transform duration-300', chip === c.key && 'scale-110 -rotate-6')} />{c.label}
+              </button>
+            ))}
+          </div>
         </div>
       </section>
 
