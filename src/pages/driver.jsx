@@ -2,13 +2,13 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { Accessibility, Baby, Briefcase, CheckCircle2, ChevronRight, Lock, MapPin, Navigation, Phone, Plane, Users } from 'lucide-react';
+import { Accessibility, Baby, Briefcase, CheckCircle2, ChevronRight, Gauge, Lock, MapPin, Navigation, Phone, Plane, Users } from 'lucide-react';
 import { api } from '@/lib/api';
 import { usePublicSettings } from '@/lib/auth';
-import { celebrate, sparkle } from '@/lib/fx';
+import { celebrate, haptic, sparkle } from '@/lib/fx';
 import { driveTime, miles, JOURNEY_TYPES, LEG_STATUS, dateOnly, shortDateTime, timeOnly } from '@/lib/format';
 import { cn } from '@/lib/utils';
-import { Banner, Empty, ErrorState, KV, PageLoader, Panel, PrimaryButton } from '@/components/common';
+import { Banner, Empty, ErrorState, Field, KV, Modal, PageLoader, Panel, PrimaryButton, TextInput } from '@/components/common';
 import { LegRoute, LegTimes } from '@/components/booking';
 
 const NEXT = {
@@ -82,14 +82,16 @@ export function DriverJob() {
   const [now, setNow] = useState(Date.now());
   useEffect(() => { const t = setInterval(() => setNow(Date.now()), 15000); return () => clearInterval(t); }, []);
   const [pending, setPending] = useState(null);
+  const [distanceLeg, setDistanceLeg] = useState(null); // leg awaiting an actual-distance entry before completing
   const inFlight = useRef(false);
 
-  const press = async (leg, to) => {
+  const press = async (leg, to, extra) => {
     if (inFlight.current) return; // ignore double taps while a request is in flight
+    if (to === 'completed' && !extra) { haptic('medium'); setDistanceLeg(leg); return; } // ask for actual distance first
     inFlight.current = true;
     setPending(leg.id);
     try {
-      const res = await api.post(`/bookings/${id}/legs/${leg.id}/status`, { status: to });
+      const res = await api.post(`/bookings/${id}/legs/${leg.id}/status`, { status: to, ...extra });
       qc.setQueryData(['driver-job', id], res.booking);
       qc.invalidateQueries({ queryKey: ['driver-legs'] });
       if (res.unchanged) toast.info('Already recorded — nothing changed.');
@@ -205,10 +207,39 @@ export function DriverJob() {
                 )}
               </div>
             )}
-            {leg.status === 'completed' && <div className="mt-4 flex items-center justify-center gap-2 rounded-xl bg-emerald-50 py-3 text-sm font-semibold text-emerald-700"><CheckCircle2 className="h-4 w-4" />Journey completed</div>}
+            {leg.status === 'completed' && (
+              <div className={cn('mt-4 rounded-xl py-3 text-center text-sm font-semibold', leg.distance_exceeded ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700')}>
+                <div className="flex items-center justify-center gap-2"><CheckCircle2 className="h-4 w-4" />Journey completed</div>
+                {leg.actual_distance_m != null && (
+                  <div className="mt-0.5 text-xs opacity-80">{miles(leg.actual_distance_m)} driven{leg.distance_exceeded ? ' — over the planned distance, management notified' : ''}</div>
+                )}
+              </div>
+            )}
           </Panel>
         );
       })}
+
+      {distanceLeg && (
+        <DistanceModal leg={distanceLeg} onClose={() => setDistanceLeg(null)}
+          onConfirm={(mi) => { const leg = distanceLeg; setDistanceLeg(null); press(leg, 'completed', { actual_distance_mi: mi }); }} />
+      )}
     </div>
+  );
+}
+
+/** Asked at drop-off (feature 3): the driver records the distance actually driven, so an
+ * over-distance journey can be flagged to management automatically. */
+function DistanceModal({ leg, onClose, onConfirm }) {
+  const plannedMi = leg.distance_m ? +(leg.distance_m / 1609.344).toFixed(1) : null;
+  const [value, setValue] = useState(plannedMi != null ? String(plannedMi) : '');
+  const n = Number(value);
+  const valid = value.trim() !== '' && Number.isFinite(n) && n >= 0 && n <= 2000;
+  return (
+    <Modal open onOpenChange={onClose} title="Journey completed" description="Enter the actual distance driven so we can confirm it against the booking."
+      footer={<PrimaryButton className="cta-glow w-full" disabled={!valid} onClick={() => onConfirm(n)}><Gauge className="h-4 w-4" />Confirm and complete</PrimaryButton>}>
+      <Field label="Actual distance driven (miles)" hint={plannedMi != null ? `Planned distance was about ${plannedMi} mi` : undefined}>
+        <TextInput type="number" inputMode="decimal" min="0" max="2000" step="0.1" autoFocus value={value} onChange={(e) => setValue(e.target.value)} />
+      </Field>
+    </Modal>
   );
 }
