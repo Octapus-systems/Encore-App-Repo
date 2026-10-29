@@ -2,6 +2,9 @@ import { forwardRef, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { haptic } from '@/lib/fx';
+import { friendly } from '@/lib/errors';
+import { Icon } from '@/components/app-ui';
+import { LogoLoader } from '@/components/logo-loader';
 import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PAYMENT_STATUS, STATUS } from '@/lib/format';
@@ -49,11 +52,31 @@ export function Spinner({ className }) {
 }
 
 export function PageLoader() {
-  return <div className="flex min-h-[40vh] items-center justify-center"><Spinner className="h-7 w-7" /></div>;
+  return <div className="flex min-h-[50vh] items-center justify-center"><LogoLoader /></div>;
 }
 
-export function ErrorState({ error }) {
-  return <div className="rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-700">{error?.message || 'Something went wrong.'}</div>;
+const TONES_ERR = {
+  amber: { box: 'from-amber-50 to-orange-50 border-amber-200', icon: 'bg-amber-100 text-amber-700', btn: 'bg-ink text-white' },
+  red: { box: 'from-red-50 to-orange-50 border-red-200', icon: 'bg-red-100 text-red-600', btn: 'bg-ink text-white' },
+};
+
+/** Friendly, animated error card with a Try again button that refreshes whatever is on screen. */
+export function ErrorState({ error, onRetry, className }) {
+  const qc = useQueryClient();
+  const f = friendly(error);
+  const t = TONES_ERR[f.tone] || TONES_ERR.red;
+  const retry = () => { haptic('medium'); if (onRetry) onRetry(); else qc.refetchQueries({ type: 'active' }); };
+  return (
+    <div role="alert" className={cn('animate-rise overflow-hidden rounded-3xl border bg-gradient-to-br p-6 text-center', t.box, className)}>
+      <div className={cn('err-icon mx-auto mb-3 grid h-16 w-16 place-items-center rounded-full', t.icon, `err-${f.kind}`)}>
+        <Icon name={f.icon} className="!text-[32px]" />
+      </div>
+      <div className="font-heading text-lg font-bold text-ink">{f.title}</div>
+      <p className="mx-auto mt-1 max-w-xs text-sm text-muted-foreground">{f.body}</p>
+      {f.retry && <button type="button" onClick={retry} className={cn('mt-4 inline-flex h-11 items-center gap-2 rounded-full px-6 text-sm font-bold shadow-md', t.btn)}><Icon name="refresh" className="!text-[18px]" />Try again</button>}
+      {f.kind === 'session' && <a href="/login" className={cn('mt-4 inline-flex h-11 items-center gap-2 rounded-full px-6 text-sm font-bold shadow-md', t.btn)}>Sign in</a>}
+    </div>
+  );
 }
 
 export function Empty({ icon: Icon, title, children }) {
@@ -161,7 +184,12 @@ export function useAction(fn, { success, invalidate = [], onSuccess, onError } =
     onError: (err, vars) => {
       setFields(err.fields || {});
       haptic('error');
-      if (onError?.(err, vars) !== true) toast.error(err.message);
+      if (onError?.(err, vars) !== true) {
+        const f = friendly(err);
+        // Technical problems get a friendly voice; messages written for the user are shown as they are.
+        if (['offline', 'server', 'busy', 'session'].includes(f.kind)) toast.error(f.title, { description: f.body });
+        else toast.error(err.message);
+      }
     },
   });
   return { ...m, fields, setFields };

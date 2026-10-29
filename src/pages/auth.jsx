@@ -295,8 +295,8 @@ export function Invite() {
   const accept = useAction((f) => api.post(`/auth/invitations/${token}/accept`, f), {
     onSuccess: (d) => { signIn(d); nav(homeFor(d.user), { replace: true }); },
   });
-  if (inv.isLoading) return <PageLoader />;
-  if (inv.error) return <Shell title="Invitation"><ErrorState error={inv.error} /></Shell>;
+  if (inv.error && !inv.data) return <Shell title="Invitation"><ErrorState error={inv.error} /></Shell>;
+  if (inv.isLoading || !inv.data) return <PageLoader />;
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
   return (
     <Shell title="You're invited" subtitle={`Create your account for ${inv.data.email}${inv.data.organisation_name ? ` on behalf of ${inv.data.organisation_name}` : ''}.`}>

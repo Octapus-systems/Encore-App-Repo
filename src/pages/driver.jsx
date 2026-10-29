@@ -22,8 +22,8 @@ const statusTone = (s) => ({ assigned: 'bg-neutral-100 text-neutral-700', on_the
 
 export function DriverJobs() {
   const { data, isLoading, error } = useQuery({ queryKey: ['driver-legs'], queryFn: () => api.get('/driver/legs'), refetchInterval: 8000 });
-  if (isLoading) return <PageLoader />;
-  if (error) return <ErrorState error={error} />;
+  if (error && !data) return <ErrorState error={error} />;
+  if (isLoading || !data) return <PageLoader />;
   const live = data.filter((l) => !['completed'].includes(l.status) && !l.booking_status.startsWith('cancelled'));
   const today = new Date().toDateString();
   const groups = [
@@ -136,8 +136,8 @@ export function DriverJob() {
     }
   };
 
-  if (q.isLoading) return <PageLoader />;
-  if (q.error) return <ErrorState error={q.error} />;
+  if (q.error && !q.data) return <ErrorState error={q.error} />;
+  if (q.isLoading || !q.data) return <PageLoader />;
   const b = q.data;
   return (
     <div className="space-y-4">

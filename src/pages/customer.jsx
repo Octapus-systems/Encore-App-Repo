@@ -164,7 +164,7 @@ export function CustomerBooking() {
   });
   const message = useAction(({ body }) => api.post(`/bookings/${id}/messages`, { body }), { onSuccess: (b, v) => { refresh(b); v.done(); } });
 
-  if (q.isLoading) return <PageLoader />;
+  if (q.isLoading || (!q.data && !q.error)) return <PageLoader />;
   if (q.error) return <ErrorState error={q.error} />;
   const b = q.data;
   const openQuote = b.quotes.find((x) => x.status === 'sent');

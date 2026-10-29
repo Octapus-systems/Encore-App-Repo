@@ -60,8 +60,8 @@ export function JourneyDetails() {
   const cancel = useAction(() => api.post(`/bookings/${id}/cancel`, { reason: note }), { success: 'Booking cancelled.', onSuccess: (b) => { refresh(b); setDialog(null); setNote(''); } });
   const message = useAction(({ body }) => api.post(`/bookings/${id}/messages`, { body }), { onSuccess: (b, v) => { refresh(b); v.done(); } });
 
-  if (q.isLoading) return <PageLoader />;
-  if (q.error) return <ErrorState error={q.error} />;
+  if (q.error && !q.data) return <ErrorState error={q.error} />;
+  if (q.isLoading || !q.data) return <PageLoader />;
   const b = q.data;
   const leg = b.legs[Math.min(legIdx, b.legs.length - 1)];
   const openQuote = b.quotes.find((x) => x.status === 'sent');
@@ -284,8 +284,8 @@ export function RequestSent() {
   const { data: b, isLoading, error } = useQuery({ queryKey: ['booking', id], queryFn: () => api.get(`/bookings/${id}`) });
   const loaded = !!b;
   useEffect(() => { if (loaded) celebrate(); }, [loaded]);
-  if (isLoading) return <PageLoader />;
-  if (error) return <ErrorState error={error} />;
+  if (error && !b) return <ErrorState error={error} />;
+  if (isLoading || !b) return <PageLoader />;
   const leg = b.legs[0];
   const copy = async () => { try { await navigator.clipboard.writeText(b.ref); toast.success('Booking reference copied'); } catch { toast(b.ref); } };
   const calendar = () => {

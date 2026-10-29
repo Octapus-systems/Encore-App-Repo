@@ -10,8 +10,8 @@ import { Button } from '@/components/ui/button';
 export default function InvoiceView({ back }) {
   const { id } = useParams();
   const { data: inv, isLoading, error } = useQuery({ queryKey: ['invoice', id], queryFn: () => api.get(`/account/invoices/${id}`) });
-  if (isLoading) return <PageLoader />;
-  if (error) return <ErrorState error={error} />;
+  if (error && !inv) return <ErrorState error={error} />;
+  if (isLoading || !inv) return <PageLoader />;
   return (
     <div className="mx-auto max-w-3xl">
       <div className="mb-4 flex items-center justify-between print:hidden">

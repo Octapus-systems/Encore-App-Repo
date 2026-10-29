@@ -489,3 +489,42 @@ html { touch-action: manipulation; }
 button:not(:disabled), a[role="button"], .press { transition: transform .35s cubic-bezier(.34,1.56,.64,1), box-shadow .2s ease, background-color .2s ease, color .2s ease, opacity .2s ease; }
 button:not(:disabled):active, a[role="button"]:active, .press:active { transform: scale(.94); transition-duration: .08s; }
 .chip-btn:not(:disabled):active { transform: scale(.9); }
+
+/* ---------- logo loader ---------- */
+.logo-loader { width: 84px; height: 84px; overflow: visible; }
+.logo-loader.is-live .ll-frame { stroke-dasharray: 1; animation: ll-trace 2.6s cubic-bezier(.6,0,.3,1) infinite; }
+@keyframes ll-trace { 0% { stroke-dashoffset: 1; } 45%, 70% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: -1; } }
+.logo-loader.is-live .ll-jacket { transform-origin: 50px 52px; animation: ll-jacket 2.6s cubic-bezier(.3,1.3,.5,1) infinite; }
+@keyframes ll-jacket { 0%, 12% { transform: scale(.7); opacity: 0; } 38%, 78% { transform: scale(1); opacity: 1; } 100% { transform: scale(.94); opacity: 0; } }
+.logo-loader.is-live .ll-collar, .logo-loader.is-live .ll-tie, .logo-loader.is-live .ll-pocket { animation: ll-parts 2.6s cubic-bezier(.3,1.3,.5,1) infinite; opacity: 0; }
+.logo-loader.is-live .ll-collar.ll-l { transform-origin: 40px 24px; --dx: -8px; --dy: -8px; animation-delay: .25s; }
+.logo-loader.is-live .ll-collar.ll-r { transform-origin: 60px 24px; --dx: 8px; --dy: -8px; animation-delay: .3s; }
+.logo-loader.is-live .ll-tie.ll-l { --dx: -3px; --dy: 12px; animation-delay: .4s; }
+.logo-loader.is-live .ll-tie.ll-r { --dx: 3px; --dy: 12px; animation-delay: .45s; }
+.logo-loader.is-live .ll-pocket { --dx: 10px; --dy: 0px; animation-delay: .55s; }
+@keyframes ll-parts { 0%, 14% { opacity: 0; transform: translate(var(--dx, 0), var(--dy, 0)); } 40%, 78% { opacity: 1; transform: none; } 100% { opacity: 0; transform: none; } }
+.logo-loader.is-live .ll-orbit { transform-origin: 50px 50px; animation: ll-orbit 2.6s linear infinite; }
+@keyframes ll-orbit { to { transform: rotate(360deg); } }
+.logo-loader.is-live .ll-glow { transform-origin: 50px 50px; animation: ll-glow 2.6s ease-in-out infinite; }
+@keyframes ll-glow { 0%, 100% { opacity: .45; transform: scale(.92); } 50% { opacity: 1; transform: scale(1.08); } }
+.loader-line { animation: loader-line .5s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes loader-line { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .logo-loader.is-live * { animation: none !important; opacity: 1 !important; } .logo-loader .ll-frame { stroke-dashoffset: 0; } }
+
+/* ---------- connection banner & error cards ---------- */
+.conn-banner { animation: conn-drop .55s cubic-bezier(.3,1.4,.5,1) both; }
+@keyframes conn-drop { from { transform: translateY(-120%); opacity: 0; } to { transform: none; opacity: 1; } }
+.conn-bars { display: flex; align-items: flex-end; gap: 3px; height: 22px; }
+.conn-bars i { display: block; width: 5px; border-radius: 2px; background: #FFB692; animation: conn-bar 1.6s ease-in-out infinite; }
+.conn-bars i:nth-child(1) { height: 6px; } .conn-bars i:nth-child(2) { height: 11px; animation-delay: .15s; }
+.conn-bars i:nth-child(3) { height: 16px; animation-delay: .3s; } .conn-bars i:nth-child(4) { height: 22px; animation-delay: .45s; }
+@keyframes conn-bar { 0%, 100% { opacity: .15; } 35%, 60% { opacity: 1; } }
+.conn-car { animation: conn-drive 3.6s cubic-bezier(.4,0,.2,1) infinite; left: 0; }
+@keyframes conn-drive { 0% { transform: translateX(0); } 55%, 100% { transform: translateX(calc(100vw * .55)); } }
+@media (min-width: 480px) { @keyframes conn-drive { 0% { transform: translateX(0); } 55%, 100% { transform: translateX(260px); } } }
+.conn-x { animation: conn-x 3.6s ease-in-out infinite; }
+@keyframes conn-x { 0%, 45% { opacity: 0; } 60%, 90% { opacity: 1; } 100% { opacity: 0; } }
+.err-icon.err-offline .material-symbols-outlined { animation: err-flicker 1.8s steps(1) infinite; }
+@keyframes err-flicker { 0%, 40%, 100% { opacity: 1; } 45%, 55% { opacity: .25; } 60% { opacity: 1; } }
+.err-icon.err-server .material-symbols-outlined { animation: fx-shake .6s .2s both; }
+.err-icon.err-notfound .material-symbols-outlined, .err-icon.err-busy .material-symbols-outlined { animation: road-bob 1.6s ease-in-out infinite; }

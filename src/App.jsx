@@ -5,6 +5,8 @@ import { queryClientInstance } from '@/lib/query-client';
 import { AuthProvider, homeFor, useAuth } from '@/lib/auth';
 import { CustomerLayout, DriverLayout, RequireRole } from '@/components/layouts';
 import { PageLoader } from '@/components/common';
+import { ConnectionWatcher } from '@/components/connection';
+import { ErrorBoundary } from '@/components/error-boundary';
 import { Invite, Login, Register, StaffNotice } from '@/pages/auth';
 import { NewRequest, Account, Notifications, CustomerInvoices } from '@/pages/customer';
 import InvoiceView from '@/pages/InvoiceView';
@@ -25,6 +27,7 @@ export default function App() {
     <QueryClientProvider client={queryClientInstance}>
       <AuthProvider>
         <BrowserRouter>
+          <ErrorBoundary>
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/welcome" element={<Onboarding />} />
@@ -61,7 +64,9 @@ export default function App() {
 
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
+          </ErrorBoundary>
         </BrowserRouter>
+        <ConnectionWatcher />
         <Toaster position="top-center" richColors closeButton />
       </AuthProvider>
     </QueryClientProvider>

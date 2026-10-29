@@ -5,7 +5,7 @@ import { api } from '@/lib/api';
 import { useAuth, usePublicSettings } from '@/lib/auth';
 import { JOURNEY_TYPES, gbp, relative, shortDateTime } from '@/lib/format';
 import { cn } from '@/lib/utils';
-import { PageLoader, StatusBadge, useAction } from '@/components/common';
+import { ErrorState, PageLoader, StatusBadge, useAction } from '@/components/common';
 import { Icon, Img } from '@/components/app-ui';
 
 const card = 'rounded-[2rem] bg-surface-container-lowest shadow-[0_8px_24px_var(--encore-shadow-0-05)]';
@@ -82,10 +82,11 @@ const EVENT_ICON = {
 
 export function AppUpdates() {
   const qc = useQueryClient();
-  const { data, isLoading } = useQuery({ queryKey: ['notifications'], queryFn: () => api.get('/account/notifications') });
+  const { data, isLoading, error } = useQuery({ queryKey: ['notifications'], queryFn: () => api.get('/account/notifications') });
   const readAll = useAction(() => api.post('/account/notifications/read-all'), { invalidate: ['notifications'] });
   const open = (n) => { if (!n.read_at) api.post(`/account/notifications/${n.id}/read`).then(() => qc.invalidateQueries({ queryKey: ['notifications'] })); };
-  if (isLoading) return <PageLoader />;
+  if (error && !data) return <ErrorState error={error} />;
+  if (isLoading || !data) return <PageLoader />;
   return (
     <div className="flex flex-col gap-space-sm pt-space-xs">
       {data.some((n) => !n.read_at) && (

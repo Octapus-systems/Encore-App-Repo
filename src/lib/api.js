@@ -1,6 +1,6 @@
 const TOKEN_KEY = 'encore.token';
 // Empty on the web (same origin); set to the API server for the mobile app build.
-const API_BASE = import.meta.env.VITE_API_URL || '';
+export const API_BASE = import.meta.env.VITE_API_URL || '';
 
 export const tokenStore = {
   get: () => { try { return localStorage.getItem(TOKEN_KEY); } catch { return null; } },
@@ -24,8 +24,10 @@ async function request(method, path, body) {
   try {
     res = await fetch(`${API_BASE}/api${path}`, { method, headers, body: body === undefined ? undefined : JSON.stringify(body) });
   } catch {
+    window.dispatchEvent(new CustomEvent('encore:network', { detail: { ok: false } }));
     throw new ApiError(0, { error: 'Could not reach Encore Executive. Check your connection — nothing was saved.' });
   }
+  window.dispatchEvent(new CustomEvent('encore:network', { detail: { ok: true } }));
   const data = res.status === 204 ? null : await res.json().catch(() => null);
   if (!res.ok) {
     if (res.status === 401 && token) {
