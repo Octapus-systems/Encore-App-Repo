@@ -5,7 +5,7 @@ import { api } from '@/lib/api';
 import { useAuth, usePublicSettings } from '@/lib/auth';
 import { JOURNEY_TYPES, gbp, relative, shortDateTime } from '@/lib/format';
 import { cn } from '@/lib/utils';
-import { ErrorState, PageLoader, StatusBadge, useAction } from '@/components/common';
+import { ErrorState, PageLoader, SkeletonList, StatusBadge, useAction } from '@/components/common';
 import { Icon, Img } from '@/components/app-ui';
 
 const card = 'rounded-[2rem] bg-surface-container-lowest shadow-[0_8px_24px_var(--encore-shadow-0-05)]';
@@ -40,7 +40,7 @@ export function MyBookings() {
   return (
     <div className="flex flex-col gap-space-md pt-space-xs">
       <Segmented value={tab} onChange={setTab} options={[['upcoming', 'Upcoming'], ['past', 'Past']]} />
-      {isLoading ? <PageLoader /> : !data.length ? (
+      {isLoading ? <SkeletonList rows={3} /> : !data.length ? (
         <EmptyCard icon="event_available" title={tab === 'upcoming' ? 'No upcoming journeys' : 'No past journeys'} text="Requests you send will appear here."
           action={tab === 'upcoming' && <Link to="/app/request" className="mt-2 rounded-full bg-primary-container px-5 py-3 text-label-md font-label-md font-bold text-on-primary shadow-[0_8px_20px_var(--encore-orange-shadow-0-35)]">Request a journey</Link>} />
       ) : data.map((b) => (

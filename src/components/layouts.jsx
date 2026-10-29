@@ -60,7 +60,7 @@ function AppDock({ items }) {
   const slot = activeIdx < 0 ? -1 : activeIdx < 2 ? activeIdx : activeIdx + 1; // 5 slots, centre is Book
   const booking = loc.pathname.startsWith('/app/request');
   const Tab = (n) => (
-    <NavLink key={n.to} to={n.to} end={n.end} className={({ isActive }) => cn('dock-tab relative flex flex-col items-center justify-center gap-1 text-white/55 transition-colors duration-300', isActive && 'text-white')}>
+    <NavLink key={n.to} to={n.to} end={n.end} className={({ isActive }) => cn('dock-tab relative flex flex-col items-center justify-center gap-1 text-white/55 transition-colors duration-300', isActive && 'text-white active-pop')}>
       {({ isActive }) => (
         <>
           <span className={cn('relative transition-transform duration-300', isActive ? '-translate-y-0.5 scale-110' : '')}>

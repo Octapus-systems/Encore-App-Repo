@@ -28,7 +28,6 @@ export function LogoMark({ className, animated = true, size }) {
         <polygon className="ll-tie ll-r" points="54.2,27.4 60.6,31.4 61.3,51.2 54.8,56.2 58.2,51.6 52.1,30" />
         <polygon className="ll-pocket" points="62.2,37.8 73.7,33.3 73.7,37.9" />
       </g>
-      <g className="ll-orbit"><circle cx="50" cy="3.5" r="2.6" fill="#FFB692" /></g>
     </svg>
   );
 }

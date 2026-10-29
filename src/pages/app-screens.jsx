@@ -110,7 +110,7 @@ export function Onboarding() {
 // ======================= Home (Lovable screen 2) =======================
 function FleetCard({ v, onBook, i = 0 }) {
   return (
-    <article className="relative flex w-[84%] max-w-[340px] flex-shrink-0 snap-start flex-col overflow-hidden rounded-[2rem] bg-[#050505] text-inverse-on-surface shadow-[0_16px_36px_var(--encore-shadow-0-18)]">
+    <article className="fleet-card relative flex w-[84%] max-w-[340px] flex-shrink-0 snap-start flex-col overflow-hidden rounded-[2rem] bg-[#050505] text-inverse-on-surface shadow-[0_16px_36px_var(--encore-shadow-0-18)]">
       <div className={cn('pointer-events-none absolute -right-12 -top-12 h-48 w-48 rounded-full bg-gradient-to-br to-transparent blur-2xl', v.glow)} />
       <Link to={`/app/fleet/${v.slug}`} className="relative z-10 flex flex-col gap-space-xs p-space-lg">
         <div className="flex items-start justify-between gap-3">
@@ -281,6 +281,25 @@ export function AppHome() {
   const here = useCurrentLocation({ auto: true });
   const sentinel = useRef(null);
   const chipRow = useRef(null);
+  // Cards away from the centre of the carousel sit slightly back, for depth.
+  const fleetRow = useRef(null);
+  useEffect(() => {
+    const row = fleetRow.current;
+    if (!row) return undefined;
+    let raf = 0;
+    const mark = () => {
+      raf = 0;
+      const mid = row.scrollLeft + row.clientWidth / 2;
+      for (const card of row.children) {
+        const c = card.offsetLeft + card.offsetWidth / 2;
+        card.classList.toggle('is-side', Math.abs(c - mid) > card.offsetWidth * 0.55);
+      }
+    };
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(mark); };
+    mark();
+    row.addEventListener('scroll', onScroll, { passive: true });
+    return () => { row.removeEventListener('scroll', onScroll); cancelAnimationFrame(raf); };
+  }, []);
   const [pill, setPill] = useState({ x: 0, w: 0 });
   useLayoutEffect(() => {
     const btn = chipRow.current?.querySelector(`[data-chip="${chip}"]`);
@@ -365,7 +384,7 @@ export function AppHome() {
           </div>
           <Link to="/app/fleet" className="flex items-center text-label-md font-label-md font-bold text-primary hover:text-primary-container">View All<Icon name="chevron_right" className="!text-[18px]" /></Link>
         </div>
-        <div className="no-scrollbar flex snap-x snap-mandatory scroll-px-margin gap-space-md overflow-x-auto px-margin pb-space-sm">
+        <div ref={fleetRow} className="no-scrollbar flex snap-x snap-mandatory scroll-px-margin gap-space-md overflow-x-auto px-margin pb-space-sm">
           {VEHICLES.map((v, i) => <FleetCard key={v.slug} v={v} i={i} onBook={() => request({ category: v.category })} />)}
         </div>
       </section>

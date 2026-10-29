@@ -39,7 +39,33 @@ export function Pill({ tone = 'grey', children, className }) {
 
 export function StatusBadge({ status, admin = false, className }) {
   const s = STATUS[status] || { label: status, tone: 'grey' };
-  return <Pill tone={s.tone} className={className}>{admin ? s.admin : s.label}</Pill>;
+  // Keyed on the status so a live change replays the morph animation.
+  return <Pill key={status} tone={s.tone} className={cn('pill-morph', className)}>{admin ? s.admin : s.label}</Pill>;
+}
+
+/** Shimmering placeholder used while a list loads. */
+export function Skeleton({ className }) {
+  return <div className={cn('sk', className)} />;
+}
+
+/** Placeholder cards shaped like the real booking rows. */
+export function SkeletonList({ rows = 3, className }) {
+  return (
+    <div className={cn('space-y-3', className)} aria-hidden>
+      {Array.from({ length: rows }, (_, i) => (
+        <div key={i} className="rounded-3xl bg-white p-4 shadow-sm" style={{ opacity: 1 - i * 0.18 }}>
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-11 w-11 rounded-2xl" />
+            <div className="flex-1 space-y-2">
+              <Skeleton className="h-3.5 w-1/2" />
+              <Skeleton className="h-3 w-4/5" />
+            </div>
+          </div>
+          <Skeleton className="mt-3 h-5 w-28 rounded-full" />
+        </div>
+      ))}
+    </div>
+  );
 }
 
 export function PaymentBadge({ status }) {

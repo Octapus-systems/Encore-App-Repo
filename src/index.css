@@ -503,8 +503,6 @@ button:not(:disabled):active, a[role="button"]:active, .press:active { transform
 .logo-loader.is-live .ll-tie.ll-r { --dx: 3px; --dy: 12px; animation-delay: .45s; }
 .logo-loader.is-live .ll-pocket { --dx: 10px; --dy: 0px; animation-delay: .55s; }
 @keyframes ll-parts { 0%, 14% { opacity: 0; transform: translate(var(--dx, 0), var(--dy, 0)); } 40%, 78% { opacity: 1; transform: none; } 100% { opacity: 0; transform: none; } }
-.logo-loader.is-live .ll-orbit { transform-origin: 50px 50px; animation: ll-orbit 2.6s linear infinite; }
-@keyframes ll-orbit { to { transform: rotate(360deg); } }
 .logo-loader.is-live .ll-glow { transform-origin: 50px 50px; animation: ll-glow 2.6s ease-in-out infinite; }
 @keyframes ll-glow { 0%, 100% { opacity: .45; transform: scale(.92); } 50% { opacity: 1; transform: scale(1.08); } }
 .loader-line { animation: loader-line .5s cubic-bezier(.2,.8,.2,1) both; }
@@ -528,3 +526,59 @@ button:not(:disabled):active, a[role="button"]:active, .press:active { transform
 @keyframes err-flicker { 0%, 40%, 100% { opacity: 1; } 45%, 55% { opacity: .25; } 60% { opacity: 1; } }
 .err-icon.err-server .material-symbols-outlined { animation: fx-shake .6s .2s both; }
 .err-icon.err-notfound .material-symbols-outlined, .err-icon.err-busy .material-symbols-outlined { animation: road-bob 1.6s ease-in-out infinite; }
+
+/* ================= premium motion pass ================= */
+
+/* ---- scroll reveal ---- */
+.rvl { opacity: 0; transform: translateY(16px) scale(.985); }
+.rvl.rvl-in { animation: rvl-in .62s cubic-bezier(.2,.85,.25,1) forwards; }
+@keyframes rvl-in { to { opacity: 1; transform: none; } }
+
+/* ---- buttons: depth, sheen on press, focus ring ---- */
+button, a[role="button"], .press { -webkit-tap-highlight-color: transparent; }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: none; box-shadow: 0 0 0 3px rgba(255,113,15,.45), 0 0 0 6px rgba(255,113,15,.15);
+}
+/* Primary call-to-actions lift, then press into the page. */
+.cta-glow, button.bg-primary, a.bg-primary { position: relative; overflow: hidden; transform: translateZ(0); }
+.cta-glow:not(:disabled):active, button.bg-primary:not(:disabled):active { transform: scale(.965) translateY(1px); }
+/* A light sweeps across the button each time it is pressed. */
+.cta-glow::before, button.bg-primary::before {
+  content: ''; position: absolute; top: 0; bottom: 0; left: -45%; width: 45%; pointer-events: none;
+  background: linear-gradient(100deg, transparent, rgba(255,255,255,.42), transparent);
+  transform: skewX(-18deg) translateX(-60%); opacity: 0;
+}
+.cta-glow:active::before, button.bg-primary:active::before { animation: btn-sheen .65s cubic-bezier(.4,0,.2,1); }
+@keyframes btn-sheen { 0% { opacity: 1; transform: skewX(-18deg) translateX(-60%); } 100% { opacity: 0; transform: skewX(-18deg) translateX(340%); } }
+
+/* ---- dock: icons spring, label fades up, active tab lifts ---- */
+.dock-tab .material-symbols-outlined { transition: transform .45s cubic-bezier(.34,1.6,.5,1), font-variation-settings .3s ease; }
+.dock-tab.active-pop .material-symbols-outlined { animation: dock-pop .55s cubic-bezier(.34,1.6,.5,1); }
+@keyframes dock-pop { 0% { transform: scale(1); } 35% { transform: scale(1.35) translateY(-3px); } 65% { transform: scale(.94); } 100% { transform: scale(1.1) translateY(-2px); } }
+.dock-tab:active .material-symbols-outlined { transform: scale(.82); transition-duration: .08s; }
+.dock-fab:not(.dock-fab-away):active { transform: scale(.88) rotate(-6deg); }
+
+/* ---- skeleton shimmer ---- */
+.sk { position: relative; overflow: hidden; background: rgb(0 0 0 / .06); border-radius: 10px; }
+.sk::after { content: ''; position: absolute; inset: 0; transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.75), transparent); animation: sk-sweep 1.5s infinite; }
+@keyframes sk-sweep { 100% { transform: translateX(100%); } }
+
+/* ---- status pill morphs when it changes ---- */
+.pill-morph { animation: pill-morph .6s cubic-bezier(.34,1.5,.5,1); }
+@keyframes pill-morph { 0% { transform: scale(.82); filter: saturate(.4); } 55% { transform: scale(1.12); } 100% { transform: scale(1); } }
+
+/* ---- fleet carousel depth: side cards sit back ---- */
+.fleet-card { transition: transform .45s cubic-bezier(.2,.8,.2,1), opacity .45s ease, filter .45s ease; will-change: transform; }
+.fleet-card.is-side { transform: scale(.93); opacity: .72; filter: saturate(.85); }
+
+/* ---- inputs focus lift ---- */
+input, textarea, select { transition: box-shadow .25s ease, border-color .25s ease, background-color .25s ease; }
+
+/* ---- list rows nudge on press ---- */
+a.rounded-2xl:active, a.rounded-3xl:active { transform: scale(.985); }
+
+@media (prefers-reduced-motion: reduce) {
+  .rvl, .rvl.rvl-in { opacity: 1 !important; transform: none !important; animation: none !important; }
+  .sk::after, .dock-tab.active-pop .material-symbols-outlined, .pill-morph { animation: none !important; }
+}

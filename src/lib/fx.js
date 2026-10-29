@@ -80,3 +80,44 @@ export function installTapFx() {
     haptic(el.dataset.haptic || (el.matches('nav a, [role="tab"]') ? 'select' : 'light'));
   }, { capture: true, passive: true });
 }
+
+/**
+ * Cards glide in as they scroll into view. Elements already on screen at first paint are
+ * left alone, so nothing flashes on load. A safety timer reveals anything still pending,
+ * so a card can never be left invisible.
+ */
+export function installScrollReveal() {
+  if (reduced()) return;
+  const SEL = 'main [data-reveal], main article, main a[class*="rounded-2xl"], main a[class*="rounded-3xl"], main a[class*="rounded-[2rem]"]';
+  const pending = new Set();
+  const show = (el) => { el.classList.add('rvl-in'); pending.delete(el); };
+  const check = () => {
+    const line = window.innerHeight * 0.94;
+    for (const el of pending) {
+      if (!el.isConnected) { pending.delete(el); continue; }
+      if (el.getBoundingClientRect().top < line) show(el);
+    }
+  };
+  let raf = 0;
+  const onScroll = () => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; check(); }); };
+  const scan = () => {
+    for (const el of document.querySelectorAll(SEL)) {
+      if (el.dataset.rvl) continue;
+      el.dataset.rvl = '1';
+      if (el.getBoundingClientRect().top <= window.innerHeight * 0.94) continue; // already visible
+      el.classList.add('rvl');
+      pending.add(el);
+      setTimeout(() => show(el), 2500); // never leave a card hidden
+    }
+    check();
+  };
+  let queued = false;
+  new MutationObserver(() => {
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(() => { queued = false; scan(); });
+  }).observe(document.body, { childList: true, subtree: true });
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll, { passive: true });
+  scan();
+}
