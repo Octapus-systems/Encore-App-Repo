@@ -10,7 +10,6 @@ export const IMAGES = {
   fleetV: { src: '/images/fleet-v-class.jpg' },
   fleetE: { src: '/images/fleet-e-class.jpg' },
   fleetR: { src: '/images/fleet-range-rover.jpg' },
-  homeHero: { src: '/images/home-hero.jpg' },
   hero: { src: '/images/welcome-1.jpg', fallback: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBW0CO-hrJ-gZp4LFEA-Utv1xCZ0kGTklyHg6ZBUG6Ft4VGDIRiqpeoeX80jJuBrXstcwEejJrBmGkme84pz9X8PL5n9t2v6sMy9JBqyMU97srrEZ9G_afBaxAPSnhyvRTsnA5jfnzv26ZI5Nm6kd0aJIUaMvtGoHl8c2Q7an4cRdkGu5FFiTnDhBc4FjNYdyutEfkxLdWEPz7zDDxTsmNJX38iloFA_ZhPSr32DKfzqp__swxfzzJw' },
   logo: { src: '/images/logo.svg' },
   profile: { src: '/images/avatar.png', fallback: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAteoHVsMXS7HqsvYwSiXVvIqKpaAoSvpsop3I0dhjDbX9cW17L54SlCOjAfYrnsk2pJXChg2imORJrbVDfwPZOP8hFbvRbajkv9u2J_HlwnEq4-aPkUAHyNnpNQg3qVvdeZy06D0_qF2rZy4_ValPH1AOxBwFXgMZBv5ZxfOE_2xkO3nAa_SORgvEWziacmlfv-OCQjwzguGHE8aY8G2DcjdMNnT2TKjdQqshQmlDhD0OyJgfa16n9' },
