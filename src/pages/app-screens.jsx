@@ -26,18 +26,18 @@ export function Onboarding() {
   if (user) return <Navigate to="/" replace />;
   const s = ONBOARDING[slide];
   return (
-    <div className="min-h-screen bg-[#ECEDEF]">
-      <div className="encore-app relative mx-auto min-h-screen w-full max-w-[480px] overflow-hidden !bg-on-secondary-fixed">
-        <main className="relative flex w-full flex-col"
+    <div className="fixed inset-0 h-[100dvh] overflow-hidden overscroll-none bg-[#ECEDEF]">
+      <div className="encore-app relative mx-auto h-full w-full max-w-[480px] overflow-hidden !bg-on-secondary-fixed">
+        <main className="relative flex h-full w-full flex-col"
           onTouchStart={(e) => { touch.current = e.touches[0].clientX; }}
           onTouchEnd={(e) => {
             const dx = e.changedTouches[0].clientX - (touch.current ?? 0);
             if (dx < -40) setSlide((v) => Math.min(ONBOARDING.length - 1, v + 1));
             if (dx > 40) setSlide((v) => Math.max(0, v - 1));
           }}>
-          <div className="relative flex min-h-screen w-full select-none flex-col overflow-hidden bg-on-secondary-fixed pb-8 text-surface">
-            <div className="pointer-events-none absolute left-1/2 top-[400px] h-40 w-80 -translate-x-1/2 rounded-full bg-primary-container opacity-35 blur-3xl" />
-            <div className="relative h-[490px] w-full">
+          <div className="relative flex h-full w-full select-none flex-col overflow-hidden bg-on-secondary-fixed pb-[max(16px,env(safe-area-inset-bottom))] text-surface">
+            <div className="pointer-events-none absolute left-1/2 bottom-[38%] h-40 w-80 -translate-x-1/2 rounded-full bg-primary-container opacity-35 blur-3xl" />
+            <div className="relative min-h-[200px] w-full flex-1">
               <div className="fade-bottom absolute inset-0 overflow-hidden">
                 {ONBOARDING.map((o, i) => (
                   <Img key={o.image} k={o.image} alt={i === slide ? 'Encore chauffeur car' : ''}
@@ -62,7 +62,7 @@ export function Onboarding() {
               </div>
             </div>
 
-            <div className="z-20 -mt-[30px] flex flex-col px-margin">
+            <div className="z-20 -mt-[30px] flex shrink-0 flex-col px-margin">
               <div key={slide} className="space-y-3 animate-[fade-in_0.9s_ease-out]">
                 <h1 className="font-headline-lg text-headline-lg leading-[1.15] tracking-tight text-white">
                   {s.line1}<br /><span className="text-primary-container drop-shadow-sm">{s.line2}</span>
@@ -70,7 +70,7 @@ export function Onboarding() {
                 <p className="max-w-sm text-body-md font-body-md leading-relaxed text-secondary-fixed">{s.text}</p>
               </div>
 
-              <div className="mt-6 grid grid-cols-3 gap-2 rounded-[1.5rem] bg-inverse-surface/60 p-3 backdrop-blur-md">
+              <div className="mt-4 grid grid-cols-3 gap-2 rounded-[1.5rem] bg-inverse-surface/60 p-3 backdrop-blur-md">
                 {[['verified_user', 'Vetted Drivers', 'Licensed'], ['support_agent', 'Personal Service', 'Reviewed by us'], ['schedule', '24/7', 'UK-wide']].map(([icon, t, sub]) => (
                   <div key={t} className="flex flex-col items-center text-center">
                     <Icon name={icon} className="mb-1 !text-[18px] text-primary-container" />
@@ -80,7 +80,7 @@ export function Onboarding() {
                 ))}
               </div>
 
-              <div className="mb-5 mt-8 flex items-center justify-between">
+              <div className="mb-4 mt-5 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   {ONBOARDING.map((_, i) => (
                     <button key={i} aria-label={`Slide ${i + 1}`} onClick={() => setSlide(i)}
