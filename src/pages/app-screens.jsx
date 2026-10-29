@@ -325,7 +325,8 @@ export function AppHome() {
       </section>
 
       <section className="pb-space-xs pt-space-md">
-        <div className="no-scrollbar overflow-x-auto scroll-smooth px-margin">
+        {/* Vertical padding (with matching negative margin) stops the scroll box from clipping the chip shadows into a hard line. */}
+        <div className="no-scrollbar -my-4 overflow-x-auto scroll-smooth px-margin py-4">
           <div ref={chipRow} className="relative flex w-max items-center gap-space-xs">
             {/* One orange pill slides (and stretches) to whichever chip is selected. */}
             <span aria-hidden className="chip-pill absolute left-0 top-0 h-full rounded-full bg-primary-container shadow-[0_6px_16px_var(--encore-orange-shadow-0-32)]"
