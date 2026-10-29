@@ -10,14 +10,14 @@ import { Banner, ErrorState, PageLoader, useAction } from '@/components/common';
 
 function Shell({ children, title, subtitle, eyebrow = 'Private client access' }) {
   return (
-    <div className="min-h-screen bg-[#0b0b0c]">
-      <div className="encore-app relative mx-auto flex min-h-screen w-full max-w-[480px] flex-col overflow-hidden !bg-[#0b0b0c]">
+    <div className="fixed inset-0 h-[100dvh] overflow-hidden overscroll-none bg-[#0b0b0c]">
+      <div className="encore-app relative mx-auto flex h-full w-full max-w-[480px] flex-col overflow-hidden !bg-[#0b0b0c]">
         <Img k="loginBg" alt="" className="auth-kenburns absolute inset-0 h-full w-full object-cover object-[center_30%]" placeholderClassName="absolute inset-0 h-full w-full" />
         <div className="absolute inset-0 bg-gradient-to-b from-black/75 via-black/35 to-[#0b0b0c]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_115%,rgba(255,113,15,0.35),transparent_60%)]" />
 
-        <div className="relative z-10 flex flex-1 flex-col px-margin pb-8 safe-top">
-          <div className="flex items-center justify-between pt-5">
+        <div className="relative z-10 flex h-full min-h-0 flex-col px-margin pb-[max(12px,env(safe-area-inset-bottom))] safe-top">
+          <div className="flex shrink-0 items-center justify-between pt-3">
             <Link to="/welcome" aria-label="Back" className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-md transition hover:bg-white/20">
               <Icon name="arrow_back" className="!text-[20px]" />
             </Link>
@@ -26,22 +26,22 @@ function Shell({ children, title, subtitle, eyebrow = 'Private client access' })
             </span>
           </div>
 
-          <div className="mt-8 flex items-center gap-3">
-            <Img k="logo" alt="Encore Chauffeurs" className="h-12 w-12 object-contain drop-shadow-[0_8px_20px_rgba(255,113,15,0.5)]" placeholderClassName="h-12 w-12 rounded-2xl" />
+          <div className="mt-5 flex shrink-0 items-center gap-3 [@media(max-height:720px)]:mt-2">
+            <Img k="logo" alt="Encore Chauffeurs" className="h-12 w-12 [@media(max-height:720px)]:h-10 [@media(max-height:720px)]:w-10 object-contain drop-shadow-[0_8px_20px_rgba(255,113,15,0.5)]" placeholderClassName="h-12 w-12 rounded-2xl" />
             <div className="leading-tight">
               <div className="text-body-lg font-bold uppercase tracking-[0.2em] text-white">Encore</div>
               <div className="text-label-sm font-label-sm uppercase tracking-[0.35em] text-primary-fixed-dim">Chauffeurs</div>
             </div>
           </div>
 
-          <div className="mt-auto pt-16">
+          <div className="mt-auto flex min-h-0 flex-col pt-3">
             <span className="text-label-sm font-label-sm uppercase tracking-[0.3em] text-primary-container">{eyebrow}</span>
-            <h1 className="mt-2 text-[38px] font-extrabold leading-[1.05] tracking-tight text-white">{title}</h1>
-            {subtitle && <p className="mt-2 max-w-sm text-body-md font-body-md text-white/70">{subtitle}</p>}
+            <h1 className="mt-1.5 text-[36px] [@media(max-height:720px)]:text-[28px] font-extrabold leading-[1.05] tracking-tight text-white">{title}</h1>
+            {subtitle && <p className="mt-2 max-w-sm text-body-md font-body-md text-white/70 [@media(max-height:720px)]:hidden">{subtitle}</p>}
 
-            <div className="mt-6 rounded-[2rem] border border-white/10 bg-white/[0.07] p-5 shadow-[0_24px_60px_rgba(0,0,0,0.45)] backdrop-blur-2xl">
+            <div className="no-scrollbar mt-4 min-h-0 overflow-y-auto overscroll-contain rounded-[2rem] border border-white/10 bg-white/[0.07] p-4 shadow-[0_24px_60px_rgba(0,0,0,0.45)] backdrop-blur-2xl">
               {children}
-              <div className="mt-4 flex items-center justify-center gap-1.5 text-[12px] text-white/40">
+              <div className="mt-3 flex items-center justify-center gap-1.5 text-[12px] text-white/40">
                 <Icon name="lock" className="!text-[14px]" />Secure sign-in · Card details never stored
               </div>
             </div>
@@ -59,7 +59,7 @@ function GlassInput({ icon, label, error, type = 'text', ...props }) {
     <label className="block">
       <div className={`group flex items-center gap-3 rounded-2xl border bg-black/30 px-4 transition focus-within:border-primary-container focus-within:bg-black/40 focus-within:shadow-[0_0_0_4px_rgba(255,113,15,0.15)] ${error ? 'border-red-400/70' : 'border-white/10'}`}>
         <Icon name={icon} className="!text-[20px] text-white/50 transition group-focus-within:text-primary-container" />
-        <div className="flex-1 py-2.5">
+        <div className="flex-1 py-2.5 [@media(max-height:720px)]:py-1.5">
           <span className="block text-[11px] font-semibold uppercase tracking-wider text-white/50">{label}</span>
           <input type={isPw && show ? 'text' : type} className="glass-input w-full bg-transparent text-body-lg font-body-lg text-white outline-none placeholder:text-white/30" {...props} />
         </div>
@@ -76,7 +76,7 @@ function GlassInput({ icon, label, error, type = 'text', ...props }) {
 
 function GlowButton({ loading, children }) {
   return (
-    <button type="submit" disabled={loading} className="group relative flex h-14 w-full items-center justify-center gap-2 overflow-hidden rounded-full bg-gradient-to-r from-primary-container via-button-mid to-tertiary-container text-headline-sm font-headline-sm text-white shadow-[0_14px_34px_rgba(255,113,15,0.45)] transition active:scale-[0.98] disabled:opacity-70">
+    <button type="submit" disabled={loading} className="group relative flex h-14 [@media(max-height:720px)]:h-12 w-full items-center justify-center gap-2 overflow-hidden rounded-full bg-gradient-to-r from-primary-container via-button-mid to-tertiary-container text-headline-sm font-headline-sm text-white shadow-[0_14px_34px_rgba(255,113,15,0.45)] transition active:scale-[0.98] disabled:opacity-70">
       <span className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-1000 group-hover:translate-x-full" />
       {loading && <Icon name="progress_activity" className="animate-spin" />}
       {children}
@@ -233,14 +233,14 @@ export function Login() {
   return (
     <Shell title={<><SplitText text="Welcome" delay={200} step={40} /><br /><ShineText><SplitText text="back." delay={500} step={40} /></ShineText></>} subtitle="Sign in to request journeys, review quotations and follow your chauffeur.">
       {s?.otp_login && (
-        <div className="mb-4 grid grid-cols-2 rounded-full bg-black/30 p-1 text-label-md font-label-md">
+        <div className="mb-4 [@media(max-height:720px)]:mb-3 grid grid-cols-2 rounded-full bg-black/30 p-1 text-label-md font-label-md">
           {[['mobile', 'Mobile'], ['email', 'Email']].map(([k, l]) => (
             <button key={k} type="button" onClick={() => setMode(k)} className={`rounded-full py-2 transition ${(useOtp ? 'mobile' : 'email') === k ? 'bg-white text-black shadow' : 'text-white/60 hover:text-white'}`}>{l}</button>
           ))}
         </div>
       )}
       {useOtp ? <OtpSignIn onDone={done} cta="Sign in" /> : (
-      <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); login.mutate(form); }}>
+      <form className="space-y-3 [@media(max-height:720px)]:space-y-2" onSubmit={(e) => { e.preventDefault(); login.mutate(form); }}>
         <GlassInput icon="mail" label="Email" type="email" autoComplete="email" required placeholder="you@company.com" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
         <GlassInput icon="lock" label="Password" type="password" autoComplete="current-password" required placeholder="••••••••" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
         <div className="flex justify-end px-1">
@@ -248,7 +248,7 @@ export function Login() {
         </div>
         <GlowButton loading={login.isPending}>Sign in</GlowButton>
       </form>)}
-      <div className="mt-4 flex items-center gap-3 text-[12px] text-white/40"><span className="h-px flex-1 bg-white/10" />or<span className="h-px flex-1 bg-white/10" /></div>
+      <div className="mt-4 [@media(max-height:720px)]:mt-3 flex items-center gap-3 text-[12px] text-white/40"><span className="h-px flex-1 bg-white/10" />or<span className="h-px flex-1 bg-white/10" /></div>
       <div className={`mt-3 grid gap-2 ${s?.guest_booking && s?.admission_mode !== 'invitation' ? 'grid-cols-2' : 'grid-cols-1'}`}>
         {s?.guest_booking && <Link to="/book" className="press flex h-11 items-center justify-center gap-1.5 rounded-full bg-white/10 text-[13px] font-semibold text-white transition hover:bg-white/15"><Icon name="directions_car" className="!text-[18px]" />Book as guest</Link>}
         {s?.admission_mode !== 'invitation' && <Link to="/register" className="press flex h-11 items-center justify-center gap-1.5 rounded-full border border-white/15 text-[13px] font-semibold text-white transition hover:bg-white/10"><Icon name="person_add" className="!text-[18px]" />Request access</Link>}
