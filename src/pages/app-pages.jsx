@@ -7,6 +7,7 @@ import { JOURNEY_TYPES, gbp, relative, shortDateTime } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import { ErrorState, PageLoader, SkeletonList, StatusBadge, useAction } from '@/components/common';
 import { Icon, Img } from '@/components/app-ui';
+import { ReopenGuideRow } from '@/components/feature-guide';
 
 const card = 'rounded-[2rem] bg-surface-container-lowest shadow-[0_8px_24px_var(--encore-shadow-0-05)]';
 
@@ -187,6 +188,7 @@ export function AppProfile() {
         <Row icon="notifications" label="Updates" sub="Quotes, confirmations and chauffeur updates" to="/app/notifications" />
         <Row icon="directions_car" label="Our fleet" to="/app/fleet" />
         {user.role === 'corporate' && <Row icon="receipt_long" label="Corporate invoices" sub="Consolidated invoices for your organisation" to="/app/invoices" />}
+        <ReopenGuideRow Row={Row} />
         {s && <Row icon="support_agent" label="Call Encore" sub={`${s.dispatcher_phone} · 24/7`} href={`tel:${s.dispatcher_phone}`} />}
       </div>
 

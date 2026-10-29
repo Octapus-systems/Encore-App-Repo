@@ -582,3 +582,14 @@ a.rounded-2xl:active, a.rounded-3xl:active { transform: scale(.985); }
   .rvl, .rvl.rvl-in { opacity: 1 !important; transform: none !important; animation: none !important; }
   .sk::after, .dock-tab.active-pop .material-symbols-outlined, .pill-morph { animation: none !important; }
 }
+
+/* ---------- help center & feature guide ---------- */
+.help-sheet, .guide-sheet { animation: sheet-up .4s cubic-bezier(.2,.85,.25,1) both; }
+@keyframes sheet-up { from { transform: translateY(100%); } to { transform: none; } }
+.help-topic { animation: encore-rise .4s cubic-bezier(.2,.8,.2,1) backwards; }
+.help-topic:nth-child(1) { animation-delay: .03s; } .help-topic:nth-child(2) { animation-delay: .07s; }
+.help-topic:nth-child(3) { animation-delay: .11s; } .help-topic:nth-child(4) { animation-delay: .15s; }
+.help-topic:nth-child(5) { animation-delay: .19s; }
+.help-check { transition: all .25s cubic-bezier(.34,1.5,.5,1); }
+.guide-slide { animation: guide-fade .4s cubic-bezier(.2,.85,.25,1) both; }
+@keyframes guide-fade { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: none; } }
