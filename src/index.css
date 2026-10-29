@@ -469,3 +469,15 @@ a.rounded-2xl, a.rounded-3xl, a[class*="rounded-[2rem]"] { transition: transform
 .encore-app h2.section-title::after { content: ''; position: absolute; left: 12px; bottom: -3px; height: 2px; width: 0; border-radius: 2px; background: linear-gradient(90deg, #FF8A3D, transparent); animation: title-underline .9s .3s cubic-bezier(.2,.8,.2,1) forwards; }
 @keyframes title-underline { to { width: 46px; } }
 @media (prefers-reduced-motion: reduce) { .split-char, .shine-text { animation: none; } .shine-text { color: #FF8A3D; } }
+
+/* ---------- fleet card: glint, float, floor pulse ---------- */
+@keyframes car-float { 0%, 100% { transform: translate3d(0, 0, 0) scale(1); } 50% { transform: translate3d(-1.5%, -1%, 0) scale(1.035); } }
+.car-float { animation: car-float 9s ease-in-out infinite; will-change: transform; }
+@keyframes car-glint { 0%, 55% { transform: translateX(-130%) skewX(-18deg); } 82%, 100% { transform: translateX(380%) skewX(-18deg); } }
+.car-glint { overflow: hidden; mix-blend-mode: overlay; }
+.car-glint::before { content: ''; position: absolute; top: -20%; bottom: -20%; left: 0; width: 38%;
+  background: linear-gradient(105deg, transparent 0%, rgba(255,214,170,.0) 15%, rgba(255,230,205,.95) 50%, rgba(255,214,170,.0) 85%, transparent 100%);
+  transform: translateX(-130%) skewX(-18deg); animation: car-glint 6.5s cubic-bezier(.4,0,.2,1) infinite; animation-delay: inherit; filter: blur(3px); }
+@keyframes car-floor { 0%, 100% { opacity: .55; transform: translateX(-50%) scaleX(.85); } 50% { opacity: 1; transform: translateX(-50%) scaleX(1.1); } }
+.car-floor { animation: car-floor 4.5s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .car-float, .car-glint::before, .car-floor { animation: none; } }

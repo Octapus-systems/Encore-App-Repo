@@ -108,7 +108,7 @@ export function Onboarding() {
 }
 
 // ======================= Home (Lovable screen 2) =======================
-function FleetCard({ v, onBook }) {
+function FleetCard({ v, onBook, i = 0 }) {
   return (
     <article className="relative flex w-[84%] max-w-[340px] flex-shrink-0 snap-start flex-col overflow-hidden rounded-[2rem] bg-[#050505] text-inverse-on-surface shadow-[0_16px_36px_var(--encore-shadow-0-18)]">
       <div className={cn('pointer-events-none absolute -right-12 -top-12 h-48 w-48 rounded-full bg-gradient-to-br to-transparent blur-2xl', v.glow)} />
@@ -126,8 +126,13 @@ function FleetCard({ v, onBook }) {
         <p className="line-clamp-1 text-body-sm font-body-sm text-white/80">{v.summary}</p>
       </Link>
       <Link to={`/app/fleet/${v.slug}`} className="relative -mt-1 block h-[190px] w-full overflow-hidden">
-        <Img k={v.card} alt={v.name} className="fade-edges absolute inset-0 h-full w-full object-cover object-[center_52%]" placeholderClassName="mx-auto h-full w-4/5 rounded-2xl !bg-white/5 !text-white/50 !border-white/20" />
-        <div className="pointer-events-none absolute bottom-2 left-1/2 h-8 w-3/4 -translate-x-1/2 rounded-full bg-primary-container/25 blur-xl" />
+        <div className="car-float absolute inset-0" style={{ animationDelay: `${i * -1.3}s` }}>
+          <Img k={v.card} alt={v.name} className="fade-edges absolute inset-0 h-full w-full object-cover object-[center_52%]" placeholderClassName="mx-auto h-full w-4/5 rounded-2xl !bg-white/5 !text-white/50 !border-white/20" />
+        </div>
+        {/* Light glint sweeping over the paintwork (blend mode keeps the black background untouched) */}
+        <span aria-hidden className="car-glint pointer-events-none absolute inset-0" style={{ animationDelay: `${i * 1.1}s` }} />
+        {/* Floor reflection pulse */}
+        <div aria-hidden className="car-floor pointer-events-none absolute bottom-1 left-1/2 h-8 w-3/4 -translate-x-1/2 rounded-full bg-primary-container/30 blur-xl" style={{ animationDelay: `${i * -0.9}s` }} />
       </Link>
       <div className="relative z-10 -mt-3 flex items-end justify-between p-space-lg pt-0">
         <div>
@@ -349,7 +354,7 @@ export function AppHome() {
           <Link to="/app/fleet" className="flex items-center text-label-md font-label-md font-bold text-primary hover:text-primary-container">View All<Icon name="chevron_right" className="!text-[18px]" /></Link>
         </div>
         <div className="no-scrollbar flex snap-x snap-mandatory scroll-px-margin gap-space-md overflow-x-auto px-margin pb-space-sm">
-          {VEHICLES.map((v) => <FleetCard key={v.slug} v={v} onBook={() => request({ category: v.category })} />)}
+          {VEHICLES.map((v, i) => <FleetCard key={v.slug} v={v} i={i} onBook={() => request({ category: v.category })} />)}
         </div>
       </section>
 
