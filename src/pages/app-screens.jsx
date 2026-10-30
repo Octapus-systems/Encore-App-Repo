@@ -40,7 +40,7 @@ export function Onboarding() {
             <div className="relative min-h-[200px] w-full flex-1">
               <div className="fade-bottom absolute inset-0 overflow-hidden">
                 {ONBOARDING.map((o, i) => (
-                  <Img key={o.image} k={o.image} alt={i === slide ? 'Encore chauffeur car' : ''}
+                  <Img key={o.image} k={o.image} eager={i === slide} alt={i === slide ? 'Encore chauffeur car' : ''}
                     className={cn('absolute inset-0 h-full w-full object-cover object-center', i === slide ? 'scale-105 opacity-100' : 'scale-100 opacity-0')}
                     style={{ transition: i === slide ? 'opacity 1.2s ease-in-out, transform 6s ease-out' : 'opacity 1.2s ease-in-out, transform 0s 1.2s' }}
                     placeholderClassName="absolute inset-0 h-full w-full !bg-white/5 !text-white/50 !border-white/20" />
@@ -127,7 +127,7 @@ function FleetCard({ v, onBook, i = 0 }) {
       </Link>
       <Link to={`/app/fleet/${v.slug}`} className="relative -mt-1 block h-[190px] w-full overflow-hidden">
         <div className="car-float absolute inset-0" style={{ animationDelay: `${i * -1.3}s` }}>
-          <Img k={v.card} alt={v.name} className="fade-edges absolute inset-0 h-full w-full object-cover object-[center_52%]" placeholderClassName="mx-auto h-full w-4/5 rounded-2xl !bg-white/5 !text-white/50 !border-white/20" />
+          <Img k={v.card} alt={v.name} eager={i === 0} className="fade-edges absolute inset-0 h-full w-full object-cover object-[center_52%]" placeholderClassName="mx-auto h-full w-4/5 rounded-2xl !bg-white/5 !text-white/50 !border-white/20" />
         </div>
         {/* Light glint sweeping over the paintwork (blend mode keeps the black background untouched) */}
         <span aria-hidden className="car-glint pointer-events-none absolute inset-0" style={{ animationDelay: `${i * 1.1}s` }} />
@@ -241,7 +241,7 @@ function HomeHero({ user, here }) {
   const where = here.place?.secondary?.split(',').slice(-1)[0]?.replace(/\s[A-Z]{1,2}\d.*$/, '') || user.organisation?.name || 'Staffordshire · UK-wide';
   return (
     <section className="relative isolate overflow-hidden rounded-b-[2.5rem] bg-[#0b0b0c] px-margin pb-16 text-white safe-top">
-      <Img k="hero" alt="" className="hero-drift absolute inset-0 h-full w-full object-cover opacity-35" placeholderClassName="absolute inset-0 h-full w-full !bg-transparent !border-0 !text-transparent" />
+      <Img k="hero" alt="" eager className="hero-drift absolute inset-0 h-full w-full object-cover opacity-35" placeholderClassName="absolute inset-0 h-full w-full !bg-transparent !border-0 !text-transparent" />
       <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-[#0b0b0c]" />
       <div className="hero-orb pointer-events-none absolute -right-16 -top-20 h-64 w-64 rounded-full bg-primary-container/40 blur-3xl" />
       <div className="hero-layer relative z-10 flex items-center justify-between pt-4">

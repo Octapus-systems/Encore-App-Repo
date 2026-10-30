@@ -12,7 +12,7 @@ function Shell({ children, title, subtitle, eyebrow = 'Private client access' })
   return (
     <div className="fixed inset-0 h-[100dvh] overflow-hidden overscroll-none bg-[#0b0b0c]">
       <div className="encore-app relative mx-auto flex h-full w-full max-w-[480px] flex-col overflow-hidden !bg-[#0b0b0c]">
-        <Img k="loginBg" alt="" className="auth-kenburns absolute inset-0 h-full w-full object-cover object-[center_30%]" placeholderClassName="absolute inset-0 h-full w-full" />
+        <Img k="loginBg" alt="" eager className="auth-kenburns absolute inset-0 h-full w-full object-cover object-[center_30%]" placeholderClassName="absolute inset-0 h-full w-full" />
         <div className="absolute inset-0 bg-gradient-to-b from-black/75 via-black/35 to-[#0b0b0c]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_115%,rgba(255,113,15,0.35),transparent_60%)]" />
 

@@ -12,8 +12,12 @@ export function Icon({ name, className, fill }) {
 /**
  * Image from IMAGES by key (or a direct src). Tries your file in /public/images,
  * then the design fallback, then shows a labelled placeholder.
+ * Decodes off the main thread and is lazy by default — the slow-to-paint images some
+ * phones saw were mostly a missing-local-file-then-slow-remote-fallback bug for several
+ * images (fixed in showcase.js), but these attributes help on weaker devices generally.
+ * `eager` is for the handful of images visible the instant a page opens (hero, logo).
  */
-export function Img({ k, src, alt = '', className, placeholderClassName, style }) {
+export function Img({ k, src, alt = '', className, placeholderClassName, style, eager = false }) {
   const entry = k ? IMAGES[k] : { src, fallback: null };
   const sources = [entry?.src, entry?.fallback].filter(Boolean);
   const [i, setI] = useState(0);
@@ -25,7 +29,12 @@ export function Img({ k, src, alt = '', className, placeholderClassName, style }
       </div>
     );
   }
-  return <img src={sources[i]} alt={alt} onError={() => setI(i + 1)} className={className} style={style} />;
+  return (
+    <img
+      src={sources[i]} alt={alt} loading={eager ? 'eager' : 'lazy'} decoding="async" fetchPriority={eager ? 'high' : 'auto'}
+      onError={() => setI(i + 1)} className={className} style={style}
+    />
+  );
 }
 
 export function RoundButton({ children, className, label, ...props }) {
