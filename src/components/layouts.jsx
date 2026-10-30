@@ -60,7 +60,9 @@ function AppDock({ items }) {
   const [left, right] = [items.slice(0, 2), items.slice(2)];
   const activeIdx = items.findIndex((n) => (n.end ? loc.pathname === n.to : loc.pathname.startsWith(n.to)));
   const slot = activeIdx < 0 ? -1 : activeIdx < 2 ? activeIdx : activeIdx + 1; // 5 slots, centre is Book
-  const booking = loc.pathname.startsWith('/app/request');
+  // Hide the floating Book + button wherever a page already has its own bottom action bar
+  // (the booking form, and a fleet vehicle's "Book Now" bar) so the two never overlap.
+  const booking = loc.pathname.startsWith('/app/request') || /^\/app\/fleet\/[^/]+$/.test(loc.pathname);
   const Tab = (n) => (
     <NavLink key={n.to} to={n.to} end={n.end} className={({ isActive }) => cn('dock-tab relative flex flex-col items-center justify-center gap-1 text-white/55 transition-colors duration-300', isActive && 'text-white active-pop')}>
       {({ isActive }) => (

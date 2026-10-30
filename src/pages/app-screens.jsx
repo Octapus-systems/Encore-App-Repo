@@ -330,7 +330,7 @@ export function AppHome() {
       <HomeHero user={user} here={here} />
 
       {/* Only the destination search stays pinned while scrolling. */}
-      <div aria-hidden className={cn('lens-blur pointer-events-none fixed left-1/2 top-0 z-30 h-[140px] w-full max-w-[480px] -translate-x-1/2', stuck && 'is-on')}>
+      <div aria-hidden className={cn('lens-blur pointer-events-none fixed left-1/2 top-0 z-30 h-[92px] w-full max-w-[480px] -translate-x-1/2', stuck && 'is-on')}>
         <i />
       </div>
       <div ref={sentinel} className="h-px" />

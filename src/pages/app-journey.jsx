@@ -11,6 +11,7 @@ import { MessageThread } from '@/components/booking';
 import { Icon, Img } from '@/components/app-ui';
 import { VEHICLES } from '@/lib/showcase';
 import { celebrate } from '@/lib/fx';
+import { addToDeviceCalendar } from '@/lib/native';
 import { SplitText } from '@/components/motion-text';
 
 const TERMINAL = ['closed', 'rejected', 'cancelled_customer', 'cancelled_management', 'expired', 'quote_declined'];
@@ -288,14 +289,16 @@ export function RequestSent() {
   if (isLoading || !b) return <PageLoader />;
   const leg = b.legs[0];
   const copy = async () => { try { await navigator.clipboard.writeText(b.ref); toast.success('Booking reference copied'); } catch { toast(b.ref); } };
-  const calendar = () => {
+  const calendar = async () => {
     const fmt = (d) => new Date(d).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
     const end = new Date(new Date(leg.pickup_at).getTime() + 2 * 3600000);
     const ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'BEGIN:VEVENT', `UID:${b.ref}@encore`, `DTSTAMP:${fmt(new Date())}`, `DTSTART:${fmt(leg.pickup_at)}`, `DTEND:${fmt(end)}`,
       `SUMMARY:Encore chauffeur (${b.ref}) — awaiting confirmation`, `LOCATION:${leg.pickup}`, `DESCRIPTION:To ${leg.destination}`, 'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
-    const url = URL.createObjectURL(new Blob([ics], { type: 'text/calendar' }));
-    const a = document.createElement('a'); a.href = url; a.download = `${b.ref}.ics`; a.click(); URL.revokeObjectURL(url);
-    toast.success('Calendar file downloaded');
+    try {
+      const result = await addToDeviceCalendar(ics, `${b.ref}.ics`);
+      // Native: the share sheet is the feedback — the customer picks Calendar themselves, so no extra toast.
+      if (result === 'downloaded') toast.success('Calendar file downloaded');
+    } catch { toast.error("Couldn't open the calendar options. Please try again."); }
   };
   return (
     <div className="flex flex-col pb-10">

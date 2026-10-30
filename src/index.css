@@ -411,8 +411,8 @@ a.rounded-2xl, a.rounded-3xl, a[class*="rounded-[2rem]"] { transition: transform
 .lens-blur { overflow: hidden; }
 .lens-blur > i { position: absolute; inset: 0; display: block;
   -webkit-backdrop-filter: blur(16px) saturate(150%); backdrop-filter: blur(16px) saturate(150%);
-  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 45%, rgba(0,0,0,.75) 60%, rgba(0,0,0,.35) 78%, transparent 100%);
-  mask-image: linear-gradient(to bottom, #000 0%, #000 45%, rgba(0,0,0,.75) 60%, rgba(0,0,0,.35) 78%, transparent 100%); }
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 55%, rgba(0,0,0,.4) 80%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 55%, rgba(0,0,0,.4) 80%, transparent 100%); }
 /* Light veil so text under the bar reads as frosted, fading out with the blur. */
 .lens-blur::after { content: ''; position: absolute; inset: 0; pointer-events: none;
   background: linear-gradient(to bottom, rgba(248,249,250,.35) 0%, rgba(248,249,250,.2) 55%, rgba(248,249,250,0) 100%); }

@@ -446,7 +446,7 @@ export function RequestForm({ initial, onSubmit, submitting, fields = {}, submit
     <div key="who" className="space-y-4">
       <Field label="Lead passenger" error={err('lead_passenger')} required><TextInput autoComplete="name" {...bind('lead_passenger')} /></Field>
       <Field label="Contact mobile on the day" error={err('contact_phone')} required><TextInput type="tel" placeholder="+44" {...bind('contact_phone')} /></Field>
-      <IconStepper label="Passengers" icon={Armchair} value={Number(f.passenger_count)} min={1} onChange={(v) => set('passenger_count', v)}
+      <IconStepper label="Passengers" icon={Armchair} value={Number(f.passenger_count)} min={1} max={12} onChange={(v) => set('passenger_count', v)}
         shake={overSeats} hint={overSeats ? `Let's upgrade you to the ${upgradeTo.name.replace('Mercedes-Benz ', '')} — it seats ${upgradeTo.seats}.` : null} />
       {on('passenger_names') && <Field label="Other passenger names" hint="Optional"><TextInput {...bind('passenger_names')} /></Field>}
     </div>,
@@ -454,8 +454,8 @@ export function RequestForm({ initial, onSubmit, submitting, fields = {}, submit
     <div key="extras" className="space-y-4">
       {on('luggage') && (
         <div className="grid grid-cols-2 gap-3">
-          <IconStepper label="Large cases" icon={Luggage} value={Number(f.luggage_large)} onChange={(v) => set('luggage_large', v)} shake={overBags} />
-          <IconStepper label="Small bags" icon={Briefcase} value={Number(f.luggage_small)} onChange={(v) => set('luggage_small', v)} shake={overBags} />
+          <IconStepper label="Large cases" icon={Luggage} value={Number(f.luggage_large)} max={12} onChange={(v) => set('luggage_large', v)} shake={overBags} />
+          <IconStepper label="Small bags" icon={Briefcase} value={Number(f.luggage_small)} max={12} onChange={(v) => set('luggage_small', v)} shake={overBags} />
         </div>
       )}
       {overBags && <div className="fx-shake rounded-xl bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-800">That's more luggage than the {chosen.name.replace('Mercedes-Benz ', '')} holds — let's upgrade you to the {upgradeTo.name.replace('Mercedes-Benz ', '')}. <button type="button" className="underline" onClick={() => set('preferred_category', upgradeTo.category)}>Switch</button></div>}
