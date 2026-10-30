@@ -536,9 +536,11 @@ button:not(:disabled):active, a[role="button"]:active, .press:active { transform
 
 /* ---- buttons: depth, sheen on press, focus ring ---- */
 button, a[role="button"], .press { -webkit-tap-highlight-color: transparent; }
-button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+button:focus-visible, a:focus-visible {
   outline: none; box-shadow: 0 0 0 3px rgba(255,113,15,.45), 0 0 0 6px rgba(255,113,15,.15);
 }
+/* Text fields keep their own built-in focus look (glass border glow, etc.) — no extra box. */
+input:focus-visible, select:focus-visible, textarea:focus-visible { outline: none; }
 /* Primary call-to-actions lift, then press into the page. */
 .cta-glow, button.bg-primary, a.bg-primary { position: relative; overflow: hidden; transform: translateZ(0); }
 .cta-glow:not(:disabled):active, button.bg-primary:not(:disabled):active { transform: scale(.965) translateY(1px); }
