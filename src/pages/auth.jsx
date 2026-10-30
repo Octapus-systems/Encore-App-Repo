@@ -182,7 +182,7 @@ export function OtpSignIn({ defaultPhone = '', defaultName = '', onDone, cta = '
   const submitCode = (c) => { if (!needsName && !verify.isPending) verify.mutate({ phone, code: c, name: undefined }); };
   if (step === 'phone') {
     return (
-      <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); send.mutate(phone); }}>
+      <form noValidate className="space-y-3" onSubmit={(e) => { e.preventDefault(); if (!national.trim()) { send.setFields({ phone: 'Enter your mobile number.' }); return; } send.mutate(phone); }}>
         <label className="block">
           <div className={`flex items-stretch rounded-2xl border bg-black/30 transition focus-within:border-primary-container focus-within:shadow-[0_0_0_4px_rgba(255,113,15,0.15)] ${send.fields?.phone ? 'border-red-400/70' : 'border-white/10'}`}>
             <div className="relative flex items-center border-r border-white/10 pl-4 pr-2">
@@ -193,7 +193,7 @@ export function OtpSignIn({ defaultPhone = '', defaultName = '', onDone, cta = '
             </div>
             <div className="flex-1 px-3 py-2.5">
               <span className="block text-[11px] font-semibold uppercase tracking-wider text-white/50">Mobile number</span>
-              <input type="tel" autoComplete="tel-national" required placeholder="7700 900123" value={national} onChange={(e) => setNational(e.target.value)} className="glass-input w-full bg-transparent text-body-lg font-body-lg text-white outline-none placeholder:text-white/30" />
+              <input type="tel" autoComplete="tel-national" placeholder="7700 900123" value={national} onChange={(e) => setNational(e.target.value)} className="glass-input w-full bg-transparent text-body-lg font-body-lg text-white outline-none placeholder:text-white/30" />
             </div>
           </div>
           {send.fields?.phone && <span className="mt-1 block px-2 text-body-sm text-red-300">{send.fields.phone}</span>}
@@ -204,12 +204,16 @@ export function OtpSignIn({ defaultPhone = '', defaultName = '', onDone, cta = '
     );
   }
   return (
-    <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); verify.mutate({ phone, code, name: needsName ? name : undefined }); }}>
+    <form noValidate className="space-y-3" onSubmit={(e) => {
+      e.preventDefault();
+      if (needsName && !name.trim()) { verify.setFields({ name: 'Tell us your name to finish.' }); return; }
+      verify.mutate({ phone, code, name: needsName ? name : undefined });
+    }}>
       <p className="px-1 text-body-sm text-white/70">Enter the code sent to <b className="text-white">{country[1]} {phone}</b>. <button type="button" className="font-semibold text-primary-container" onClick={() => { setStep('phone'); setNeedsName(false); }}>Change</button></p>
       {demo && <div className="rounded-2xl border border-amber-300/30 bg-amber-400/10 px-4 py-2 text-body-sm text-amber-200">Demo mode — no SMS provider yet. Your code is <b className="tracking-widest">{demo}</b></div>}
       <CodeBoxes value={code} onChange={setCode} onComplete={submitCode} status={status} disabled={verify.isPending || status === 'ok'} />
       {verify.fields?.code && status !== 'ok' && <span className="block px-1 text-body-sm text-red-300">{verify.fields.code}</span>}
-      {needsName && <GlassInput icon="person" label="Your name" autoComplete="name" required placeholder="Full name" value={name} onChange={(e) => setName(e.target.value)} error={verify.fields?.name} />}
+      {needsName && <GlassInput icon="person" label="Your name" autoComplete="name" placeholder="Full name" value={name} onChange={(e) => setName(e.target.value)} error={verify.fields?.name} />}
       {needsName && <p className="px-1 text-body-sm text-white/60">Welcome to Encore — tell us your name to finish.</p>}
       <GlowButton loading={verify.isPending}>{needsName ? 'Create my account' : cta}</GlowButton>
       <button type="button" disabled={resendIn > 0 || send.isPending} onClick={() => send.mutate(phone)} className="w-full text-center text-body-sm text-white/50 enabled:hover:text-white disabled:opacity-60">{resendIn > 0 ? `Resend code in ${resendIn}s` : 'Resend code'}</button>
@@ -240,9 +244,16 @@ export function Login() {
         </div>
       )}
       {useOtp ? <OtpSignIn onDone={done} cta="Sign in" /> : (
-      <form className="space-y-3 [@media(max-height:720px)]:space-y-2" onSubmit={(e) => { e.preventDefault(); login.mutate(form); }}>
-        <GlassInput icon="mail" label="Email" type="email" autoComplete="email" required placeholder="you@company.com" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
-        <GlassInput icon="lock" label="Password" type="password" autoComplete="current-password" required placeholder="••••••••" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
+      <form noValidate className="space-y-3 [@media(max-height:720px)]:space-y-2" onSubmit={(e) => {
+        e.preventDefault();
+        const errs = {};
+        if (!form.email.trim()) errs.email = 'Enter your email address.';
+        if (!form.password) errs.password = 'Enter your password.';
+        if (Object.keys(errs).length) { login.setFields(errs); return; }
+        login.mutate(form);
+      }}>
+        <GlassInput icon="mail" label="Email" type="email" autoComplete="email" placeholder="you@company.com" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} error={login.fields?.email} />
+        <GlassInput icon="lock" label="Password" type="password" autoComplete="current-password" placeholder="••••••••" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} error={login.fields?.password} />
         <div className="flex justify-end px-1">
           <a href={s ? `tel:${s.dispatcher_phone}` : undefined} className="text-body-sm font-body-sm text-white/60 hover:text-white">Forgot password? Call us</a>
         </div>
@@ -273,7 +284,7 @@ export function Register() {
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
   return (
     <Shell eyebrow="Join Encore" title="Request access" subtitle="Encore Executive serves a selective client base. Your request is reviewed by our team before you can book.">
-      <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); reg.mutate(form); }}>
+      <form noValidate className="space-y-3" onSubmit={(e) => { e.preventDefault(); reg.mutate(form); }}>
         <GlassInput icon="person" label="Full name" error={reg.fields.name} value={form.name} onChange={set('name')} autoComplete="name" />
         <GlassInput icon="mail" label="Email" error={reg.fields.email} type="email" value={form.email} onChange={set('email')} autoComplete="email" />
         <GlassInput icon="smartphone" label="Mobile (for WhatsApp updates)" error={reg.fields.phone} type="tel" value={form.phone} onChange={set('phone')} autoComplete="tel" placeholder="+44" />
@@ -300,7 +311,7 @@ export function Invite() {
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
   return (
     <Shell title="You're invited" subtitle={`Create your account for ${inv.data.email}${inv.data.organisation_name ? ` on behalf of ${inv.data.organisation_name}` : ''}.`}>
-      <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); accept.mutate({ ...form, name: form.name || inv.data.name || '' }); }}>
+      <form noValidate className="space-y-3" onSubmit={(e) => { e.preventDefault(); accept.mutate({ ...form, name: form.name || inv.data.name || '' }); }}>
         <GlassInput icon="person" label="Full name" error={accept.fields.name} value={form.name} placeholder={inv.data.name || ''} onChange={set('name')} />
         <GlassInput icon="smartphone" label="Mobile (for WhatsApp updates)" error={accept.fields.phone} type="tel" value={form.phone} onChange={set('phone')} placeholder="+44" />
         <GlassInput icon="lock" label="Choose a password" error={accept.fields.password} type="password" value={form.password} onChange={set('password')} autoComplete="new-password" />
