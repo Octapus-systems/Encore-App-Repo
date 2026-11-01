@@ -213,7 +213,10 @@ export function PlanJourney({ here, initialType, onDone, onClose }) {
 
         {/* Route card */}
         <div className="relative mt-3 rounded-[22px] bg-white/[0.05] p-1.5 ring-1 ring-white/10">
-          <span className="pointer-events-none absolute bottom-[30px] left-[25px] top-[30px] w-[2px] rounded-full bg-gradient-to-b from-emerald-400/80 to-[#FF710F]/80" />
+          {/* Connector: a short dotted line centred between the two markers (card padding 6 + row padding 12 + half marker 11 = 29px). */}
+          <span className="pointer-events-none absolute left-[28px] top-[41px] z-20 flex h-[30px] w-[2px] flex-col justify-between">
+            {[0, 1, 2, 3, 4].map((i) => <i key={i} className="block h-[3px] w-[2px] rounded-full" style={{ background: i < 2 ? '#34D399' : i > 2 ? '#FF710F' : '#9CA3AF', opacity: 0.85 }} />)}
+          </span>
           {['pickup', 'destination'].map((f) => {
             const active = field === f && !saving;
             const has = f === 'pickup' ? pickup : dest;
