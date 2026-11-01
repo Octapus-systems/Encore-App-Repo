@@ -656,13 +656,23 @@ html.is-scrolling .car-floor, html.is-scrolling .hero-drift, html.is-scrolling .
 .fleet-card.is-side .car-float, .fleet-card.is-side .car-glint::before, .fleet-card.is-side .car-floor { animation-play-state: paused; }
 .chip-move { animation: fx-pop .35s cubic-bezier(.2,.9,.3,1.2) both; }
 
-/* Request-received success seal */
-.seal-core { animation: seal-pop .55s cubic-bezier(.2,.9,.3,1.25) both; }
-.seal-ring { stroke-dasharray: 1; stroke-dashoffset: 1; transform: rotate(-90deg); transform-origin: center; animation: seal-draw .8s .15s cubic-bezier(.6,0,.2,1) forwards; }
-.seal-tick { stroke-dasharray: 1; stroke-dashoffset: 1; animation: seal-draw .45s .55s cubic-bezier(.5,0,.2,1) forwards; }
-.seal-wave { border: 2px solid rgba(255,113,15,.45); opacity: 0; animation: seal-wave 1.6s .8s cubic-bezier(.2,.7,.3,1) both; }
-.seal-wave-2 { animation-delay: 1.05s; }
-@keyframes seal-pop { from { transform: scale(.4); opacity: 0; } to { transform: none; opacity: 1; } }
+/* Request-received success seal: draws big in the centre of the screen, then zooms into place. */
+.seal-hero { transform: translate(var(--dx, 0), var(--dy, 0)) scale(2.4); visibility: hidden; }
+.seal-hero.is-go { visibility: visible; animation: seal-home .75s 1.15s cubic-bezier(.65,0,.2,1) forwards; }
+@keyframes seal-home { to { transform: none; } }
+.seal-hero .seal-core { animation: seal-pop .5s cubic-bezier(.2,.9,.3,1.3) both; }
+.seal-ring { stroke-dasharray: 1; stroke-dashoffset: 1; transform: rotate(-90deg); transform-origin: center; animation: seal-draw .7s .2s cubic-bezier(.6,0,.2,1) forwards; }
+.seal-tick { stroke-dasharray: 1; stroke-dashoffset: 1; animation: seal-draw .4s .6s cubic-bezier(.5,0,.2,1) forwards; }
+.seal-wave { border: 2px solid rgba(255,113,15,.45); opacity: 0; animation: seal-wave 1.4s 1.75s cubic-bezier(.2,.7,.3,1) both; }
+.seal-wave-2 { animation-delay: 2s; }
+/* White veil covers the page while the big tick plays, then lifts as the tick lands. */
+.seal-veil { background: radial-gradient(circle at 50% 50%, rgba(255,240,230,.98), rgba(248,249,250,.98) 60%); animation: veil-out .6s 1.2s ease forwards; }
+@keyframes veil-out { to { opacity: 0; visibility: hidden; } }
+.sent-page > :not(.seal-veil) > :not(.seal) { animation: encore-rise .6s 1.55s cubic-bezier(.2,.8,.2,1) backwards; }
+@keyframes seal-pop { from { transform: scale(.3); opacity: 0; } to { transform: none; opacity: 1; } }
 @keyframes seal-draw { to { stroke-dashoffset: 0; } }
 @keyframes seal-wave { 0% { transform: scale(.85); opacity: .9; } 100% { transform: scale(1.7); opacity: 0; } }
-@media (prefers-reduced-motion: reduce) { .seal-core, .seal-wave { animation: none; } .seal-ring, .seal-tick { animation: none; stroke-dashoffset: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .seal-hero, .seal-hero.is-go { transform: none; visibility: visible; animation: none; }
+  .seal-veil { display: none; } .seal-core, .seal-wave { animation: none; } .seal-ring, .seal-tick { animation: none; stroke-dashoffset: 0; }
+}

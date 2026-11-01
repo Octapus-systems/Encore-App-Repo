@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -294,7 +294,18 @@ export function RequestSent() {
   const nav = useNavigate();
   const { data: b, isLoading, error } = useQuery({ queryKey: ['booking', id], queryFn: () => api.get(`/bookings/${id}`) });
   const loaded = !!b;
-  useEffect(() => { if (loaded) haptic('success'); }, [loaded]);
+  // Hero tick: starts big in the centre of the screen, draws, then zooms down into its place.
+  const sealRef = useRef(null);
+  useLayoutEffect(() => {
+    const el = sealRef.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    el.style.setProperty('--dx', `${window.innerWidth / 2 - (r.left + r.width / 2)}px`);
+    el.style.setProperty('--dy', `${window.innerHeight / 2 - (r.top + r.height / 2)}px`);
+    el.classList.add('is-go');
+    const t = setTimeout(() => haptic('success'), 700);
+    return () => clearTimeout(t);
+  }, [loaded]);
   if (error && !b) return <ErrorState error={error} />;
   if (isLoading || !b) return <PageLoader />;
   const leg = b.legs[0];
@@ -311,10 +322,11 @@ export function RequestSent() {
     } catch { toast.error("Couldn't open the calendar options. Please try again."); }
   };
   return (
-    <div className="flex flex-col pb-10">
+    <div className="sent-page flex flex-col pb-10">
+      <div aria-hidden className="seal-veil pointer-events-none fixed inset-0 z-[55]" />
       <div className="mb-6 mt-2 flex flex-col items-center text-center">
         {/* Success seal: ring and tick draw themselves, then two soft rings ripple out. */}
-        <div className="seal relative mb-5 grid h-24 w-24 place-items-center" aria-hidden>
+        <div ref={sealRef} className="seal seal-hero relative z-[60] mb-5 grid h-24 w-24 place-items-center" aria-hidden>
           <span className="seal-wave absolute inset-0 rounded-full" />
           <span className="seal-wave seal-wave-2 absolute inset-0 rounded-full" />
           <span className="seal-core absolute inset-2 rounded-full bg-gradient-to-br from-[#FF8A3D] to-[#E85D04] shadow-[0_14px_30px_rgba(255,113,15,0.35)]" />
