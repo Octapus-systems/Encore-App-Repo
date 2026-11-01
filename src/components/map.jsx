@@ -13,11 +13,12 @@ import { cn } from '@/lib/utils';
 import { Icon } from '@/components/app-ui';
 
 const STYLE = import.meta.env.VITE_MAP_STYLE || 'https://tiles.openfreemap.org/styles/positron';
+const DARK = import.meta.env.VITE_MAP_STYLE_DARK || 'https://tiles.openfreemap.org/styles/dark';
 const UK = { lat: 52.806, lng: -2.117 }; // Stafford — Encore's home patch, used until GPS answers
 
-function baseMap(el, center, zoom) {
+function baseMap(el, center, zoom, style = STYLE) {
   const map = new maplibregl.Map({
-    container: el, style: STYLE, center: [center.lng, center.lat], zoom,
+    container: el, style, center: [center.lng, center.lat], zoom,
     attributionControl: false, dragRotate: false, pitchWithRotate: false, touchPitch: false, fadeDuration: 150,
   });
   map.touchZoomRotate.disableRotation();
@@ -321,3 +322,26 @@ export function LiveTrackMap({ bookingId, legId, className }) {
   );
 }
 
+
+// ---------------------------------------------------------------------------
+// Mini map — a calm, non-interactive view of where the customer is (planner header).
+// ---------------------------------------------------------------------------
+export function MiniMap({ center, className }) {
+  const box = useRef(null);
+  const map = useRef(null);
+  const pin = useRef(null);
+  useEffect(() => {
+    const m = baseMap(box.current, center || UK, center ? 15.5 : 6, DARK);
+    m.scrollZoom.disable(); m.dragPan.disable(); m.touchZoomRotate.disable(); m.doubleClickZoom.disable(); m.keyboard.disable();
+    map.current = m;
+    return () => { map.current = null; pin.current = null; m.remove(); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  useEffect(() => {
+    const m = map.current; if (!m || !center) return;
+    if (!pin.current) pin.current = new maplibregl.Marker({ element: dot('is-me') }).setLngLat([center.lng, center.lat]).addTo(m);
+    else pin.current.setLngLat([center.lng, center.lat]);
+    m.flyTo({ center: [center.lng, center.lat], zoom: 15.5, duration: 1400, essential: true });
+  }, [center?.lat, center?.lng]); // eslint-disable-line react-hooks/exhaustive-deps
+  return <div className={cn('relative overflow-hidden', className)}><div ref={box} className="h-full w-full" /></div>;
+}

@@ -1,9 +1,10 @@
-// Maps are a separate download (Leaflet + tiles) fetched only when a map is first shown.
+// Maps are a separate download (MapLibre + tiles) fetched only when a map is first shown.
 import { lazy, Suspense } from 'react';
 import { cn } from '@/lib/utils';
 
 const load = () => import('./map.jsx');
 const Picker = lazy(() => load().then((m) => ({ default: m.MapPicker })));
+const Mini = lazy(() => load().then((m) => ({ default: m.MiniMap })));
 const Live = lazy(() => load().then((m) => ({ default: m.LiveTrackMap })));
 
 /** Warm the map code ahead of a likely tap (e.g. when the booking form opens). */
@@ -21,6 +22,14 @@ export function LiveTrackMap({ className, ...props }) {
   return (
     <Suspense fallback={<div className={cn('sk', className)} />}>
       <Live className={className} {...props} />
+    </Suspense>
+  );
+}
+
+export function MiniMap({ className, ...props }) {
+  return (
+    <Suspense fallback={<div className={cn('bg-[#1a1a1d]', className)} />}>
+      <Mini className={className} {...props} />
     </Suspense>
   );
 }

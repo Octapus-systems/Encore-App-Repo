@@ -7,7 +7,7 @@ import { haptic } from '@/lib/fx';
 import { cn } from '@/lib/utils';
 import { Icon } from '@/components/app-ui';
 import { QUICK, recent, remember, useSuggestions } from '@/components/address';
-import { MapPicker, preloadMaps } from '@/components/lazy-maps';
+import { MapPicker, MiniMap, preloadMaps } from '@/components/lazy-maps';
 
 const SAVED_KEY = 'encore.savedPlaces';
 const TYPES = [['point_to_point', 'One way', 'east'], ['return', 'Return', 'sync_alt'], ['airport', 'Airport', 'flight'], ['hourly', 'By the hour', 'schedule']];
@@ -25,6 +25,13 @@ function whenOptions() {
 const whenLabel = (v, opts) => opts.find(([, x]) => x === v)?.[0]
   || (v ? new Date(v).toLocaleString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Pickup time');
 const miles = (m) => (m == null ? null : m < 160 ? 'here' : `${(m / 1609.344).toFixed(m < 16093 ? 1 : 0)} mi`);
+// Straight-line miles from the pickup to a remembered place (for recents / airports).
+const AIRPORT_AT = { 'q-bhx': [52.4539, -1.748], 'q-man': [53.3588, -2.2727], 'q-lhr': [51.47, -0.4543], 'q-eme': [52.8311, -1.3281] };
+const crow = (a, b) => {
+  const R = 6371000; const r = Math.PI / 180;
+  const h = Math.sin(((b.lat - a.lat) * r) / 2) ** 2 + Math.cos(a.lat * r) * Math.cos(b.lat * r) * Math.sin(((b.lng - a.lng) * r) / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+};
 const saved = () => { try { return JSON.parse(localStorage.getItem(SAVED_KEY) || '{}'); } catch { return {}; } };
 const strip = ({ text, main, secondary, airport, lat, lng }) => ({ text, main, secondary, airport, lat, lng });
 
@@ -73,6 +80,12 @@ export function PlanJourney({ here, initialType, onDone, onClose }) {
   const query = q[field];
   const { items, loading } = useSuggestions(query, true, pickup?.lat != null ? pickup : null);
   const typing = query.trim().length >= 3;
+  const away = (it) => {
+    const at = it.lat != null ? it : AIRPORT_AT[it.id] ? { lat: AIRPORT_AT[it.id][0], lng: AIRPORT_AT[it.id][1] } : null;
+    return pickup?.lat != null && at ? miles(crow(pickup, at)) : null;
+  };
+  const keyboard = vh < window.innerHeight * 0.8;
+  const showMap = !saving && !keyboard && !query;
 
   // The GPS answer may arrive after the sheet opened.
   useEffect(() => { if (here.place && !pickup) setPickup({ ...here.place, gps: true }); }, [here.place, pickup]);
@@ -84,8 +97,7 @@ export function PlanJourney({ here, initialType, onDone, onClose }) {
     vv?.addEventListener('resize', fit);
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-    const t = setTimeout(() => inputs.destination.current?.focus({ preventScroll: true }), 80);
-    return () => { vv?.removeEventListener('resize', fit); document.body.style.overflow = prev; clearTimeout(t); };
+    return () => { vv?.removeEventListener('resize', fit); document.body.style.overflow = prev; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -125,12 +137,26 @@ export function PlanJourney({ here, initialType, onDone, onClose }) {
 
   return createPortal(
     <div className="plan-sheet fixed inset-x-0 top-0 z-[85] mx-auto flex max-w-[480px] flex-col overflow-hidden bg-[#0E0E10] text-white" style={{ height: vh }}>
-      {/* Header */}
-      <div className="flex-shrink-0 px-4 pt-[max(10px,env(safe-area-inset-top))]">
-        <div className="relative flex h-12 items-center justify-center">
-          <button type="button" onClick={onClose} aria-label="Back" className="absolute left-0 grid h-10 w-10 place-items-center rounded-full active:bg-white/10"><Icon name="arrow_back" className="!text-[22px]" /></button>
-          <div className="text-[17px] font-bold tracking-tight">{saving ? `Set your ${saving === 'home' ? 'Home' : 'Work'} address` : 'Plan your journey'}</div>
+      {/* Live map of where the customer is — folds away while typing so results get the room. */}
+      <div className="relative flex-shrink-0 overflow-hidden transition-[height] duration-500 ease-[cubic-bezier(.2,.85,.25,1)]" style={{ height: showMap ? Math.round(vh * 0.32) : 0 }}>
+        <MiniMap center={pickup?.lat != null ? pickup : null} className="absolute inset-0" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-[#0E0E10]" />
+        <button type="button" onClick={onClose} aria-label="Back" className="absolute left-4 top-[max(12px,env(safe-area-inset-top))] grid h-11 w-11 place-items-center rounded-full bg-black/55 ring-1 ring-white/15 backdrop-blur-md active:scale-95"><Icon name="arrow_back" className="!text-[22px]" /></button>
+        <div className="plan-pill absolute inset-x-16 top-[max(14px,env(safe-area-inset-top))] flex h-10 items-center justify-center gap-2 rounded-full bg-black/60 px-4 ring-1 ring-white/10 backdrop-blur-md">
+          {pickup ? <span className="relative flex h-2 w-2 flex-shrink-0"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-70" /><span className="relative h-2 w-2 rounded-full bg-emerald-400" /></span>
+            : <span className="h-3 w-3 flex-shrink-0 animate-spin rounded-full border-2 border-white/25 border-t-white" />}
+          <span className="truncate text-[12.5px] font-semibold text-white/90">{pickup ? (pickup.text || pickup.main) : here.status === 'error' ? 'Location unavailable — type your pickup' : 'Finding your location…'}</span>
         </div>
+      </div>
+
+      {/* Sheet */}
+      <div className={cn('plan-body relative z-10 flex-shrink-0 rounded-t-[28px] bg-[#0E0E10] px-4 transition-[margin] duration-500', showMap ? '-mt-7 pt-2.5' : 'pt-[max(10px,env(safe-area-inset-top))]')}>
+        {showMap ? <div className="mx-auto mb-2 h-1.5 w-11 rounded-full bg-white/20" /> : (
+          <div className="relative flex h-12 items-center justify-center">
+            <button type="button" onClick={onClose} aria-label="Back" className="absolute left-0 grid h-10 w-10 place-items-center rounded-full active:bg-white/10"><Icon name="arrow_back" className="!text-[22px]" /></button>
+            <div className="text-[17px] font-bold tracking-tight">{saving ? `Set your ${saving === 'home' ? 'Home' : 'Work'} address` : 'Plan your journey'}</div>
+          </div>
+        )}
 
         {/* When / type chips */}
         {!saving && (
@@ -174,7 +200,7 @@ export function PlanJourney({ here, initialType, onDone, onClose }) {
             const active = field === f && !saving;
             const has = f === 'pickup' ? pickup : dest;
             return (
-              <div key={f} className={cn('relative flex h-[50px] items-center gap-3 rounded-2xl px-3 transition', active ? 'bg-white/[0.07] ring-1 ring-[#FF710F]/70' : '')}>
+              <div key={f} className={cn('relative flex h-[50px] items-center gap-3 rounded-2xl px-3 transition', active ? 'plan-glow bg-white/[0.07] ring-1 ring-[#FF710F]/70' : '')}>
                 <span className="relative z-10 grid h-[22px] w-[22px] flex-shrink-0 place-items-center">
                   {f === 'pickup'
                     ? <span className="h-3 w-3 rounded-full border-[3px] border-emerald-400 bg-[#0E0E10]" />
@@ -226,9 +252,19 @@ export function PlanJourney({ here, initialType, onDone, onClose }) {
               <Row it={{ ...here.place, main: 'Current location', secondary: here.place.text }} onPick={() => { setPickup({ ...here.place, gps: true }); if (dest) finish({ ...here.place, gps: true }, dest); else focus('destination'); }} icon="my_location" />
             )}
             {past.length > 0 && <li className="px-5 pb-1 pt-3 text-[11px] font-bold uppercase tracking-[0.12em] text-white/35">Recent</li>}
-            {past.map((it, i) => <Row key={`r-${it.text}`} it={it} onPick={(x) => choose(x)} icon="history" delay={i * 28} />)}
-            <li className="px-5 pb-1 pt-3 text-[11px] font-bold uppercase tracking-[0.12em] text-white/35">Airports</li>
-            {QUICK.map((it, i) => <Row key={it.id} it={it} onPick={(x) => choose(x)} delay={(past.length + i) * 28} />)}
+            {past.map((it, i) => <Row key={`r-${it.text}`} it={it} onPick={(x) => choose(x)} icon="history" dist={away(it)} delay={i * 28} />)}
+            <li className="px-5 pb-2 pt-4 text-[11px] font-bold uppercase tracking-[0.12em] text-white/35">Airport transfers</li>
+            <li className="grid grid-cols-2 gap-2.5 px-4">
+              {QUICK.map((it, i) => (
+                <button key={it.id} type="button" onClick={() => choose(it)} style={{ animationDelay: `${(past.length + i) * 40}ms` }}
+                  className="plan-card group relative overflow-hidden rounded-2xl bg-gradient-to-br from-white/[0.09] to-white/[0.02] p-3.5 text-left ring-1 ring-white/10 active:scale-[0.97]">
+                  <span className="pointer-events-none absolute -right-5 -top-5 h-20 w-20 rounded-full bg-[#FF710F]/20 blur-2xl transition-opacity group-active:opacity-100" />
+                  <span className="relative grid h-9 w-9 place-items-center rounded-xl bg-[#FF710F]/15 text-[#FF8A3D]"><Icon name="flight_takeoff" className="!text-[19px]" /></span>
+                  <span className="relative mt-2.5 block text-[14px] font-bold leading-tight">{it.main.replace(/ Airport.*$/, '')}</span>
+                  <span className="relative mt-0.5 flex items-center justify-between text-[11.5px] text-white/45"><span>{(it.main.match(/\(([A-Z]{3})\)/) || [])[1] || 'Airport'}</span>{away(it) && <span>{away(it)}</span>}</span>
+                </button>
+              ))}
+            </li>
           </>
         )}
         {typing && items.length > 0 && <li className="px-5 pt-2 text-right text-[10px] text-white/30">Powered by Google</li>}
