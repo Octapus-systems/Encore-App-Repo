@@ -255,7 +255,7 @@ export function PlanJourney({ here, initialType, onDone, onClose }) {
       </div>
 
       {/* Results */}
-      <ul className="min-h-0 flex-1 overflow-y-auto overscroll-contain border-t border-white/[0.06] pb-6 pt-1" onScroll={() => document.activeElement?.blur?.()}>
+      <ul className="no-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-contain border-t border-white/[0.06] pb-6 pt-1" onScroll={() => document.activeElement?.blur?.()}>
         {typing ? (
           items.length ? items.map((it, i) => <Row key={it.id} it={it} q={query} onPick={(x) => choose(x)} dist={miles(it.distance_m)} delay={i * 28} />)
             : !loading && (
