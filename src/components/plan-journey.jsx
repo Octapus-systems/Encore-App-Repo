@@ -3,6 +3,7 @@
 // keyboard, with distance from the pickup, saved places, recents and a drag-the-pin map option.
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { api } from '@/lib/api';
 import { haptic } from '@/lib/fx';
 import { cn } from '@/lib/utils';
 import { Icon } from '@/components/app-ui';
@@ -65,7 +66,7 @@ function Row({ it, q, onPick, icon, dist, delay }) {
 export function PlanJourney({ here, initialType, onDone, onClose }) {
   const [pickup, setPickup] = useState(here.place ? { ...here.place, gps: true } : null);
   const [dest, setDest] = useState(null);
-  const [field, setField] = useState('destination'); // which row is being typed into
+  const [field, setField] = useState(here.place ? 'destination' : 'pickup'); // which row is being typed into
   const [q, setQ] = useState({ pickup: '', destination: '' });
   const [type, setType] = useState(initialType && initialType !== 'all' ? initialType : 'point_to_point');
   const [when, setWhen] = useState('');
@@ -85,10 +86,12 @@ export function PlanJourney({ here, initialType, onDone, onClose }) {
     return pickup?.lat != null && at ? miles(crow(pickup, at)) : null;
   };
   // Map centres on the pickup pin, or the phone's GPS position when the pickup was typed.
-  const mapAt = pickup?.lat != null ? pickup : here.place?.lat != null ? here.place : null;
+  const mapAt = pickup?.lat != null ? pickup : dest?.lat != null ? dest : here.place?.lat != null ? here.place : null;
   const keyboard = vh < window.innerHeight * 0.8;
   const showMap = !saving && !keyboard && !query;
 
+  // No GPS → ask for the pickup first.
+  useEffect(() => { if (here.status === 'error' && !pickup && !q.pickup && !q.destination) setField('pickup'); }, [here.status]); // eslint-disable-line react-hooks/exhaustive-deps
   // The GPS answer may arrive after the sheet opened.
   useEffect(() => { if (here.place && !pickup) setPickup({ ...here.place, gps: true }); }, [here.place, pickup]);
   useEffect(() => {
@@ -116,8 +119,16 @@ export function PlanJourney({ here, initialType, onDone, onClose }) {
       setSaving(null); setQ((s) => ({ ...s, [f]: '' }));
       return;
     }
-    remember(place);
     setQ((s) => ({ ...s, [f]: '' }));
+    // Suggestions carry no coordinates — fetch them so the map can pin the place.
+    if (place.lat == null && place.text) {
+      api.get(`/places/geocode?q=${encodeURIComponent(place.text)}`).then((c) => {
+        if (!c) return;
+        const at = { ...place, lat: c.lat, lng: c.lng };
+        remember(at);
+        (f === 'pickup' ? setPickup : setDest)((cur) => (cur?.text === place.text ? at : cur));
+      }).catch(() => {});
+    } else remember(place);
     if (f === 'pickup') {
       setPickup(place);
       if (dest) finish(place, dest); else focus('destination');
