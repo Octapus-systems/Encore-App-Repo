@@ -13,7 +13,6 @@ import { cn } from '@/lib/utils';
 import { Icon } from '@/components/app-ui';
 
 const STYLE = import.meta.env.VITE_MAP_STYLE || 'https://tiles.openfreemap.org/styles/positron';
-const DARK = import.meta.env.VITE_MAP_STYLE_DARK || 'https://tiles.openfreemap.org/styles/dark';
 const UK = { lat: 52.806, lng: -2.117 }; // Stafford — Encore's home patch, used until GPS answers
 
 function baseMap(el, center, zoom, style = STYLE) {
@@ -331,7 +330,7 @@ export function MiniMap({ center, className }) {
   const map = useRef(null);
   const pin = useRef(null);
   useEffect(() => {
-    const m = baseMap(box.current, center || UK, center ? 15.5 : 6, DARK);
+    const m = baseMap(box.current, center || UK, center ? 16 : 6);
     m.scrollZoom.disable(); m.dragPan.disable(); m.touchZoomRotate.disable(); m.doubleClickZoom.disable(); m.keyboard.disable();
     map.current = m;
     return () => { map.current = null; pin.current = null; m.remove(); };
@@ -339,9 +338,9 @@ export function MiniMap({ center, className }) {
   }, []);
   useEffect(() => {
     const m = map.current; if (!m || !center) return;
-    if (!pin.current) pin.current = new maplibregl.Marker({ element: dot('is-me') }).setLngLat([center.lng, center.lat]).addTo(m);
+    if (!pin.current) pin.current = new maplibregl.Marker({ element: el('<div><div class="mini-pin"><div class="map-pin-head"><span></span></div><div class="map-pin-stem"></div></div></div>'), anchor: 'bottom' }).setLngLat([center.lng, center.lat]).addTo(m);
     else pin.current.setLngLat([center.lng, center.lat]);
-    m.flyTo({ center: [center.lng, center.lat], zoom: 15.5, duration: 1400, essential: true });
+    m.flyTo({ center: [center.lng, center.lat], zoom: 16, duration: 1400, essential: true, offset: [0, 20] });
   }, [center?.lat, center?.lng]); // eslint-disable-line react-hooks/exhaustive-deps
   return <div className={cn('relative overflow-hidden', className)}><div ref={box} className="h-full w-full" /></div>;
 }

@@ -84,6 +84,8 @@ export function PlanJourney({ here, initialType, onDone, onClose }) {
     const at = it.lat != null ? it : AIRPORT_AT[it.id] ? { lat: AIRPORT_AT[it.id][0], lng: AIRPORT_AT[it.id][1] } : null;
     return pickup?.lat != null && at ? miles(crow(pickup, at)) : null;
   };
+  // Map centres on the pickup pin, or the phone's GPS position when the pickup was typed.
+  const mapAt = pickup?.lat != null ? pickup : here.place?.lat != null ? here.place : null;
   const keyboard = vh < window.innerHeight * 0.8;
   const showMap = !saving && !keyboard && !query;
 
@@ -139,10 +141,15 @@ export function PlanJourney({ here, initialType, onDone, onClose }) {
     <div className="plan-sheet fixed inset-x-0 top-0 z-[85] mx-auto flex max-w-[480px] flex-col overflow-hidden bg-[#0E0E10] text-white" style={{ height: vh }}>
       {/* Live map of where the customer is — folds away while typing so results get the room. */}
       <div className="relative flex-shrink-0 overflow-hidden transition-[height] duration-500 ease-[cubic-bezier(.2,.85,.25,1)]" style={{ height: showMap ? Math.round(vh * 0.32) : 0 }}>
-        <MiniMap center={pickup?.lat != null ? pickup : null} className="absolute inset-0" />
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-[#0E0E10]" />
-        <button type="button" onClick={onClose} aria-label="Back" className="absolute left-4 top-[max(12px,env(safe-area-inset-top))] grid h-11 w-11 place-items-center rounded-full bg-black/55 ring-1 ring-white/15 backdrop-blur-md active:scale-95"><Icon name="arrow_back" className="!text-[22px]" /></button>
-        <div className="plan-pill absolute inset-x-16 top-[max(14px,env(safe-area-inset-top))] flex h-10 items-center justify-center gap-2 rounded-full bg-black/60 px-4 ring-1 ring-white/10 backdrop-blur-md">
+        <MiniMap center={mapAt} className="absolute inset-0" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-b from-transparent to-[#0E0E10]" />
+        {/* Tap the map to open the full-screen pin picker for the pickup. */}
+        <button type="button" aria-label="Adjust pickup on the map" onClick={() => { haptic('light'); setMap('pickup'); }} className="absolute inset-0 z-[1]" />
+        <span className="pointer-events-none absolute bottom-10 right-4 z-[2] flex items-center gap-1.5 rounded-full bg-[#141416]/85 px-3 py-1.5 text-[12px] font-semibold text-white shadow-lg ring-1 ring-white/10">
+          <Icon name="open_in_full" className="!text-[15px] text-[#FF8A3D]" />{mapAt ? 'Tap to adjust pin' : 'Tap to set on map'}
+        </span>
+        <button type="button" onClick={onClose} aria-label="Back" className="absolute left-4 z-[2] top-[max(12px,env(safe-area-inset-top))] grid h-11 w-11 place-items-center rounded-full bg-black/55 ring-1 ring-white/15 backdrop-blur-md active:scale-95"><Icon name="arrow_back" className="!text-[22px]" /></button>
+        <div className="plan-pill pointer-events-none absolute z-[2] inset-x-16 top-[max(14px,env(safe-area-inset-top))] flex h-10 items-center justify-center gap-2 rounded-full bg-black/60 px-4 ring-1 ring-white/10 backdrop-blur-md">
           {pickup ? <span className="relative flex h-2 w-2 flex-shrink-0"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-70" /><span className="relative h-2 w-2 rounded-full bg-emerald-400" /></span>
             : <span className="h-3 w-3 flex-shrink-0 animate-spin rounded-full border-2 border-white/25 border-t-white" />}
           <span className="truncate text-[12.5px] font-semibold text-white/90">{pickup ? (pickup.text || pickup.main) : here.status === 'error' ? 'Location unavailable — type your pickup' : 'Finding your location…'}</span>
