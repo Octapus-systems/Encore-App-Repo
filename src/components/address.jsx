@@ -9,15 +9,15 @@ import { MapPicker, preloadMaps } from '@/components/lazy-maps';
 
 const newSession = () => (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2));
 const RECENT_KEY = 'encore.recentPlaces';
-const QUICK = [
+export const QUICK = [
   { id: 'q-bhx', text: 'Birmingham Airport (BHX), Birmingham, UK', main: 'Birmingham Airport (BHX)', secondary: 'Birmingham, UK', airport: true },
   { id: 'q-man', text: 'Manchester Airport (MAN), Manchester, UK', main: 'Manchester Airport (MAN)', secondary: 'Manchester, UK', airport: true },
   { id: 'q-lhr', text: 'Heathrow Airport (LHR), Longford, Hounslow, UK', main: 'Heathrow Airport (LHR)', secondary: 'London, UK', airport: true },
   { id: 'q-eme', text: 'East Midlands Airport (EMA), Castle Donington, Derby, UK', main: 'East Midlands Airport (EMA)', secondary: 'Derby, UK', airport: true },
 ];
 
-const recent = () => { try { return JSON.parse(localStorage.getItem(RECENT_KEY) || '[]'); } catch { return []; } };
-const remember = (it) => {
+export const recent = () => { try { return JSON.parse(localStorage.getItem(RECENT_KEY) || '[]'); } catch { return []; } };
+export const remember = (it) => {
   try {
     const list = [it, ...recent().filter((r) => r.text !== it.text)].slice(0, 5);
     localStorage.setItem(RECENT_KEY, JSON.stringify(list.map(({ id, text, main, secondary, airport, lat, lng }) => ({ id, text, main, secondary, airport, lat, lng }))));
@@ -27,7 +27,7 @@ const remember = (it) => {
 const isPhone = () => typeof window !== 'undefined' && window.matchMedia('(max-width: 767px), (pointer: coarse)').matches;
 
 /** Debounced UK place suggestions (Google Places via our server — the key never reaches the app). */
-function useSuggestions(query, enabled) {
+export function useSuggestions(query, enabled, origin = null) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const session = useMemo(newSession, []);
@@ -37,13 +37,14 @@ function useSuggestions(query, enabled) {
     let cancelled = false;
     setLoading(true);
     const t = setTimeout(() => {
-      api.get(`/places?q=${encodeURIComponent(q)}&session=${session}`)
+      const near = origin?.lat != null ? `&lat=${origin.lat.toFixed(4)}&lng=${origin.lng.toFixed(4)}` : '';
+      api.get(`/places?q=${encodeURIComponent(q)}&session=${session}${near}`)
         .then((r) => { if (!cancelled) setItems(r || []); })
         .catch(() => { if (!cancelled) setItems([]); })
         .finally(() => { if (!cancelled) setLoading(false); });
     }, 220);
     return () => { cancelled = true; clearTimeout(t); };
-  }, [query, enabled, session]);
+  }, [query, enabled, session, origin?.lat, origin?.lng]);
   return { items, loading };
 }
 

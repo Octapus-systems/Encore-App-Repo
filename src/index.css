@@ -627,3 +627,6 @@ a.rounded-2xl:active, a.rounded-3xl:active { transform: scale(.985); }
 @keyframes search-in { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
 .place-row { animation: encore-rise .3s cubic-bezier(.2,.85,.25,1) both; }
 @media (prefers-reduced-motion: reduce) { .search-sheet, .place-row { animation: none; } }
+.plan-sheet { animation: search-in .3s cubic-bezier(.2,.85,.25,1) both; }
+.plan-menu { animation: fx-pop .22s cubic-bezier(.2,.9,.3,1.2) both; transform-origin: top left; }
+@media (prefers-reduced-motion: reduce) { .plan-sheet, .plan-menu { animation: none; } }
