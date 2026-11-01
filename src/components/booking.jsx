@@ -277,6 +277,9 @@ export function RequestForm({ initial, onSubmit, submitting, fields = {}, submit
   const addr = (k) => ({
     value: f[k] ?? '', invalid: !!err(k),
     onChange: (v) => { set(k, v); if (PIN[k]) setF((p) => ({ ...p, [PIN[k][0]]: null, [PIN[k][1]]: null })); },
+    // "Set location on map" inside the search sheet returns the exact pin.
+    onSelect: (it) => { if (PIN[k] && it.lat != null) setF((p) => ({ ...p, [PIN[k][0]]: it.lat, [PIN[k][1]]: it.lng })); },
+    sheetTitle: k === 'pickup' ? 'Pickup' : k === 'destination' ? 'Destination' : undefined,
   });
   const isReturn = f.journey_type === 'return' || f.is_return;
   const [picking, setPicking] = useState(null); // 'pickup' | 'destination' while the map is open
