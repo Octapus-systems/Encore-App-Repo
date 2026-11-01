@@ -313,8 +313,18 @@ export function AppHome() {
   }, []);
   const [pill, setPill] = useState({ x: 0, w: 0 });
   useLayoutEffect(() => {
-    const btn = chipRow.current?.querySelector(`[data-chip="${chip}"]`);
-    if (btn) setPill({ x: btn.offsetLeft, w: btn.offsetWidth });
+    const row = chipRow.current;
+    const measure = () => {
+      const btn = row?.querySelector(`[data-chip="${chip}"]`);
+      if (btn) setPill((p) => (p.x === btn.offsetLeft && p.w === btn.offsetWidth ? p : { x: btn.offsetLeft, w: btn.offsetWidth }));
+    };
+    measure();
+    // Chips change size once the icon font arrives (icons first render as wide text) — re-measure
+    // so the orange pill never spills over the next chip.
+    const ro = new ResizeObserver(measure);
+    row?.querySelectorAll('[data-chip]').forEach((b) => ro.observe(b));
+    document.fonts?.ready.then(measure);
+    return () => ro.disconnect();
   }, [chip]);
   const [stuck, setStuck] = useState(false);
   useEffect(() => {
