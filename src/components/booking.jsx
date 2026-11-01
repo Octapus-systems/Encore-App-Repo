@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Armchair, ArrowDown, ArrowLeft, ArrowRight, Baby, Check, Luggage, Briefcase, Clock, MapPin, Minus, Plane, Plus, Repeat, Send, Users, Accessibility, Car, LocateFixed } from 'lucide-react';
-import { MapPicker, preloadMaps } from '@/components/lazy-maps';
+import { MapPicker, RouteMap, preloadMaps } from '@/components/lazy-maps';
 import { api } from '@/lib/api';
 import { haptic } from '@/lib/fx';
 import { VEHICLES } from '@/lib/showcase';
@@ -75,55 +75,31 @@ function CountUp({ to, decimals = 0, ms = 900 }) {
   return <>{v.toFixed(decimals)}</>;
 }
 
-/** Mini route card: a stylised route line draws itself, then distance and drive time count up. */
-function RoutePreview({ from, to, onRoute }) {
+/** Route card: real map with both pins (when known), distance and drive time. */
+function RoutePreview({ from, to, fromAt, toAt, onRoute }) {
   // Shows only once a real route is found, and keeps the last good route on screen while
   // the addresses are being edited — so the card never flashes in and disappears.
   const [route, setRoute] = useState(null);
-  const [shownFor, setShownFor] = useState(null);
-  const [loading, setLoading] = useState(false);
   useEffect(() => {
-    if (!from || !to || from.length < 5 || to.length < 5) { setRoute(null); setShownFor(null); return undefined; }
+    if (!from || !to || from.length < 5 || to.length < 5) { setRoute(null); return undefined; }
     let cancelled = false;
-    setLoading(true);
     const t = setTimeout(() => {
       api.get(`/places/route?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`)
-        .then((r) => { if (!cancelled && r) { setRoute(r); setShownFor(`${from}|${to}`); onRoute?.(r); } })
-        .catch(() => {})
-        .finally(() => { if (!cancelled) setLoading(false); });
+        .then((r) => { if (!cancelled && r) { setRoute(r); onRoute?.(r); } })
+        .catch(() => {});
     }, 700);
     return () => { cancelled = true; clearTimeout(t); };
   }, [from, to]); // eslint-disable-line react-hooks/exhaustive-deps
   if (!route) return null;
-  const mi = route ? route.distance_m / 1609.344 : 0;
-  const mins = route ? Math.round(route.duration_s / 60) : 0;
+  const mi = route.distance_m / 1609.344;
+  const mins = Math.round(route.duration_s / 60);
   return (
-    <div className="route-card relative mt-4 overflow-hidden rounded-2xl bg-[#0f0f11] p-4 text-white">
-      <svg key={shownFor} viewBox="0 0 320 110" className="h-[110px] w-full" aria-hidden>
-        <defs>
-          <linearGradient id="rp-line" x1="0" x2="1"><stop offset="0" stopColor="#34d399" /><stop offset="1" stopColor="#FF710F" /></linearGradient>
-          <pattern id="rp-grid" width="16" height="16" patternUnits="userSpaceOnUse"><path d="M16 0H0V16" fill="none" stroke="rgba(255,255,255,.06)" strokeWidth="1" /></pattern>
-        </defs>
-        <rect width="320" height="110" fill="url(#rp-grid)" />
-        <path d="M24 82 C 80 82, 90 30, 150 44 S 230 92, 296 28" fill="none" stroke="rgba(255,255,255,.12)" strokeWidth="6" strokeLinecap="round" />
-        {route && <path className="route-draw" d="M24 82 C 80 82, 90 30, 150 44 S 230 92, 296 28" fill="none" stroke="url(#rp-line)" strokeWidth="4" strokeLinecap="round" pathLength="1" />}
-        <circle cx="24" cy="82" r="7" fill="#34d399" /><circle cx="24" cy="82" r="12" fill="#34d399" opacity=".25" className="route-ping" />
-        <circle cx="296" cy="28" r="7" fill="#FF710F" className={route ? 'route-pin' : ''} opacity={route ? 1 : 0.4} />
-        {route && <circle r="5" fill="#fff" className="route-car"><animateMotion dur="1.4s" fill="freeze" keyPoints="0;1" keyTimes="0;1" calcMode="spline" keySplines=".4 0 .2 1" path="M24 82 C 80 82, 90 30, 150 44 S 230 92, 296 28" /></circle>}
-      </svg>
-      <div className="mt-1 flex items-end justify-between gap-3">
-        <div className="min-w-0 text-xs text-white/55">
-          <div className="truncate"><span className="mr-1 inline-block h-2 w-2 rounded-full bg-emerald-400" />{shortPlace(from)}</div>
-          <div className="truncate"><span className="mr-1 inline-block h-2 w-2 rounded-full bg-[#FF710F]" />{shortPlace(to)}</div>
-        </div>
-        {!loading || shownFor === `${from}|${to}` ? (
-          <div key={shownFor} className="flex-shrink-0 text-right">
-            <div className="text-2xl font-extrabold tabular-nums leading-none"><CountUp to={mi} decimals={mi < 10 ? 1 : 0} /> <span className="text-sm font-semibold text-white/60">mi</span></div>
-            <div className="mt-1 text-sm font-semibold tabular-nums text-[#FFB692]">≈ <CountUp to={mins} /> min drive</div>
-          </div>
-        ) : (
-          <div className="flex items-center gap-2 text-sm text-white/60"><span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/20 border-t-[#FF710F]" />Finding route…</div>
-        )}
+    <div className="mt-4 overflow-hidden rounded-2xl border bg-white shadow-sm">
+      {(fromAt || toAt) && <RouteMap from={fromAt} to={toAt} className="h-40 w-full" />}
+      <div className="flex items-center gap-3 px-4 py-3 text-sm">
+        <span className="flex items-center gap-1.5 font-bold text-ink"><Car className="h-4 w-4 text-primary" />{mi.toFixed(mi < 10 ? 1 : 0)} mi</span>
+        <span className="h-1 w-1 rounded-full bg-neutral-300" />
+        <span className="flex items-center gap-1.5 font-semibold text-muted-foreground"><Clock className="h-4 w-4 text-primary" />~{mins >= 60 ? `${Math.floor(mins / 60)} h ${mins % 60} min` : `${mins} min`} drive</span>
       </div>
     </div>
   );
@@ -401,7 +377,8 @@ export function RequestForm({ initial, onSubmit, submitting, fields = {}, submit
         <AddressInput placeholder={f.journey_type === 'hourly' ? 'As directed' : 'Search destination address'} {...addr('destination')} />
         {mapLink('destination', 'Choose on map')}
       </Field>
-      <RoutePreview from={f.pickup} to={f.destination} onRoute={setRouteInfo} />
+      <RoutePreview from={f.pickup} to={f.destination} onRoute={setRouteInfo}
+        fromAt={f.pickup_lat != null ? { lat: f.pickup_lat, lng: f.pickup_lng } : null} toAt={f.dest_lat != null ? { lat: f.dest_lat, lng: f.dest_lng } : null} />
       {picking && (
         <MapPicker
           title={picking === 'pickup' ? 'Set pickup point' : 'Set destination'}

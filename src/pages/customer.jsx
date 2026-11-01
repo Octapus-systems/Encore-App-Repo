@@ -18,6 +18,8 @@ import {
 import { BookingProgress, LegRoute, LegTimes, MessageThread, RequestForm, emptyRequest } from '@/components/booking';
 import { Button } from '@/components/ui/button';
 import { QuickRequest } from '@/components/quick-request';
+import { PlanJourney } from '@/components/plan-journey';
+import { useCurrentLocation } from '@/lib/location';
 
 const useBookings = (view) => useQuery({ queryKey: ['bookings', view], queryFn: () => api.get(`/bookings?view=${view}&sort=${view === 'past' ? 'pickup_desc' : 'pickup'}`), refetchInterval: 10000 });
 
@@ -106,9 +108,11 @@ export function CustomerHome() {
 export function NewRequest() {
   const { user } = useAuth();
   const nav = useNavigate();
-  const [params] = useSearchParams();
+  const [params, setParams] = useSearchParams();
   const type = params.get('type');
-  const pins = useLocation().state;
+  const loc = useLocation();
+  const pins = loc.state;
+  const here = useCurrentLocation({ auto: true });
   const [full, setFull] = useState(false);
   // Planner already chose both ends → one-screen confirm instead of the step-by-step form.
   const quick = !full && !!params.get('pickup') && !!params.get('destination');
@@ -128,6 +132,22 @@ export function NewRequest() {
     invalidate: ['bookings', 'notifications'],
     onSuccess: (b) => nav(`/app/bookings/${b.id}/sent`, { replace: true }),
   });
+  // One way to book: any entry (dock +, fleet Book, Home) starts in the planner; once pickup and
+  // destination are chosen it becomes the one-screen confirm. The full form is an opt-in fallback.
+  if (!quick && !full) {
+    return (
+      <PlanJourney here={here} initialType={type || 'point_to_point'} onClose={() => nav(-1)}
+        onDone={({ pickup, destination, type: t, when }) => {
+          const p = new URLSearchParams(params);
+          p.set('type', t); p.set('pickup', pickup.text); p.set('destination', destination.text);
+          if (when) p.set('when', when);
+          setParams(p, { replace: true, state: {
+            pickupPin: pickup.lat != null ? { lat: pickup.lat, lng: pickup.lng } : null,
+            destPin: destination.lat != null ? { lat: destination.lat, lng: destination.lng } : null,
+          } });
+        }} />
+    );
+  }
   return (
     <div className="mx-auto max-w-2xl">
       {!quick && <PageHeader title="" subtitle={user.role === 'corporate' ? `Booking for ${user.organisation?.name}. Add your traveller as the lead passenger.` : 'Tell us everything we need to arrange your journey perfectly.'} />}
