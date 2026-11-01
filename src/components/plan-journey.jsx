@@ -11,7 +11,7 @@ import { QUICK, recent, remember, useSuggestions } from '@/components/address';
 import { MapPicker, MiniMap, preloadMaps } from '@/components/lazy-maps';
 
 const SAVED_KEY = 'encore.savedPlaces';
-const TYPES = [['point_to_point', 'One way', 'east'], ['return', 'Return', 'sync_alt'], ['airport', 'Airport', 'flight'], ['hourly', 'By the hour', 'schedule']];
+const TYPES = [['point_to_point', 'One way', 'east'], ['return', 'Return', 'sync_alt'], ['airport', 'Airport', 'flight'], ['hourly', 'By the hour', 'schedule'], ['corporate', 'Corporate', 'business_center'], ['event', 'Event', 'celebration']];
 const localInput = (d) => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
 function whenOptions() {
   const now = new Date();
