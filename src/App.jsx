@@ -1,3 +1,4 @@
+import { Suspense, lazy, useEffect } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { Toaster } from 'sonner';
@@ -8,13 +9,44 @@ import { PageLoader } from '@/components/common';
 import { ConnectionWatcher } from '@/components/connection';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { Invite, Login, Register, StaffNotice } from '@/pages/auth';
-import { NewRequest, Account, Notifications, CustomerInvoices } from '@/pages/customer';
-import InvoiceView from '@/pages/InvoiceView';
 import { AppHome, CarDetails, FleetList, Onboarding } from '@/pages/app-screens';
-import { JourneyDetails, RequestSent } from '@/pages/app-journey';
-import { AppProfile, AppUpdates, MyBookings } from '@/pages/app-pages';
-import { DriverJobs, DriverJob } from '@/pages/driver';
-import { GuestBook } from '@/pages/guest';
+
+// Screens beyond Home load as separate chunks, then are fetched in the background once the
+// app is idle — so the first screen paints sooner and later taps open instantly.
+const loaders = {
+  customer: () => import('@/pages/customer'),
+  journey: () => import('@/pages/app-journey'),
+  pages: () => import('@/pages/app-pages'),
+  invoice: () => import('@/pages/InvoiceView'),
+  driver: () => import('@/pages/driver'),
+  guest: () => import('@/pages/guest'),
+};
+const page = (mod, name = 'default') => lazy(() => loaders[mod]().then((m) => ({ default: m[name] })));
+const NewRequest = page('customer', 'NewRequest');
+const Account = page('customer', 'Account');
+const Notifications = page('customer', 'Notifications');
+const CustomerInvoices = page('customer', 'CustomerInvoices');
+const InvoiceView = page('invoice');
+const JourneyDetails = page('journey', 'JourneyDetails');
+const RequestSent = page('journey', 'RequestSent');
+const AppProfile = page('pages', 'AppProfile');
+const AppUpdates = page('pages', 'AppUpdates');
+const MyBookings = page('pages', 'MyBookings');
+const DriverJobs = page('driver', 'DriverJobs');
+const DriverJob = page('driver', 'DriverJob');
+const GuestBook = page('guest', 'GuestBook');
+
+function Prefetch() {
+  const { user } = useAuth();
+  useEffect(() => {
+    if (!user) return undefined;
+    const mods = user.role === 'driver' ? ['driver', 'customer'] : ['journey', 'pages', 'customer', 'invoice'];
+    const idle = window.requestIdleCallback || ((fn) => setTimeout(fn, 1200));
+    const id = idle(() => mods.forEach((m) => loaders[m]().catch(() => {})));
+    return () => (window.cancelIdleCallback || clearTimeout)(id);
+  }, [user]);
+  return null;
+}
 
 function Home() {
   const { user, loading } = useAuth();
@@ -28,6 +60,8 @@ export default function App() {
       <AuthProvider>
         <BrowserRouter>
           <ErrorBoundary>
+          <Prefetch />
+          <Suspense fallback={<PageLoader />}>
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/welcome" element={<Onboarding />} />
@@ -64,6 +98,7 @@ export default function App() {
 
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
+          </Suspense>
           </ErrorBoundary>
         </BrowserRouter>
         <ConnectionWatcher />

@@ -13,6 +13,7 @@ import { VEHICLES } from '@/lib/showcase';
 import { celebrate } from '@/lib/fx';
 import { addToDeviceCalendar } from '@/lib/native';
 import { SplitText } from '@/components/motion-text';
+import { LiveTrackMap } from '@/components/lazy-maps';
 
 const TERMINAL = ['closed', 'rejected', 'cancelled_customer', 'cancelled_management', 'expired', 'quote_declined'];
 const STEPS = [
@@ -70,13 +71,22 @@ export function JourneyDetails() {
   const stepIdx = STEPS.findIndex(([, m]) => m.includes(b.status));
   const banner = BANNER[b.status] || ['info', STATUS[b.status]?.label || b.status, b.cancel_reason || ''];
   const ended = TERMINAL.includes(b.status);
+  const LIVE = ['on_the_way', 'arrived', 'started'];
+  const trackLeg = LIVE.includes(leg.status) ? leg : b.legs.find((l) => LIVE.includes(l.status));
+  const tracking = !ended && !!trackLeg;
 
   return (
     <div className="-mx-margin flex flex-col pb-6">
-      {/* Hero: route image + live status (no GPS tracking in Phase 1) */}
-      <div className="relative h-56 w-full overflow-hidden bg-surface-container-high">
-        <Img k="map" alt="Route" className="h-full w-full object-cover object-center" placeholderClassName="h-full w-full" />
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-surface" />
+      {/* Hero: live chauffeur map while on the way / started, otherwise a route image. */}
+      <div className={cn('relative w-full overflow-hidden bg-surface-container-high transition-[height] duration-500', tracking ? 'h-[52vh] min-h-[320px]' : 'h-56')}>
+        {tracking ? (
+          <LiveTrackMap bookingId={b.id} legId={trackLeg.id} className="absolute inset-0" />
+        ) : (
+          <>
+            <Img k="map" alt="Route" className="h-full w-full object-cover object-center" placeholderClassName="h-full w-full" />
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-surface" />
+          </>
+        )}
         <div className="absolute left-4 right-4 top-3 z-10">
           <div className="flex items-center gap-space-sm rounded-full bg-surface-container-lowest/95 px-4 py-2.5 shadow-[0_8px_20px_var(--encore-shadow-0-08)] backdrop-blur-md">
             <div className={cn('flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full', ended ? 'bg-error-container text-error' : 'bg-primary-container/15 text-primary')}><Icon name={ended ? 'block' : banner[0]} className="!text-[20px]" /></div>
@@ -87,7 +97,7 @@ export function JourneyDetails() {
             {!ended && <span className="h-2 w-2 flex-shrink-0 animate-pulse rounded-full bg-primary-container" />}
           </div>
         </div>
-        <div className="absolute bottom-4 right-4 z-10">
+        <div className={cn('absolute bottom-4 right-4 z-10', tracking && 'hidden')}>
           <div className="flex items-center gap-2 rounded-full bg-inverse-surface/90 px-3 py-1.5 text-inverse-on-surface shadow-[0_4px_14px_var(--encore-shadow-0-2)]">
             <Icon name="confirmation_number" className="!text-[16px] text-primary-fixed-dim" />
             <span className="text-label-sm font-label-sm tracking-wide">{b.ref}</span>

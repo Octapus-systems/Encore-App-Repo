@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Armchair, ArrowDown, ArrowLeft, ArrowRight, Baby, Check, Luggage, Briefcase, Clock, MapPin, Minus, Plane, Plus, Repeat, Send, Users, Accessibility, Car, LocateFixed } from 'lucide-react';
-import { toast } from 'sonner';
-import { locate } from '@/lib/location';
+import { MapPicker, preloadMaps } from '@/components/lazy-maps';
 import { api } from '@/lib/api';
 import { haptic } from '@/lib/fx';
 import { VEHICLES } from '@/lib/showcase';
@@ -39,6 +38,7 @@ function Section({ n, title, children }) {
 
 export const emptyRequest = (user) => ({
   journey_type: 'point_to_point', pickup: '', destination: '', stops: [], pickup_at: '', flight_number: '', duration_hours: 3,
+  pickup_lat: null, pickup_lng: null, dest_lat: null, dest_lng: null,
   is_return: false, return_pickup_at: '', return_pickup: '', return_destination: '',
   lead_passenger: user?.role === 'customer' ? user.name : '', contact_phone: user?.role === 'customer' ? user.phone || '' : '',
   passenger_count: 1, passenger_names: '', luggage_large: 0, luggage_small: 0, child_seats: 0,
@@ -272,13 +272,26 @@ export function RequestForm({ initial, onSubmit, submitting, fields = {}, submit
   const set = (k, v) => { setF((p) => ({ ...p, [k]: v })); setLocal((e) => (e[k] ? { ...e, [k]: undefined } : e)); };
   const err = (k) => local[k] || fields[k];
   const bind = (k) => ({ value: f[k] ?? '', onChange: (e) => set(k, e.target.value), invalid: !!err(k) });
-  const addr = (k) => ({ value: f[k] ?? '', onChange: (v) => set(k, v), invalid: !!err(k) });
+  // Typing a new address drops the old map pin for that field.
+  const PIN = { pickup: ['pickup_lat', 'pickup_lng'], destination: ['dest_lat', 'dest_lng'] };
+  const addr = (k) => ({
+    value: f[k] ?? '', invalid: !!err(k),
+    onChange: (v) => { set(k, v); if (PIN[k]) setF((p) => ({ ...p, [PIN[k][0]]: null, [PIN[k][1]]: null })); },
+  });
   const isReturn = f.journey_type === 'return' || f.is_return;
-  const [locating, setLocating] = useState(false);
-  const useMyLocation = () => {
-    setLocating(true);
-    locate().then((p) => set('pickup', p.text)).catch((e) => toast.error(e.message)).finally(() => setLocating(false));
+  const [picking, setPicking] = useState(null); // 'pickup' | 'destination' while the map is open
+  useEffect(() => { preloadMaps(); }, []);
+  const pinned = (k) => f[PIN[k][0]] != null;
+  const placePin = (k, p) => {
+    setF((prev) => ({ ...prev, [k]: p.text, [PIN[k][0]]: p.lat, [PIN[k][1]]: p.lng }));
+    setLocal((e) => (e[k] ? { ...e, [k]: undefined } : e));
+    setPicking(null);
   };
+  const mapLink = (k, label) => (
+    <button type="button" onClick={() => { haptic('light'); setPicking(k); }} className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-700">
+      {pinned(k) ? <><Check className="h-4 w-4" />Pinned on map · adjust</> : <><LocateFixed className="h-4 w-4" />{label}</>}
+    </button>
+  );
   const bf = s?.booking_fields || {};
   const on = (k) => bf[k] !== false; // fields management can switch off in Settings
   const notice = Number(s?.min_notice_hours || 0);
@@ -372,9 +385,7 @@ export function RequestForm({ initial, onSubmit, submitting, fields = {}, submit
       </div>
       <Field label="Pickup address" error={err('pickup')} required>
         <AddressInput placeholder="Search address, station or airport" {...addr('pickup')} />
-        <button type="button" disabled={locating} onClick={useMyLocation} className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-700 disabled:opacity-60">
-          {locating ? <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-emerald-200 border-t-emerald-600" /> : <LocateFixed className="h-4 w-4" />}Use my current location
-        </button>
+        {mapLink('pickup', 'Use my current location (map)')}
       </Field>
       {on('stops') && f.stops.map((stop, i) => (
         <div key={i} className="flex items-end gap-2">
@@ -385,8 +396,16 @@ export function RequestForm({ initial, onSubmit, submitting, fields = {}, submit
       {on('stops') && f.stops.length < 5 && <button type="button" onClick={() => set('stops', [...f.stops, ''])} className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary"><Plus className="h-4 w-4" />Add an extra pickup or stop</button>}
       <Field label={f.journey_type === 'hourly' ? 'Final destination (if known)' : 'Destination'} error={err('destination')} required={f.journey_type !== 'hourly'}>
         <AddressInput placeholder={f.journey_type === 'hourly' ? 'As directed' : 'Search destination address'} {...addr('destination')} />
+        {mapLink('destination', 'Choose on map')}
       </Field>
       <RoutePreview from={f.pickup} to={f.destination} onRoute={setRouteInfo} />
+      {picking && (
+        <MapPicker
+          title={picking === 'pickup' ? 'Set pickup point' : 'Set destination'}
+          confirmLabel={picking === 'pickup' ? 'Confirm pickup' : 'Confirm destination'}
+          initial={pinned(picking) ? { text: f[picking], lat: f[PIN[picking][0]], lng: f[PIN[picking][1]] } : null}
+          onConfirm={(p) => placePin(picking, p)} onClose={() => setPicking(null)} />
+      )}
     </div>,
 
     <div key="when" className="space-y-4">

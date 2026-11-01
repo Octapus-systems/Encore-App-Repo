@@ -31,7 +31,7 @@ export function Img({ k, src, alt = '', className, placeholderClassName, style, 
   }
   return (
     <img
-      src={sources[i]} alt={alt} loading={eager ? 'eager' : 'lazy'} decoding="async" fetchPriority={eager ? 'high' : 'auto'}
+      src={sources[i]} alt={alt} loading={eager ? 'eager' : 'lazy'} decoding="async" {...{ fetchpriority: eager ? 'high' : 'auto' }}
       onError={() => setI(i + 1)} className={className} style={style}
     />
   );

@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { Link, NavLink, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Bell, Car,
@@ -6,11 +7,12 @@ import { Bell, Car,
 import { api } from '@/lib/api';
 import { homeFor, useAuth, usePublicSettings } from '@/lib/auth';
 import { cn } from '@/lib/utils';
-import { Logo, PageLoader } from '@/components/common';
+import { Logo, PageLoader, SkeletonList } from '@/components/common';
 import { EncoreHeader, Icon } from '@/components/app-ui';
 import { useLiveUpdates } from '@/lib/live';
 import { HelpLauncher } from '@/components/help-center';
 import { FeatureGuide } from '@/components/feature-guide';
+import { useShareLiveLocation } from '@/lib/live-share';
 
 const customerLink = (n) => `/app/bookings/${n.booking_id}`;
 const driverLink = (n) => `/driver/jobs/${n.booking_id}`;
@@ -113,7 +115,7 @@ export function CustomerLayout() {
     <div className="min-h-screen bg-[#ECEDEF]">
       <div className="encore-app relative mx-auto min-h-screen w-full max-w-[480px] overflow-x-clip shadow-[0_0_60px_rgba(0,0,0,0.08)]">
         {!head.home && <EncoreHeader title={head.title} back={head.back} />}
-        <main className="px-margin pb-[calc(110px+env(safe-area-inset-bottom))] pt-space-sm"><div key={loc.pathname} className="page-enter"><Outlet /></div></main>
+        <main className="px-margin pb-[calc(110px+env(safe-area-inset-bottom))] pt-space-sm"><div key={loc.pathname} className="page-enter"><Suspense fallback={<SkeletonList />}><Outlet /></Suspense></div></main>
         <HelpLauncher />
         <FeatureGuide user={user} />
         <AppDock items={nav} />
@@ -128,6 +130,7 @@ export function DriverLayout() {
   const loc = useLocation();
   const { data: s } = usePublicSettings();
   const unread = useLiveUpdates(driverLink);
+  const live = useShareLiveLocation();
   return (
     <div className="min-h-screen bg-surface">
       <header className="sticky top-0 z-30 bg-ink safe-top">
@@ -141,8 +144,15 @@ export function DriverLayout() {
             )}
           </div>
         </div>
+        {live.active && (
+          <div className={cn('flex items-center justify-center gap-2 px-4 py-1.5 text-xs font-semibold', live.error ? 'bg-amber-500 text-black' : 'bg-primary text-white')}>
+            {live.error ? live.error : (
+              <><span className="relative flex h-2 w-2"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75" /><span className="relative inline-flex h-2 w-2 rounded-full bg-white" /></span>Sharing your live location with the passenger — keep Encore open</>
+            )}
+          </div>
+        )}
       </header>
-      <main className="mx-auto max-w-2xl px-4 pb-28 pt-5"><div key={loc.pathname} className="page-enter"><Outlet /></div></main>
+      <main className="mx-auto max-w-2xl px-4 pb-28 pt-5"><div key={loc.pathname} className="page-enter"><Suspense fallback={<SkeletonList />}><Outlet /></Suspense></div></main>
       <nav className="fixed inset-x-0 bottom-0 z-30 border-t bg-white/95 backdrop-blur safe-bottom">
         <div className="mx-auto grid max-w-md grid-cols-3">
           {[{ to: '/driver', label: 'My journeys', icon: Car, end: true }, { to: '/driver/updates', label: 'Updates', icon: Bell, badge: unread }, { to: '/driver/account', label: user.name.split(' ')[0], icon: User }].map((n) => (

@@ -595,3 +595,29 @@ a.rounded-2xl:active, a.rounded-3xl:active { transform: scale(.985); }
 .help-check { transition: all .25s cubic-bezier(.34,1.5,.5,1); }
 .guide-slide { animation: guide-fade .4s cubic-bezier(.2,.85,.25,1) both; }
 @keyframes guide-fade { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: none; } }
+
+/* ---------- Maps (pin picker + live chauffeur) ---------- */
+.map-sheet { animation: map-in .32s cubic-bezier(.2,.85,.25,1) both; }
+.map-sheet .map-card { animation: map-card-in .42s .08s cubic-bezier(.2,.9,.25,1.05) both; }
+@keyframes map-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes map-card-in { from { transform: translateY(100%); } to { transform: none; } }
+.maplibregl-map { font-family: inherit; -webkit-tap-highlight-color: transparent; }
+.maplibregl-ctrl-attrib { font-size: 9px; }
+.map-pin { display: flex; flex-direction: column; align-items: center; transform: translateY(0); transition: transform .28s cubic-bezier(.34,1.6,.5,1); will-change: transform; }
+.map-pin.is-lifted { transform: translateY(-14px); transition-duration: .16s; transition-timing-function: ease-out; }
+.map-pin-head { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 9999px; background: #141416; box-shadow: 0 8px 18px rgba(0,0,0,.3); }
+.map-pin-head span { width: 13px; height: 13px; border-radius: 9999px; background: #FF710F; box-shadow: 0 0 0 3px rgba(255,113,15,.25); }
+.map-pin-stem { width: 3px; height: 16px; margin-top: -1px; border-radius: 0 0 3px 3px; background: #141416; }
+.map-pin-shadow { position: absolute; left: 50%; bottom: -3px; width: 12px; height: 5px; margin-left: -6px; border-radius: 50%; background: rgba(0,0,0,.35); transition: transform .28s cubic-bezier(.34,1.6,.5,1), opacity .2s; }
+.map-pin-shadow.is-lifted { transform: scale(1.8); opacity: .45; }
+.map-dot { display: block; width: 22px; height: 22px; border-radius: 9999px; border: 4px solid #fff; box-shadow: 0 3px 10px rgba(0,0,0,.3); }
+.map-dot.is-me { background: #2563EB; animation: me-pulse 2s ease-out infinite; }
+.map-dot.is-pickup { background: #10B981; }
+.map-dot.is-dest { background: #FF710F; }
+@keyframes me-pulse { 0% { box-shadow: 0 0 0 0 rgba(37,99,235,.45), 0 3px 10px rgba(0,0,0,.3); } 100% { box-shadow: 0 0 0 16px rgba(37,99,235,0), 0 3px 10px rgba(0,0,0,.3); } }
+.map-car { position: relative; width: 44px; height: 44px; display: grid; place-items: center; }
+.map-car-body { transition: transform .9s cubic-bezier(.4,0,.2,1); filter: drop-shadow(0 4px 8px rgba(0,0,0,.35)); }
+.map-car-pulse { position: absolute; inset: 0; border-radius: 9999px; background: rgba(255,113,15,.28); animation: car-pulse 2.2s ease-out infinite; }
+@keyframes car-pulse { from { transform: scale(.6); opacity: .9; } to { transform: scale(1.7); opacity: 0; } }
+.live-chip { animation: encore-rise .4s cubic-bezier(.2,.85,.25,1) both; }
+@media (prefers-reduced-motion: reduce) { .map-sheet, .map-sheet .map-card, .map-dot.is-me, .map-car-pulse { animation: none; } }

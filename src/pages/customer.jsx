@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   ArrowRight, Bell, CalendarClock, Car, CheckCircle2, ChevronRight, ClipboardList, CreditCard, ExternalLink, FileText,
@@ -107,6 +107,7 @@ export function NewRequest() {
   const nav = useNavigate();
   const [params] = useSearchParams();
   const type = params.get('type');
+  const pins = useLocation().state;
   const initial = {
     ...emptyRequest(user),
     ...(type && JOURNEY_TYPES[type] ? { journey_type: type } : {}),
@@ -114,6 +115,9 @@ export function NewRequest() {
     ...(params.get('category') ? { preferred_category: params.get('category') } : {}),
     ...(params.get('when') ? { pickup_at: params.get('when') } : {}),
     ...(params.get('pickup') ? { pickup: params.get('pickup') } : {}),
+    // Exact pins chosen on the Home map (router state, never in the URL).
+    ...(params.get('pickup') && pins?.pickupPin ? { pickup_lat: pins.pickupPin.lat, pickup_lng: pins.pickupPin.lng } : {}),
+    ...(params.get('destination') && pins?.destPin ? { dest_lat: pins.destPin.lat, dest_lng: pins.destPin.lng } : {}),
   };
   const create = useAction((body) => api.post('/bookings', body), {
     success: 'Request sent — we will be in touch with a quotation.',
