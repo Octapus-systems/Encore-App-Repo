@@ -344,3 +344,35 @@ export function MiniMap({ center, className }) {
   }, [center?.lat, center?.lng]); // eslint-disable-line react-hooks/exhaustive-deps
   return <div className={cn('relative overflow-hidden', className)}><div ref={box} className="h-full w-full" /></div>;
 }
+
+// ---------------------------------------------------------------------------
+// Route preview — both ends pinned and joined by an arc, framed to fit (booking summary).
+// ---------------------------------------------------------------------------
+export function RouteMap({ from, to, className }) {
+  const box = useRef(null);
+  useEffect(() => {
+    const pts = [from, to].filter((p) => p?.lat != null);
+    const m = baseMap(box.current, pts[0] || UK, pts.length ? 12 : 6);
+    m.scrollZoom.disable(); m.dragPan.disable(); m.touchZoomRotate.disable(); m.doubleClickZoom.disable(); m.keyboard.disable();
+    if (from?.lat != null) new maplibregl.Marker({ element: dot('is-pickup') }).setLngLat([from.lng, from.lat]).addTo(m);
+    if (to?.lat != null) new maplibregl.Marker({ element: el('<span class="map-dot is-dest" style="border-radius:7px"></span>') }).setLngLat([to.lng, to.lat]).addTo(m);
+    if (pts.length === 2) {
+      // Gentle curve between the two points (a straight line looks like a bug at long distance).
+      const [a, b] = pts; const curve = [];
+      const mx = (a.lng + b.lng) / 2 - (b.lat - a.lat) * 0.18; const my = (a.lat + b.lat) / 2 + (b.lng - a.lng) * 0.18;
+      for (let i = 0; i <= 40; i++) {
+        const t = i / 40;
+        curve.push([(1 - t) ** 2 * a.lng + 2 * (1 - t) * t * mx + t * t * b.lng, (1 - t) ** 2 * a.lat + 2 * (1 - t) * t * my + t * t * b.lat]);
+      }
+      ready(m, () => {
+        m.addSource('arc', { type: 'geojson', data: line(curve) });
+        m.addLayer({ id: 'arc-casing', type: 'line', source: 'arc', layout: { 'line-cap': 'round' }, paint: { 'line-color': '#fff', 'line-width': 7 } });
+        m.addLayer({ id: 'arc', type: 'line', source: 'arc', layout: { 'line-cap': 'round' }, paint: { 'line-color': '#FF710F', 'line-width': 3.5, 'line-dasharray': [1.5, 1.5] } });
+      });
+      const bb = new maplibregl.LngLatBounds(); curve.forEach((c) => bb.extend(c));
+      m.fitBounds(bb, { padding: { top: 36, bottom: 84, left: 46, right: 46 }, maxZoom: 15, duration: 0 });
+    }
+    return () => m.remove();
+  }, [from?.lat, from?.lng, to?.lat, to?.lng]); // eslint-disable-line react-hooks/exhaustive-deps
+  return <div className={cn('relative overflow-hidden', className)}><div ref={box} className="h-full w-full" /></div>;
+}

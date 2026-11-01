@@ -17,6 +17,7 @@ import {
 } from '@/components/common';
 import { BookingProgress, LegRoute, LegTimes, MessageThread, RequestForm, emptyRequest } from '@/components/booking';
 import { Button } from '@/components/ui/button';
+import { QuickRequest } from '@/components/quick-request';
 
 const useBookings = (view) => useQuery({ queryKey: ['bookings', view], queryFn: () => api.get(`/bookings?view=${view}&sort=${view === 'past' ? 'pickup_desc' : 'pickup'}`), refetchInterval: 10000 });
 
@@ -108,6 +109,9 @@ export function NewRequest() {
   const [params] = useSearchParams();
   const type = params.get('type');
   const pins = useLocation().state;
+  const [full, setFull] = useState(false);
+  // Planner already chose both ends → one-screen confirm instead of the step-by-step form.
+  const quick = !full && !!params.get('pickup') && !!params.get('destination');
   const initial = {
     ...emptyRequest(user),
     ...(type && JOURNEY_TYPES[type] ? { journey_type: type } : {}),
@@ -126,8 +130,12 @@ export function NewRequest() {
   });
   return (
     <div className="mx-auto max-w-2xl">
-      <PageHeader title="" subtitle={user.role === 'corporate' ? `Booking for ${user.organisation?.name}. Add your traveller as the lead passenger.` : 'Tell us everything we need to arrange your journey perfectly.'} />
-      <RequestForm initial={initial} onSubmit={(b) => create.mutate(b)} submitting={create.isPending} fields={create.fields} />
+      {!quick && <PageHeader title="" subtitle={user.role === 'corporate' ? `Booking for ${user.organisation?.name}. Add your traveller as the lead passenger.` : 'Tell us everything we need to arrange your journey perfectly.'} />}
+      {quick ? (
+        <QuickRequest initial={initial} onSubmit={(b) => create.mutate(b)} submitting={create.isPending} fields={create.fields} onFullForm={() => setFull(true)} />
+      ) : (
+        <RequestForm initial={initial} onSubmit={(b) => create.mutate(b)} submitting={create.isPending} fields={create.fields} />
+      )}
     </div>
   );
 }

@@ -109,9 +109,14 @@ export function PlanJourney({ here, initialType, onDone, onClose }) {
   const focus = (f) => { setField(f); setMenu(null); setTimeout(() => inputs[f].current?.focus({ preventScroll: true }), 0); };
   const finish = (p, d) => { haptic('success'); onDone({ pickup: p, destination: d, type, when }); };
 
-  const choose = (it, f = field) => {
+  const choose = async (it, f = field) => {
     haptic('select');
-    const place = strip(it);
+    let place = strip(it);
+    // Suggestions carry no coordinates — look them up first so maps can pin the place.
+    if (place.lat == null && place.text) {
+      const c = await api.get(`/places/geocode?q=${encodeURIComponent(place.text)}`).catch(() => null);
+      if (c) place = { ...place, lat: c.lat, lng: c.lng };
+    }
     if (saving) {
       const next = { ...places, [saving]: place };
       setPlaces(next);
@@ -119,16 +124,8 @@ export function PlanJourney({ here, initialType, onDone, onClose }) {
       setSaving(null); setQ((s) => ({ ...s, [f]: '' }));
       return;
     }
+    remember(place);
     setQ((s) => ({ ...s, [f]: '' }));
-    // Suggestions carry no coordinates — fetch them so the map can pin the place.
-    if (place.lat == null && place.text) {
-      api.get(`/places/geocode?q=${encodeURIComponent(place.text)}`).then((c) => {
-        if (!c) return;
-        const at = { ...place, lat: c.lat, lng: c.lng };
-        remember(at);
-        (f === 'pickup' ? setPickup : setDest)((cur) => (cur?.text === place.text ? at : cur));
-      }).catch(() => {});
-    } else remember(place);
     if (f === 'pickup') {
       setPickup(place);
       if (dest) finish(place, dest); else focus('destination');

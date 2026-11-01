@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 const load = () => import('./map.jsx');
 const Picker = lazy(() => load().then((m) => ({ default: m.MapPicker })));
 const Mini = lazy(() => load().then((m) => ({ default: m.MiniMap })));
+const Route = lazy(() => load().then((m) => ({ default: m.RouteMap })));
 const Live = lazy(() => load().then((m) => ({ default: m.LiveTrackMap })));
 
 /** Warm the map code ahead of a likely tap (e.g. when the booking form opens). */
@@ -30,6 +31,14 @@ export function MiniMap({ className, ...props }) {
   return (
     <Suspense fallback={<div className={cn('bg-[#1a1a1d]', className)} />}>
       <Mini className={className} {...props} />
+    </Suspense>
+  );
+}
+
+export function RouteMap({ className, ...props }) {
+  return (
+    <Suspense fallback={<div className={cn('sk', className)} />}>
+      <Route className={className} {...props} />
     </Suspense>
   );
 }
