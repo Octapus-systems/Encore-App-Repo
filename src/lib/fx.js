@@ -41,9 +41,9 @@ export function haptic(kind = 'light') {
 export function celebrate({ origin = { x: 0.5, y: 0.9 } } = {}) {
   haptic('success');
   if (reduced()) return;
-  const base = { origin, colors: BRAND, disableForReducedMotion: true, zIndex: 9999 };
-  confetti({ ...base, particleCount: 70, spread: 70, startVelocity: 45, scalar: 0.9 });
-  setTimeout(() => confetti({ ...base, particleCount: 40, spread: 110, startVelocity: 30, scalar: 0.7, ticks: 160 }), 180);
+  // Refined: a light shimmer of small round particles in brand tones, not a party-popper.
+  const base = { origin, colors: ['#FF8A3D', '#FFB692', '#FFD9C4', '#ffffff'], shapes: ['circle'], disableForReducedMotion: true, zIndex: 9999 };
+  confetti({ ...base, particleCount: 28, spread: 55, startVelocity: 26, gravity: 0.7, scalar: 0.55, ticks: 110 });
 }
 
 /** Small moment: a short sparkle from the element that was tapped. */

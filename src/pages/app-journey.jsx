@@ -10,7 +10,7 @@ import { ErrorState, Field, Modal, PageLoader, PaymentBadge, TextArea, TextInput
 import { MessageThread } from '@/components/booking';
 import { Icon, Img } from '@/components/app-ui';
 import { VEHICLES } from '@/lib/showcase';
-import { celebrate } from '@/lib/fx';
+import { celebrate, haptic } from '@/lib/fx';
 import { addToDeviceCalendar } from '@/lib/native';
 import { SplitText } from '@/components/motion-text';
 import { LiveTrackMap } from '@/components/lazy-maps';
@@ -294,7 +294,7 @@ export function RequestSent() {
   const nav = useNavigate();
   const { data: b, isLoading, error } = useQuery({ queryKey: ['booking', id], queryFn: () => api.get(`/bookings/${id}`) });
   const loaded = !!b;
-  useEffect(() => { if (loaded) celebrate(); }, [loaded]);
+  useEffect(() => { if (loaded) haptic('success'); }, [loaded]);
   if (error && !b) return <ErrorState error={error} />;
   if (isLoading || !b) return <PageLoader />;
   const leg = b.legs[0];
@@ -313,9 +313,15 @@ export function RequestSent() {
   return (
     <div className="flex flex-col pb-10">
       <div className="mb-6 mt-2 flex flex-col items-center text-center">
-        <div className="relative mb-4 flex items-center justify-center">
-          <div className="absolute h-20 w-20 animate-pulse rounded-full bg-primary-container/20 blur-xl" />
-          <div className="relative flex h-16 w-16 items-center justify-center rounded-full bg-primary-container text-on-primary shadow-[0_10px_25px_var(--encore-orange-shadow-0-35)]"><Icon name="check" className="!text-[32px] font-bold" /></div>
+        {/* Success seal: ring and tick draw themselves, then two soft rings ripple out. */}
+        <div className="seal relative mb-5 grid h-24 w-24 place-items-center" aria-hidden>
+          <span className="seal-wave absolute inset-0 rounded-full" />
+          <span className="seal-wave seal-wave-2 absolute inset-0 rounded-full" />
+          <span className="seal-core absolute inset-2 rounded-full bg-gradient-to-br from-[#FF8A3D] to-[#E85D04] shadow-[0_14px_30px_rgba(255,113,15,0.35)]" />
+          <svg viewBox="0 0 96 96" className="relative h-24 w-24">
+            <circle className="seal-ring" cx="48" cy="48" r="44" fill="none" stroke="#FFB692" strokeWidth="2" strokeLinecap="round" pathLength="1" />
+            <path className="seal-tick" d="M32 49 L43 60 L65 37" fill="none" stroke="#fff" strokeWidth="5.5" strokeLinecap="round" strokeLinejoin="round" pathLength="1" />
+          </svg>
         </div>
         <h2 className="mb-2 font-headline-lg text-headline-lg text-on-surface"><SplitText text="Request Received" delay={250} step={35} /></h2>
         <div className="max-w-[320px] space-y-2 text-body-md font-body-md leading-relaxed text-secondary">

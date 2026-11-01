@@ -655,3 +655,14 @@ html.is-scrolling .car-floor, html.is-scrolling .hero-drift, html.is-scrolling .
 /* Side cards in the fleet carousel stay still. */
 .fleet-card.is-side .car-float, .fleet-card.is-side .car-glint::before, .fleet-card.is-side .car-floor { animation-play-state: paused; }
 .chip-move { animation: fx-pop .35s cubic-bezier(.2,.9,.3,1.2) both; }
+
+/* Request-received success seal */
+.seal-core { animation: seal-pop .55s cubic-bezier(.2,.9,.3,1.25) both; }
+.seal-ring { stroke-dasharray: 1; stroke-dashoffset: 1; transform: rotate(-90deg); transform-origin: center; animation: seal-draw .8s .15s cubic-bezier(.6,0,.2,1) forwards; }
+.seal-tick { stroke-dasharray: 1; stroke-dashoffset: 1; animation: seal-draw .45s .55s cubic-bezier(.5,0,.2,1) forwards; }
+.seal-wave { border: 2px solid rgba(255,113,15,.45); opacity: 0; animation: seal-wave 1.6s .8s cubic-bezier(.2,.7,.3,1) both; }
+.seal-wave-2 { animation-delay: 1.05s; }
+@keyframes seal-pop { from { transform: scale(.4); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes seal-draw { to { stroke-dashoffset: 0; } }
+@keyframes seal-wave { 0% { transform: scale(.85); opacity: .9; } 100% { transform: scale(1.7); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .seal-core, .seal-wave { animation: none; } .seal-ring, .seal-tick { animation: none; stroke-dashoffset: 0; } }
