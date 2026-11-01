@@ -117,7 +117,7 @@ export function CustomerLayout() {
         {!head.home && <EncoreHeader title={head.title} back={head.back} />}
         <main className="px-margin pb-[calc(110px+env(safe-area-inset-bottom))] pt-space-sm"><div key={loc.pathname} className="page-enter"><Suspense fallback={<SkeletonList />}><Outlet /></Suspense></div></main>
         {/* Home stays uncluttered — help is in Profile and on every other screen. */}
-        {!head.home && <HelpLauncher />}
+        {!head.home && !loc.pathname.startsWith('/app/request') && <HelpLauncher />}
         <FeatureGuide user={user} />
         <AppDock items={nav} />
       </div>

@@ -654,3 +654,4 @@ html.is-scrolling .cta-glow::after, html.is-scrolling .dock-fab::after, html.is-
 html.is-scrolling .car-floor, html.is-scrolling .hero-drift, html.is-scrolling .hero-orb, html.is-scrolling .shine-text { animation-play-state: paused; }
 /* Side cards in the fleet carousel stay still. */
 .fleet-card.is-side .car-float, .fleet-card.is-side .car-glint::before, .fleet-card.is-side .car-floor { animation-play-state: paused; }
+.chip-move { animation: fx-pop .35s cubic-bezier(.2,.9,.3,1.2) both; }

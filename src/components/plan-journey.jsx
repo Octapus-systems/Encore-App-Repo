@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import { Icon } from '@/components/app-ui';
 import { QUICK, recent, remember, useSuggestions } from '@/components/address';
 import { MapPicker, MiniMap, preloadMaps } from '@/components/lazy-maps';
+import { PickDateTime } from '@/components/pick-datetime';
 
 const SAVED_KEY = 'encore.savedPlaces';
 const TYPES = [['point_to_point', 'One way', 'east'], ['return', 'Return', 'sync_alt'], ['airport', 'Airport', 'flight'], ['hourly', 'By the hour', 'schedule'], ['corporate', 'Corporate', 'business_center'], ['event', 'Event', 'celebration']];
@@ -193,10 +194,10 @@ export function PlanJourney({ here, initialType, onDone, onClose }) {
                         {l}{when === v && <Icon name="check" className="!text-[18px] text-[#FF8A3D]" />}
                       </button>
                     ))}
-                    <label className="relative flex w-full cursor-pointer items-center gap-2 px-4 py-2.5 text-[14px] font-medium text-[#FF8A3D]">
+                    <PickDateTime value={when} min={localInput(new Date())} onChange={(v) => { setWhen(v); setMenu(null); haptic('select'); }}
+                      className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-[14px] font-medium text-[#FF8A3D]">
                       <Icon name="calendar_month" className="!text-[18px]" />Choose date & time
-                      <input type="datetime-local" min={localInput(new Date())} className="absolute inset-0 opacity-0" onChange={(e) => { setWhen(e.target.value); setMenu(null); }} />
-                    </label>
+                    </PickDateTime>
                   </>
                 ) : TYPES.map(([k, l, ic]) => (
                   <button key={k} type="button" onClick={() => { setType(k); setMenu(null); haptic('select'); }} className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-[14px] font-medium active:bg-white/5">

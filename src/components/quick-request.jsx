@@ -8,6 +8,7 @@ import { VEHICLES } from '@/lib/showcase';
 import { cn } from '@/lib/utils';
 import { Icon, Img } from '@/components/app-ui';
 import { RouteMap } from '@/components/lazy-maps';
+import { PickDateTime } from '@/components/pick-datetime';
 
 const TYPES = [['point_to_point', 'One way', 'east'], ['return', 'Return', 'sync_alt'], ['airport', 'Airport', 'flight'], ['hourly', 'By the hour', 'schedule'], ['corporate', 'Corporate', 'business_center'], ['event', 'Event', 'celebration']];
 const localInput = (d) => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
@@ -120,8 +121,8 @@ export function QuickRequest({ initial, onSubmit, submitting, fields = {}, onFul
 
         {/* Trip type */}
         <div className="no-scrollbar -mx-margin flex gap-2 overflow-x-auto px-margin">
-          {TYPES.map(([k, l, ic]) => (
-            <button key={k} type="button" onClick={() => { haptic('select'); set('journey_type', k); }}
+          {[...TYPES].sort((a, b) => (b[0] === f.journey_type) - (a[0] === f.journey_type)).map(([k, l, ic]) => (
+            <button key={k} type="button" onClick={(e) => { haptic('select'); set('journey_type', k); e.currentTarget.parentElement.scrollTo({ left: 0, behavior: 'smooth' }); }}
               className={cn('flex flex-shrink-0 items-center gap-1.5 rounded-full px-3.5 py-2 text-[13px] font-bold transition', f.journey_type === k ? 'bg-on-surface text-surface shadow-md' : 'bg-surface-container-lowest text-on-surface shadow-sm')}>
               <Icon name={ic} className="!text-[17px]" />{l}
             </button>
@@ -135,13 +136,31 @@ export function QuickRequest({ initial, onSubmit, submitting, fields = {}, onFul
             {f.pickup_at && <span className="text-[13px] font-bold text-primary">{pretty(f.pickup_at)}</span>}
           </div>
           <div className="no-scrollbar flex gap-2 overflow-x-auto">
-            {times.map(([l, v]) => (
-              <button key={l} type="button" onClick={() => { haptic('select'); set('pickup_at', v); }} className={cn('whitespace-nowrap rounded-full px-3.5 py-2 text-[13px] font-semibold transition', f.pickup_at === v ? 'bg-primary-container text-white' : 'bg-surface-container text-on-surface')}>{l}</button>
-            ))}
-            <label className={cn('relative flex cursor-pointer items-center gap-1 whitespace-nowrap rounded-full px-3.5 py-2 text-[13px] font-semibold', f.pickup_at && !times.some(([, v]) => v === f.pickup_at) ? 'bg-primary-container text-white' : 'bg-surface-container text-on-surface')}>
-              <Icon name="calendar_month" className="!text-[16px]" />Other
-              <input type="datetime-local" min={minDate} value={f.pickup_at || ''} onChange={(e) => set('pickup_at', e.target.value)} className="absolute inset-0 opacity-0" />
-            </label>
+            {/* Chosen time moves to the front; a custom time shows as its own chip. */}
+            {(() => {
+              const custom = f.pickup_at && !times.some(([, v]) => v === f.pickup_at);
+              const chips = [...times.map(([l, v]) => ({ k: l, l, v, on: f.pickup_at === v }))];
+              chips.sort((a, b) => b.on - a.on);
+              return (
+                <>
+                  {custom && (
+                    <PickDateTime value={f.pickup_at} min={minDate} onChange={(v) => set('pickup_at', v)}
+                      className="flex items-center gap-1 whitespace-nowrap rounded-full bg-primary-container px-3.5 py-2 text-[13px] font-semibold text-white">
+                      <Icon name="calendar_month" className="!text-[16px]" />{pretty(f.pickup_at)}
+                    </PickDateTime>
+                  )}
+                  {chips.map((c) => (
+                    <button key={c.k} type="button" onClick={(e) => { haptic('select'); set('pickup_at', c.v); e.currentTarget.parentElement.scrollTo({ left: 0, behavior: 'smooth' }); }} className={cn('chip-move whitespace-nowrap rounded-full px-3.5 py-2 text-[13px] font-semibold transition', c.on ? 'bg-primary-container text-white' : 'bg-surface-container text-on-surface')}>{c.l}</button>
+                  ))}
+                  {!custom && (
+                    <PickDateTime value={f.pickup_at} min={minDate} onChange={(v) => { haptic('select'); set('pickup_at', v); }}
+                      className="flex items-center gap-1 whitespace-nowrap rounded-full bg-surface-container px-3.5 py-2 text-[13px] font-semibold text-on-surface">
+                      <Icon name="calendar_month" className="!text-[16px]" />Other date
+                    </PickDateTime>
+                  )}
+                </>
+              );
+            })()}
           </div>
           {err.pickup_at && <p className="mt-2 text-[12px] font-semibold text-amber-700">{err.pickup_at}</p>}
           {isReturn && (
