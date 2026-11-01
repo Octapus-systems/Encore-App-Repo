@@ -157,7 +157,7 @@ export function PlanJourney({ here, initialType, onDone, onClose }) {
           <Icon name="open_in_full" className="!text-[15px] text-[#FF8A3D]" />{mapAt ? 'Tap to adjust pin' : 'Tap to set on map'}
         </span>
         <button type="button" onClick={onClose} aria-label="Back" className="absolute left-4 z-[2] top-[max(12px,env(safe-area-inset-top))] grid h-11 w-11 place-items-center rounded-full bg-black/55 ring-1 ring-white/15 backdrop-blur-md active:scale-95"><Icon name="arrow_back" className="!text-[22px]" /></button>
-        <div className="plan-pill pointer-events-none absolute z-[2] inset-x-16 top-[max(14px,env(safe-area-inset-top))] flex h-10 items-center justify-center gap-2 rounded-full bg-black/60 px-4 ring-1 ring-white/10 backdrop-blur-md">
+        <div className="plan-pill pointer-events-none absolute z-[2] left-16 right-[86px] top-[max(14px,env(safe-area-inset-top))] flex h-10 items-center justify-center gap-2 rounded-full bg-black/60 px-4 ring-1 ring-white/10 backdrop-blur-md">
           {pickup ? <span className="relative flex h-2 w-2 flex-shrink-0"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-70" /><span className="relative h-2 w-2 rounded-full bg-emerald-400" /></span>
             : <span className="h-3 w-3 flex-shrink-0 animate-spin rounded-full border-2 border-white/25 border-t-white" />}
           <span className="truncate text-[12.5px] font-semibold text-white/90">{pickup ? (pickup.text || pickup.main) : here.status === 'error' ? 'Location unavailable — type your pickup' : 'Finding your location…'}</span>

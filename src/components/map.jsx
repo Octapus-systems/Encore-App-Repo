@@ -21,9 +21,13 @@ function baseMap(el, center, zoom, style = STYLE) {
     attributionControl: false, dragRotate: false, pitchWithRotate: false, touchPitch: false, fadeDuration: 150,
   });
   map.touchZoomRotate.disableRotation();
-  // Credits stay as a small (i) button (required by the map data licence) instead of a text strip.
-  map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right');
-  map.once('load', () => el.querySelector('.maplibregl-ctrl-attrib')?.classList.remove('maplibregl-compact-show'));
+  // Map data licence (OpenStreetMap / OpenMapTiles) needs a visible credit — a faint one-line text, no button.
+  const credit = document.createElement('a');
+  credit.className = 'map-credit';
+  credit.href = 'https://www.openstreetmap.org/copyright';
+  credit.target = '_blank'; credit.rel = 'noopener noreferrer';
+  credit.textContent = '© OpenStreetMap';
+  el.appendChild(credit);
   // The container is sized by an opening animation / growing hero — keep the canvas matched to it.
   const ro = new ResizeObserver(() => map.resize());
   ro.observe(el);
@@ -293,7 +297,7 @@ export function LiveTrackMap({ bookingId, legId, className }) {
   const miles = leg?.distance_m != null ? `${(leg.distance_m / 1609.344).toFixed(leg.distance_m < 16093 ? 1 : 0)} mi` : null;
 
   return (
-    <div className={cn('relative overflow-hidden bg-[#E9EAEC]', className)}>
+    <div className={cn('live-map relative overflow-hidden bg-[#E9EAEC]', className)}>
       <div className="absolute inset-0"><div ref={box} className="h-full w-full" /></div>
       {leg && (
         <div className="pointer-events-none absolute inset-x-3 bottom-6 z-10 flex items-end justify-between gap-2">

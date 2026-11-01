@@ -639,3 +639,5 @@ a.rounded-2xl:active, a.rounded-3xl:active { transform: scale(.985); }
 @media (prefers-reduced-motion: reduce) { .plan-glow::after, .plan-card, .plan-pill { animation: none; } }
 .mini-pin { display: flex; flex-direction: column; align-items: center; animation: pin-drop .6s cubic-bezier(.34,1.6,.5,1) both; filter: drop-shadow(0 6px 10px rgba(0,0,0,.35)); }
 @keyframes pin-drop { from { transform: translateY(-28px); opacity: 0; } to { transform: none; opacity: 1; } }
+.map-credit { position: absolute; right: 8px; top: 6px; z-index: 2; font-size: 8.5px; line-height: 1; color: rgba(0,0,0,.38); text-decoration: none; pointer-events: auto; }
+.live-map .map-credit { top: auto; bottom: 4px; }
