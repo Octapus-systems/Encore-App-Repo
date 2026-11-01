@@ -184,35 +184,33 @@ export function QuickRequest({ initial, onSubmit, submitting, fields = {}, onFul
           <Count icon="luggage" label="Suitcases" value={Number(f.luggage_large) || 0} onChange={(v) => set('luggage_large', v)} />
         </div>
 
-        {/* Vehicle — vertical list (no sideways scroll, nothing clipped at the screen edge) */}
-        <div className="rounded-[22px] bg-surface-container-lowest p-2 shadow-sm">
-          <div className="flex items-baseline justify-between px-2 pb-1 pt-1.5">
+        {/* Vehicle — photo cards. Padding inside the scroll box keeps the selected outline and
+            shadow from being clipped; cards snap so two sit fully on screen with the next peeking. */}
+        <div>
+          <div className="mb-1 flex items-baseline justify-between px-1">
             <span className="text-[13px] font-bold text-on-surface">Choose your car</span>
             <span className="text-[11px] text-secondary">Quoted by Encore</span>
           </div>
-          <div role="radiogroup" className="space-y-1">
+          <div role="radiogroup" className="no-scrollbar -mx-margin flex snap-x snap-mandatory scroll-px-margin gap-3 overflow-x-auto px-margin pb-3 pt-2">
             {VEHICLES.map((v) => {
               const ok = fits(v, f);
               const on = (f.preferred_category || best?.category) === v.category;
               return (
-                <button key={v.slug} type="button" role="radio" aria-checked={on} disabled={!ok} onClick={() => { haptic('select'); set('preferred_category', v.category); }}
-                  className={cn('flex w-full items-center gap-3 rounded-2xl p-2 text-left transition-colors', on ? 'bg-primary-fixed/60' : 'active:bg-surface-container-low', !ok && 'opacity-40')}>
-                  <span className="relative h-12 w-[74px] flex-shrink-0 overflow-hidden rounded-xl bg-[#0b0b0c]">
-                    <Img k={v.card} alt="" className="h-full w-full object-cover" />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="flex items-center gap-1.5">
-                      <span className="truncate text-[14px] font-bold text-on-surface">{v.label}</span>
-                      {v.category === best?.category && ok && <span className="flex-shrink-0 rounded-full bg-emerald-50 px-1.5 py-px text-[10px] font-bold text-emerald-700">Best fit</span>}
-                    </span>
-                    <span className="mt-0.5 flex items-center gap-2.5 text-[12px] text-secondary">
+                <button key={v.slug} type="button" role="radio" aria-checked={on} disabled={!ok} onClick={(e) => { haptic('select'); set('preferred_category', v.category); e.currentTarget.scrollIntoView({ behavior: 'smooth', inline: 'nearest', block: 'nearest' }); }}
+                  className={cn('relative w-[44%] min-w-[148px] flex-shrink-0 snap-start overflow-hidden rounded-[20px] bg-[#0f0f11] text-left text-white transition-transform duration-300',
+                    on ? 'shadow-[0_10px_24px_rgba(255,113,15,0.35)] outline outline-2 outline-offset-2 outline-primary-container' : 'shadow-[0_6px_16px_rgba(0,0,0,0.12)]', !ok && 'opacity-40')}>
+                  <Img k={v.card} alt="" className="h-[86px] w-full object-cover" />
+                  <span className="pointer-events-none absolute inset-x-0 top-0 h-[86px] bg-gradient-to-b from-transparent via-transparent to-[#0f0f11]" />
+                  <span className="relative block px-3 pb-3 pt-1">
+                    <span className="block truncate text-[13.5px] font-bold">{v.label}</span>
+                    <span className="mt-1 flex items-center gap-2.5 text-[11.5px] text-white/60">
                       <span className="flex items-center gap-0.5"><Icon name="group" className="!text-[14px]" />{v.seats}</span>
                       <span className="flex items-center gap-0.5"><Icon name="luggage" className="!text-[14px]" />{v.bags}</span>
-                      <span className="truncate">{ok ? v.name.replace('Mercedes-Benz ', '') : 'Too small for your party'}</span>
                     </span>
                   </span>
-                  <span className={cn('grid h-5 w-5 flex-shrink-0 place-items-center rounded-full border-2 transition', on ? 'border-primary-container bg-primary-container' : 'border-outline-variant')}>
-                    {on && <span className="h-1.5 w-1.5 rounded-full bg-white" />}
+                  {v.category === best?.category && ok && <span className="absolute left-2 top-2 rounded-full bg-emerald-500 px-2 py-0.5 text-[10px] font-bold text-white shadow">Best fit</span>}
+                  <span className={cn('absolute right-2 top-2 grid h-6 w-6 place-items-center rounded-full transition', on ? 'bg-primary-container text-white' : 'bg-black/40 ring-1 ring-white/40')}>
+                    {on && <Icon name="check" className="!text-[16px]" />}
                   </span>
                 </button>
               );
