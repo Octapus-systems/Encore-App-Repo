@@ -119,7 +119,7 @@ function FleetCard({ v, onBook, i = 0 }) {
             <span className="block truncate text-label-sm font-label-sm font-extrabold uppercase tracking-wider text-primary-fixed">{v.label}</span>
             <h3 className="line-clamp-2 min-h-[2lh] font-headline-md text-headline-md font-extrabold tracking-tight text-inverse-on-surface">{v.name}</h3>
           </div>
-          <div className="flex items-center gap-1 rounded-full bg-surface-container-highest/20 px-2.5 py-1 text-white backdrop-blur-md">
+          <div className="flex items-center gap-1 rounded-full bg-black/45 px-2.5 py-1 text-white">
             <Icon name="group" className="!text-[15px] text-primary-container" />
             <span className="text-label-md font-label-md font-bold">{v.seats}</span>
           </div>
@@ -166,12 +166,12 @@ function HomeHero({ user, here }) {
       <div className="hero-layer relative z-10 flex items-center justify-between pt-4">
         <div className="flex min-w-0 items-center gap-2.5">
           <Img k="logo" alt="Encore" className="h-9 w-9 flex-shrink-0 object-contain drop-shadow-[0_6px_16px_rgba(255,113,15,0.5)]" placeholderClassName="h-9 w-9 rounded-full" />
-          <span className="flex min-w-0 items-center gap-1 rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-white/80 backdrop-blur-md">
+          <span className="flex min-w-0 items-center gap-1 rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-white/80">
             <Icon name={here.place ? 'near_me' : 'location_on'} className="!text-[14px] text-primary-container" /><span className="truncate">{where}</span>
           </span>
         </div>
         <div className="flex flex-shrink-0 items-center gap-2">
-          <Link to="/app/notifications" aria-label="Notifications" className="relative grid h-10 w-10 place-items-center rounded-full bg-white/10 backdrop-blur-md transition hover:bg-white/20">
+          <Link to="/app/notifications" aria-label="Notifications" className="relative grid h-10 w-10 place-items-center rounded-full bg-white/10 transition hover:bg-white/20">
             <Icon name="notifications" className="!text-[20px]" />
             {unread > 0 && <span className="absolute -right-0.5 -top-0.5 grid h-5 min-w-5 place-items-center rounded-full bg-primary-container px-1 text-[10px] font-bold ring-2 ring-[#0b0b0c]">{unread > 9 ? '9+' : unread}</span>}
           </Link>

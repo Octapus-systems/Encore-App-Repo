@@ -353,7 +353,11 @@ button.bg-primary:not(:disabled):hover, a.bg-primary:hover { box-shadow: 0 8px 2
 .pop-in { animation: fx-pop .55s cubic-bezier(.2,.9,.3,1.3) both; }
 
 @keyframes fx-glow { 0%, 100% { box-shadow: 0 10px 30px -10px rgba(255,113,15,.55), 0 0 0 0 rgba(255,113,15,.35); } 50% { box-shadow: 0 14px 36px -10px rgba(255,113,15,.7), 0 0 0 8px rgba(255,113,15,0); } }
-.cta-glow { animation: fx-glow 2.4s ease-in-out infinite; }
+.cta-glow { position: relative; isolation: isolate; box-shadow: 0 10px 30px -10px rgba(255,113,15,.55); }
+/* Pulse is a separate layer animating only opacity + scale (GPU) — animating box-shadow repainted every frame. */
+.cta-glow::after { content: ''; position: absolute; inset: 0; border-radius: inherit; z-index: -1; pointer-events: none;
+  box-shadow: 0 0 0 7px rgba(255,113,15,.28), 0 14px 36px -10px rgba(255,113,15,.7); opacity: 0; animation: cta-pulse 2.4s ease-in-out infinite; will-change: opacity, transform; }
+@keyframes cta-pulse { 0%, 100% { opacity: 0; transform: scale(.97); } 50% { opacity: 1; transform: scale(1); } }
 
 /* Premium surfaces: soft lift on interactive cards. */
 a.rounded-2xl, a.rounded-3xl, a[class*="rounded-[2rem]"] { transition: transform .25s cubic-bezier(.2,.8,.2,1), box-shadow .25s ease; }
@@ -396,7 +400,9 @@ a.rounded-2xl, a.rounded-3xl, a[class*="rounded-[2rem]"] { transition: transform
 .dock-shell::before { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
   background: linear-gradient(180deg, rgba(255,255,255,.08), transparent 40%); }
 @keyframes dock-breathe { 0%, 100% { box-shadow: 0 12px 30px rgba(255,113,15,.5), 0 0 0 0 rgba(255,113,15,.35); } 50% { box-shadow: 0 14px 34px rgba(255,113,15,.65), 0 0 0 10px rgba(255,113,15,0); } }
-.dock-fab { animation: dock-breathe 3s ease-in-out infinite; }
+.dock-fab { isolation: isolate; }
+.dock-fab::after { content: ''; position: absolute; inset: 0; border-radius: inherit; z-index: -1; pointer-events: none;
+  box-shadow: 0 0 0 10px rgba(255,113,15,.22); opacity: 0; animation: cta-pulse 3s ease-in-out infinite; will-change: opacity, transform; }
 .dock-fab .material-symbols-outlined { transition: transform .35s cubic-bezier(.3,1.4,.5,1); }
 .dock-tab:active .material-symbols-outlined { transform: scale(.85); }
 
@@ -410,7 +416,8 @@ a.rounded-2xl, a.rounded-3xl, a[class*="rounded-[2rem]"] { transition: transform
 .lens-blur.is-on { visibility: visible; }
 .lens-blur { overflow: hidden; }
 .lens-blur > i { position: absolute; inset: 0; display: block;
-  -webkit-backdrop-filter: blur(16px) saturate(150%); backdrop-filter: blur(16px) saturate(150%);
+  /* Solid frosted veil instead of a live backdrop blur (which re-blurred the page on every scroll frame). */
+  background: linear-gradient(to bottom, rgba(244,245,247,.97) 0%, rgba(244,245,247,.92) 55%, rgba(244,245,247,.55) 80%, rgba(244,245,247,0) 100%);
   -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 55%, rgba(0,0,0,.4) 80%, transparent 100%);
   mask-image: linear-gradient(to bottom, #000 0%, #000 55%, rgba(0,0,0,.4) 80%, transparent 100%); }
 /* Light veil so text under the bar reads as frosted, fading out with the blur. */
@@ -474,10 +481,10 @@ a.rounded-2xl, a.rounded-3xl, a[class*="rounded-[2rem]"] { transition: transform
 @keyframes car-float { 0%, 100% { transform: translate3d(0, 0, 0) scale(1); } 50% { transform: translate3d(-1.5%, -1%, 0) scale(1.035); } }
 .car-float { animation: car-float 9s ease-in-out infinite; will-change: transform; }
 @keyframes car-glint { 0%, 55% { transform: translateX(-130%) skewX(-18deg); } 82%, 100% { transform: translateX(380%) skewX(-18deg); } }
-.car-glint { overflow: hidden; mix-blend-mode: overlay; }
+.car-glint { overflow: hidden; }
 .car-glint::before { content: ''; position: absolute; top: -20%; bottom: -20%; left: 0; width: 38%;
   background: linear-gradient(105deg, transparent 0%, rgba(255,214,170,.0) 15%, rgba(255,230,205,.95) 50%, rgba(255,214,170,.0) 85%, transparent 100%);
-  transform: translateX(-130%) skewX(-18deg); animation: car-glint 6.5s cubic-bezier(.4,0,.2,1) infinite; animation-delay: inherit; filter: blur(3px); }
+  transform: translateX(-130%) skewX(-18deg); animation: car-glint 6.5s cubic-bezier(.4,0,.2,1) infinite; animation-delay: inherit; opacity: .35; will-change: transform; }
 @keyframes car-floor { 0%, 100% { opacity: .55; transform: translateX(-50%) scaleX(.85); } 50% { opacity: 1; transform: translateX(-50%) scaleX(1.1); } }
 .car-floor { animation: car-floor 4.5s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { .car-float, .car-glint::before, .car-floor { animation: none; } }
@@ -641,3 +648,9 @@ a.rounded-2xl:active, a.rounded-3xl:active { transform: scale(.985); }
 @keyframes pin-drop { from { transform: translateY(-28px); opacity: 0; } to { transform: none; opacity: 1; } }
 .map-credit { position: absolute; right: 8px; top: 6px; z-index: 2; font-size: 8.5px; line-height: 1; color: rgba(0,0,0,.38); text-decoration: none; pointer-events: auto; }
 .live-map .map-credit { top: auto; bottom: 4px; }
+
+/* While the page scrolls, decorative loops pause so every frame goes to scrolling (fx.js toggles this). */
+html.is-scrolling .cta-glow::after, html.is-scrolling .dock-fab::after, html.is-scrolling .car-float, html.is-scrolling .car-glint::before,
+html.is-scrolling .car-floor, html.is-scrolling .hero-drift, html.is-scrolling .hero-orb, html.is-scrolling .shine-text { animation-play-state: paused; }
+/* Side cards in the fleet carousel stay still. */
+.fleet-card.is-side .car-float, .fleet-card.is-side .car-glint::before, .fleet-card.is-side .car-floor { animation-play-state: paused; }

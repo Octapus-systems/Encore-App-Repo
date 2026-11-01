@@ -121,3 +121,17 @@ export function installScrollReveal() {
   window.addEventListener('resize', onScroll, { passive: true });
   scan();
 }
+
+/**
+ * Adds `is-scrolling` to <html> while the page is moving, so CSS can pause decorative loops
+ * (glows, shines, floating cars) and give every frame to the scroll itself.
+ */
+export function installScrollCalm() {
+  const root = document.documentElement;
+  let t = 0;
+  window.addEventListener('scroll', () => {
+    if (!t) root.classList.add('is-scrolling');
+    clearTimeout(t);
+    t = setTimeout(() => { t = 0; root.classList.remove('is-scrolling'); }, 160);
+  }, { passive: true, capture: true });
+}

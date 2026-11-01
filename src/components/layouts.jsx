@@ -80,7 +80,7 @@ function AppDock({ items }) {
   );
   return (
     <nav className="fixed bottom-0 left-1/2 z-50 w-full max-w-[480px] -translate-x-1/2 px-3 pb-[max(10px,env(safe-area-inset-bottom))]">
-      <div className="dock-shell relative grid h-[70px] grid-cols-5 rounded-[26px] bg-[#141416]/95 shadow-[0_18px_40px_rgba(0,0,0,0.35)] ring-1 ring-white/10 backdrop-blur-2xl">
+      <div className="dock-shell relative grid h-[70px] grid-cols-5 rounded-[26px] bg-[#141416]/95 shadow-[0_18px_40px_rgba(0,0,0,0.35)] ring-1 ring-white/10">
         {slot >= 0 && (
           <span className="dock-indicator pointer-events-none absolute top-0 h-[3px] w-10 rounded-full bg-gradient-to-r from-primary-container to-button-end shadow-[0_0_14px_rgba(255,113,15,0.9)]"
             style={{ left: `calc(${slot} * 20% + 10% - 20px)` }} />
@@ -153,7 +153,7 @@ export function DriverLayout() {
         )}
       </header>
       <main className="mx-auto max-w-2xl px-4 pb-28 pt-5"><div key={loc.pathname} className="page-enter"><Suspense fallback={<SkeletonList />}><Outlet /></Suspense></div></main>
-      <nav className="fixed inset-x-0 bottom-0 z-30 border-t bg-white/95 backdrop-blur safe-bottom">
+      <nav className="fixed inset-x-0 bottom-0 z-30 border-t bg-white/95 safe-bottom">
         <div className="mx-auto grid max-w-md grid-cols-3">
           {[{ to: '/driver', label: 'My journeys', icon: Car, end: true }, { to: '/driver/updates', label: 'Updates', icon: Bell, badge: unread }, { to: '/driver/account', label: user.name.split(' ')[0], icon: User }].map((n) => (
             <NavLink key={n.to} to={n.to} end={n.end} className={({ isActive }) => cn('flex flex-col items-center gap-1 py-2.5 text-[11px] font-medium text-muted-foreground', isActive && 'text-primary')}>
