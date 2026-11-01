@@ -111,22 +111,21 @@ export function Onboarding() {
 // ======================= Home (Lovable screen 2) =======================
 function FleetCard({ v, onBook, i = 0 }) {
   return (
-    <article className="fleet-card relative flex w-[84%] max-w-[340px] flex-shrink-0 snap-start flex-col overflow-hidden rounded-[2rem] bg-[#050505] text-inverse-on-surface shadow-[0_16px_36px_var(--encore-shadow-0-18)]">
-      <div className={cn('pointer-events-none absolute -right-12 -top-12 h-48 w-48 rounded-full bg-gradient-to-br to-transparent blur-2xl', v.glow)} />
-      <Link to={`/app/fleet/${v.slug}`} className="relative z-10 flex flex-col gap-space-xs p-space-lg">
+    <article className="fleet-card relative flex w-[64%] max-w-[250px] flex-shrink-0 snap-start flex-col overflow-hidden rounded-[1.6rem] bg-[#050505] text-inverse-on-surface shadow-[0_16px_36px_var(--encore-shadow-0-18)]">
+      <div className={cn('pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-gradient-to-br to-transparent blur-2xl', v.glow)} />
+      <Link to={`/app/fleet/${v.slug}`} className="relative z-10 flex flex-col gap-1 p-4 pb-0">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <span className="block truncate text-label-sm font-label-sm font-extrabold uppercase tracking-wider text-primary-fixed">{v.label}</span>
-            <h3 className="line-clamp-2 min-h-[2lh] font-headline-md text-headline-md font-extrabold tracking-tight text-inverse-on-surface">{v.name}</h3>
+            <h3 className="truncate text-[17px] font-extrabold leading-tight tracking-tight text-inverse-on-surface">{v.name.replace('Mercedes-Benz ', '')}</h3>
           </div>
           <div className="flex items-center gap-1 rounded-full bg-black/45 px-2.5 py-1 text-white">
             <Icon name="group" className="!text-[15px] text-primary-container" />
             <span className="text-label-md font-label-md font-bold">{v.seats}</span>
           </div>
         </div>
-        <p className="line-clamp-1 text-body-sm font-body-sm text-white/80">{v.summary}</p>
       </Link>
-      <Link to={`/app/fleet/${v.slug}`} className="relative -mt-1 block h-[190px] w-full overflow-hidden">
+      <Link to={`/app/fleet/${v.slug}`} className="relative block h-[118px] w-full overflow-hidden">
         <div className="car-float absolute inset-0" style={{ animationDelay: `${i * -1.3}s` }}>
           <Img k={v.card} alt={v.name} eager={i === 0} className="fade-edges absolute inset-0 h-full w-full object-cover object-[center_52%]" placeholderClassName="mx-auto h-full w-4/5 rounded-2xl !bg-white/5 !text-white/50 !border-white/20" />
         </div>
@@ -135,16 +134,13 @@ function FleetCard({ v, onBook, i = 0 }) {
         {/* Floor reflection pulse */}
         <div aria-hidden className="car-floor pointer-events-none absolute bottom-1 left-1/2 h-8 w-3/4 -translate-x-1/2 rounded-full bg-primary-container/30 blur-xl" style={{ animationDelay: `${i * -0.9}s` }} />
       </Link>
-      <div className="relative z-10 -mt-3 flex items-end justify-between p-space-lg pt-0">
+      <div className="relative z-10 -mt-2 flex items-center justify-between gap-2 p-4 pt-0">
         <div>
-          <span className="block text-label-sm font-label-sm text-white/75">Pricing</span>
-          <div className="flex items-baseline gap-1">
-            <span className="font-headline-md text-headline-md font-black text-white">Tailored</span>
-            <span className="text-label-sm font-label-sm text-secondary-fixed">quote</span>
-          </div>
+          <span className="block text-[13px] font-extrabold text-white">Tailored</span>
+          <span className="block text-[11px] text-white/60">quote</span>
         </div>
-        <button onClick={onBook} className="flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-gradient-to-r from-primary-container to-button-end px-5 py-3 text-label-md font-label-md font-bold text-on-primary shadow-[0_8px_20px_var(--encore-orange-shadow-0-4)] transition-all hover:brightness-110 active:scale-95">
-          Book Now <Icon name="arrow_forward" className="!text-[16px]" />
+        <button onClick={onBook} className="flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-gradient-to-r from-primary-container to-button-end px-3.5 py-2 text-[12.5px] font-bold text-on-primary shadow-[0_8px_20px_var(--encore-orange-shadow-0-4)] transition-all hover:brightness-110 active:scale-95">
+          Book <Icon name="arrow_forward" className="!text-[15px]" />
         </button>
       </div>
     </article>
@@ -341,9 +337,9 @@ export function AppHome() {
         <section className="flex flex-col gap-space-sm px-margin pt-space-xs">
           <div className="flex items-center justify-between">
             <h2 className="section-title font-headline-sm text-headline-sm tracking-tight text-on-surface">Upcoming Journeys</h2>
-            <Link to="/app/bookings" className="text-label-sm font-label-sm text-primary">See all</Link>
+            <Link to="/app/bookings" className="text-label-sm font-label-sm text-primary">{bookings.length > 2 ? `See all ${bookings.length}` : 'See all'}</Link>
           </div>
-          {bookings.slice(0, 3).map((b) => (
+          {bookings.slice(0, 2).map((b) => (
             <Link key={b.id} to={`/app/bookings/${b.id}`} className="flex w-full items-center justify-between gap-space-sm rounded-[2rem] bg-surface-container-lowest p-space-md shadow-[0_8px_24px_var(--encore-shadow-0-05)] transition-transform active:scale-[0.99]">
               <div className="flex min-w-0 items-center gap-space-md">
                 <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-primary-fixed text-on-primary-fixed-variant"><Icon name="event" /></div>
