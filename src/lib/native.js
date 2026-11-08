@@ -50,3 +50,25 @@ export async function addToDeviceCalendar(ics, filename) {
   URL.revokeObjectURL(url);
   return 'downloaded';
 }
+
+// ---------- push notifications (Firebase) ----------
+// Only in builds made with VITE_PUSH=on — those include the Firebase config (google-services.json).
+// Registering without it would crash Android, so other builds skip push entirely.
+let pushStarted = false;
+export async function initPush(linkFor, onOpen) {
+  if (pushStarted || !isNative() || import.meta.env.VITE_PUSH !== 'on') return;
+  pushStarted = true;
+  try {
+    const { PushNotifications } = await import('@capacitor/push-notifications');
+    const { api } = await import('@/lib/api');
+    let perm = await PushNotifications.checkPermissions();
+    if (perm.receive === 'prompt') perm = await PushNotifications.requestPermissions();
+    if (perm.receive !== 'granted') return;
+    await PushNotifications.addListener('registration', (t) => { api.post('/account/devices', { token: t.value, platform: Capacitor.getPlatform() }).catch(() => {}); });
+    await PushNotifications.addListener('pushNotificationActionPerformed', (a) => {
+      const d = a.notification?.data || {};
+      onOpen?.(linkFor({ booking_id: d.booking_id ? Number(d.booking_id) : null, event: d.event }));
+    });
+    await PushNotifications.register();
+  } catch { pushStarted = false; }
+}

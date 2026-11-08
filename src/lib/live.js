@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { api } from '@/lib/api';
 import { celebrate } from '@/lib/fx';
-import { initNativeNotifications, isNative, showNativeNotification } from '@/lib/native';
+import { initNativeNotifications, initPush, isNative, showNativeNotification } from '@/lib/native';
 
 // Good news worth a small celebration when it arrives.
 const CELEBRATE = ['booking_confirmed', 'driver_accepted', 'journey_completed', 'quote_response', 'new_request'];
@@ -19,7 +19,7 @@ export function useLiveUpdates(linkFor) {
   const nav = useNavigate();
   const seen = useRef(null);
   // Installed app: ask for notification permission on first launch and open the right screen on tap.
-  useEffect(() => { initNativeNotifications((extra) => extra?.to && nav(extra.to)); }, [nav]);
+  useEffect(() => { initNativeNotifications((extra) => extra?.to && nav(extra.to)); initPush(linkFor, (to) => to && nav(to)); }, [nav]); // eslint-disable-line react-hooks/exhaustive-deps
   const { data } = useQuery({
     queryKey: ['notifications'],
     queryFn: () => api.get('/account/notifications'),

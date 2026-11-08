@@ -1,4 +1,4 @@
-import { Suspense } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { Link, NavLink, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Bell, Car,
@@ -41,14 +41,16 @@ const CUSTOMER_TITLES = [
   [/^\/app\/?$/, { title: 'Home', home: true }],
   [/^\/app\/fleet\/.+/, { title: 'Fleet Vehicle Details', back: '/app/fleet' }],
   [/^\/app\/fleet/, { title: 'Our Fleet', back: '/app' }],
-  [/^\/app\/request/, { title: 'Request a Journey', back: true }],
-  [/^\/app\/bookings\/\d+\/sent/, { title: 'Request Received', back: '/app/bookings' }],
-  [/^\/app\/bookings\/.+/, { title: 'Journey Details', back: '/app/bookings' }],
-  [/^\/app\/bookings/, { title: 'My Bookings' }],
+  [/^\/app\/request/, { title: 'Book a ride', back: true, overlay: true }],
+  [/^\/app\/bookings\/\d+\/sent/, { title: 'All set', back: '/app/bookings' }],
+  [/^\/app\/bookings\/.+/, { title: 'Journey Details', back: '/app/bookings', overlay: true }],
+  [/^\/app\/bookings/, { title: 'My Bookings', back: '/app' }],
   [/^\/app\/invoices\/.+/, { title: 'Invoice', back: '/app/invoices' }],
   [/^\/app\/invoices/, { title: 'Invoices', back: '/app/account' }],
-  [/^\/app\/notifications/, { title: 'Updates', back: true }],
-  [/^\/app\/account/, { title: 'Profile' }],
+  [/^\/app\/notifications/, { title: 'Updates', back: '/app' }],
+  [/^\/app\/company/, { title: 'Company team', back: '/app/account' }],
+  [/^\/app\/corporate/, { title: 'Corporate account', back: '/app/account' }],
+  [/^\/app\/account/, { title: 'Profile', back: '/app' }],
 ];
 
 
@@ -61,38 +63,62 @@ function AppDock({ items }) {
   const unread = useUnread();
   const [left, right] = [items.slice(0, 2), items.slice(2)];
   const activeIdx = items.findIndex((n) => (n.end ? loc.pathname === n.to : loc.pathname.startsWith(n.to)));
-  const slot = activeIdx < 0 ? -1 : activeIdx < 2 ? activeIdx : activeIdx + 1; // 5 slots, centre is Book
   // Hide the floating Book + button wherever a page already has its own bottom action bar
   // (the booking form, and a fleet vehicle's "Book Now" bar) so the two never overlap.
   const booking = loc.pathname.startsWith('/app/request') || /^\/app\/fleet\/[^/]+$/.test(loc.pathname);
+  const slot = booking ? 2 : activeIdx < 0 ? -1 : activeIdx < 2 ? activeIdx : activeIdx + 1; // 5 slots, centre is Book
+
+  // Tuck the dock away while scrolling down a page, bring it back on the slightest scroll up.
+  const [tucked, setTucked] = useState(false);
+  useEffect(() => {
+    let last = window.scrollY; let raf = 0;
+    const check = () => {
+      raf = 0;
+      const y = window.scrollY;
+      // Back at the top or at the very end of the page (the space under the content is the dock's) → show it.
+      const atEnd = y + window.innerHeight >= document.documentElement.scrollHeight - 48;
+      if (y < 60 || atEnd) setTucked(false);
+      else if (y > last + 8) setTucked(true);
+      else if (y < last - 8) setTucked(false);
+      if (Math.abs(y - last) > 8) last = y;
+    };
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(check); };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => { window.removeEventListener('scroll', onScroll); cancelAnimationFrame(raf); };
+  }, []);
+  useEffect(() => { setTucked(false); }, [loc.pathname]);
+
   const Tab = (n) => (
-    <NavLink key={n.to} to={n.to} end={n.end} className={({ isActive }) => cn('dock-tab relative flex flex-col items-center justify-center gap-1 text-white/55 transition-colors duration-300', isActive && 'text-white active-pop')}>
+    <NavLink key={n.to} to={n.to} end={n.end} data-haptic="select"
+      className={({ isActive }) => cn('dock-tab relative z-10 flex flex-col items-center justify-center gap-[3px] text-white/50 transition-colors duration-300', isActive && 'is-active text-white')}>
       {({ isActive }) => (
         <>
-          <span className={cn('relative transition-transform duration-300', isActive ? '-translate-y-0.5 scale-110' : '')}>
-            <Icon name={n.icon} fill={isActive} className="!text-[24px]" />
-            {n.badge && unread > 0 && <span className="absolute -right-1.5 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-primary-container px-1 text-[9px] font-bold text-white ring-2 ring-[#141416]">{unread > 9 ? '9+' : unread}</span>}
+          <span className="dock-icon relative">
+            <Icon name={n.icon} fill={isActive} className="!text-[23px]" />
+            {n.badge && unread > 0 && <span key={unread} className="dock-badge absolute -right-2 -top-1 grid h-[17px] min-w-[17px] place-items-center rounded-full bg-primary-container px-1 text-[9.5px] font-bold text-white ring-2 ring-[#111113]">{unread > 9 ? '9+' : unread}</span>}
           </span>
-          <span className={cn('text-[10.5px] font-semibold leading-none tracking-wide transition-opacity', isActive ? 'opacity-100' : 'opacity-70')}>{n.label}</span>
+          <span className="dock-label text-[10.5px] font-semibold leading-none tracking-wide">{n.label}</span>
         </>
       )}
     </NavLink>
   );
   return (
-    <nav className="fixed bottom-0 left-1/2 z-50 w-full max-w-[480px] -translate-x-1/2 px-3 pb-[max(10px,env(safe-area-inset-bottom))]">
-      <div className="dock-shell relative grid h-[70px] grid-cols-5 rounded-[26px] bg-[#141416]/95 shadow-[0_18px_40px_rgba(0,0,0,0.35)] ring-1 ring-white/10">
-        {slot >= 0 && (
-          <span className="dock-indicator pointer-events-none absolute top-0 h-[3px] w-10 rounded-full bg-gradient-to-r from-primary-container to-button-end shadow-[0_0_14px_rgba(255,113,15,0.9)]"
-            style={{ left: `calc(${slot} * 20% + 10% - 20px)` }} />
-        )}
+    <nav className={cn('fixed bottom-0 left-1/2 z-50 w-full max-w-[480px] -translate-x-1/2 px-3 pb-[max(10px,env(safe-area-inset-bottom))] transition-transform duration-500 ease-[cubic-bezier(.32,.72,0,1)]', tucked && 'translate-y-[calc(100%+44px)]')}>
+      <div className="dock-shell relative grid h-[66px] grid-cols-5 rounded-[24px] bg-[#111113]/90 shadow-[0_20px_44px_rgba(0,0,0,0.38),0_2px_6px_rgba(0,0,0,0.25)] ring-1 ring-white/[0.08] backdrop-blur-xl backdrop-saturate-150">
+        {/* Glass pill that glides to the selected tab */}
+        <span aria-hidden className={cn('dock-pill pointer-events-none absolute inset-y-[7px] left-0 w-[20%]', slot < 0 && 'opacity-0')}
+          style={{ transform: `translateX(${Math.max(slot, 0) * 100}%)` }}>
+          <span className="absolute inset-x-[7px] inset-y-0 rounded-[17px] bg-white/[0.07] ring-1 ring-inset ring-white/[0.06]" />
+          <span className="absolute bottom-[3px] left-1/2 h-[3px] w-[3px] -translate-x-1/2 rounded-full bg-primary-container shadow-[0_0_8px_2px_rgba(255,113,15,0.7)]" />
+        </span>
         {left.map(Tab)}
-        <div className="relative flex justify-center">
-          <NavLink to="/app/request" aria-label="Book a journey"
-            className={cn('dock-fab absolute -top-7 grid h-[62px] w-[62px] place-items-center rounded-full bg-gradient-to-br from-primary-container via-button-mid to-tertiary-container text-white shadow-[0_12px_30px_rgba(255,113,15,0.55)] ring-[6px] ring-background transition-transform duration-300 active:scale-90', booking && 'dock-fab-away')}>
-            <Icon name="add" className="!text-[32px]" />
+        <div className="relative z-10 flex justify-center">
+          <NavLink to="/app/request" aria-label="Book a journey" data-haptic="medium"
+            className={cn('dock-fab absolute -top-[26px] grid h-[58px] w-[58px] place-items-center rounded-full bg-gradient-to-b from-[#FF8A3D] to-[#F25F0A] text-white shadow-[0_12px_28px_rgba(255,113,15,0.5),inset_0_1px_0_rgba(255,255,255,0.35)] ring-[5px] ring-background', booking && 'dock-fab-away')}>
+            <Icon name="add" className="!text-[30px]" />
           </NavLink>
-          <span className={cn('dock-slot-icon pointer-events-none absolute top-[14px] text-primary-container', booking && 'is-on')}><Icon name="edit_road" fill className="!text-[24px]" /></span>
-          <span className={cn('mt-auto pb-2.5 text-[10.5px] font-semibold tracking-wide transition-colors', booking ? 'text-white' : 'text-white/55')}>{booking ? 'Booking' : 'Book'}</span>
+          <span className={cn('dock-slot-icon pointer-events-none absolute top-[13px] text-primary-container', booking && 'is-on')}><Icon name="edit_road" fill className="!text-[23px]" /></span>
+          <span className={cn('mt-auto pb-[11px] text-[10.5px] font-semibold leading-none tracking-wide transition-colors', booking ? 'text-white' : 'text-white/50')}>{booking ? 'Booking' : 'Book'}</span>
         </div>
         {right.map(Tab)}
       </div>
@@ -114,10 +140,10 @@ export function CustomerLayout() {
   return (
     <div className="min-h-screen bg-[#ECEDEF]">
       <div className="encore-app relative mx-auto min-h-screen w-full max-w-[480px] overflow-x-clip shadow-[0_0_60px_rgba(0,0,0,0.08)]">
-        {!head.home && <EncoreHeader title={head.title} back={head.back} />}
+        {!head.home && <EncoreHeader title={head.title} back={head.back} overlay={head.overlay} />}
         <main className="px-margin pb-[calc(110px+env(safe-area-inset-bottom))] pt-space-sm"><div key={loc.pathname} className="page-enter"><Suspense fallback={<SkeletonList />}><Outlet /></Suspense></div></main>
         {/* Home stays uncluttered — help is in Profile and on every other screen. */}
-        {!head.home && !loc.pathname.startsWith('/app/request') && <HelpLauncher />}
+        {!head.home && !loc.pathname.startsWith('/app/request') && !loc.pathname.includes('/sent') && <HelpLauncher />}
         <FeatureGuide user={user} />
         <AppDock items={nav} />
       </div>
@@ -150,6 +176,11 @@ export function DriverLayout() {
             {live.error ? live.error : (
               <><span className="relative flex h-2 w-2"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75" /><span className="relative inline-flex h-2 w-2 rounded-full bg-white" /></span>Sharing your live location with the passenger — keep Encore open</>
             )}
+          </div>
+        )}
+        {!live.active && live.onDuty && (
+          <div className="flex items-center justify-center gap-1.5 bg-emerald-600/90 px-4 py-1 text-[11px] font-semibold text-white">
+            <span className="h-1.5 w-1.5 rounded-full bg-white" />On duty · your location is shared with Encore dispatch
           </div>
         )}
       </header>

@@ -114,6 +114,7 @@ export function NewRequest() {
   const pins = loc.state;
   const here = useCurrentLocation({ auto: true });
   const [full, setFull] = useState(false);
+  const [editRoute, setEditRoute] = useState(null); // route being changed: { pickup, destination } places
   // Planner already chose both ends → one-screen confirm instead of the step-by-step form.
   const quick = !full && !!params.get('pickup') && !!params.get('destination');
   const initial = {
@@ -132,12 +133,30 @@ export function NewRequest() {
     invalidate: ['bookings', 'notifications'],
     onSuccess: (b) => nav(`/app/bookings/${b.id}/sent`, { replace: true }),
   });
+  // "Change route" on the confirm screen reopens the planner with both places filled in;
+  // closing the planner returns to the confirm screen instead of leaving the booking.
+  const place = (text, pin) => (text ? { text, main: text.split(',')[0], ...(pin ? { lat: pin.lat, lng: pin.lng } : {}) } : null);
+  const changeRoute = (form) => {
+    const back = { params: new URLSearchParams(params), state: loc.state };
+    if (form?.pickup_at) back.params.set('when', form.pickup_at);
+    setEditRoute({
+      pickup: place(params.get('pickup'), form?.pickup_lat != null ? { lat: form.pickup_lat, lng: form.pickup_lng } : pins?.pickupPin),
+      destination: place(params.get('destination'), form?.dest_lat != null ? { lat: form.dest_lat, lng: form.dest_lng } : pins?.destPin),
+      back,
+    });
+    const p = new URLSearchParams(params); p.delete('pickup'); p.delete('destination'); if (form?.pickup_at) p.set('when', form.pickup_at);
+    setParams(p, { replace: true, state: loc.state });
+  };
+  const backToConfirm = () => { const b = editRoute.back; setEditRoute(null); setParams(b.params, { replace: true, state: b.state }); };
   // One way to book: any entry (dock +, fleet Book, Home) starts in the planner; once pickup and
   // destination are chosen it becomes the one-screen confirm. The full form is an opt-in fallback.
   if (!quick && !full) {
     return (
-      <PlanJourney here={here} initialType={type || 'point_to_point'} onClose={() => nav(-1)}
+      <PlanJourney here={here} initialType={type || 'point_to_point'}
+        initialPickup={editRoute?.pickup} initialDest={editRoute?.destination}
+        onClose={() => (editRoute ? backToConfirm() : nav(-1))}
         onDone={({ pickup, destination, type: t, when }) => {
+          setEditRoute(null);
           const p = new URLSearchParams(params);
           p.set('type', t); p.set('pickup', pickup.text); p.set('destination', destination.text);
           if (when) p.set('when', when);
@@ -152,7 +171,7 @@ export function NewRequest() {
     <div className="mx-auto max-w-2xl">
       {!quick && <PageHeader title="" subtitle={user.role === 'corporate' ? `Booking for ${user.organisation?.name}. Add your traveller as the lead passenger.` : 'Tell us everything we need to arrange your journey perfectly.'} />}
       {quick ? (
-        <QuickRequest initial={initial} onSubmit={(b) => create.mutate(b)} submitting={create.isPending} fields={create.fields} onFullForm={() => setFull(true)} />
+        <QuickRequest initial={initial} onSubmit={(b) => create.mutate(b)} submitting={create.isPending} fields={create.fields} onFullForm={() => setFull(true)} onChangeRoute={changeRoute} />
       ) : (
         <RequestForm initial={initial} onSubmit={(b) => create.mutate(b)} submitting={create.isPending} fields={create.fields} />
       )}

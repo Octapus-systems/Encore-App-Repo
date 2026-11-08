@@ -56,6 +56,7 @@ export function DriverJobs() {
                     <div className="mt-1 text-sm font-medium">{l.lead_passenger} · {l.passenger_count} pax{l.leg_count > 1 ? ` · ${l.label}` : ''}</div>
                     <div className="mt-1 truncate text-sm text-muted-foreground">{l.pickup}</div>
                     <div className="truncate text-sm text-muted-foreground">→ {l.destination}</div>
+                    {l.booking_status.startsWith('cancelled') && l.cancel_reason && <div className="mt-1 truncate text-xs font-semibold text-red-700">Reason: {l.cancel_reason}</div>}
                   </div>
                   <div className="flex shrink-0 flex-col items-end gap-2">
                     <span className={cn('rounded-full px-2.5 py-0.5 text-xs font-semibold', l.booking_status.startsWith('cancelled') ? 'bg-red-100 text-red-700' : statusTone(l.status))}>{l.booking_status.startsWith('cancelled') ? 'Cancelled' : LEG_STATUS[l.status]}</span>
@@ -160,7 +161,12 @@ export function DriverJob() {
         </div>
       </div>
 
-      {b.cancelled && <Banner tone="red" title="This journey has been cancelled">Do not attend. Contact the dispatcher if you have questions.</Banner>}
+      {b.cancelled && (
+        <Banner tone="red" title={`This journey has been cancelled${b.cancelled_by ? ` by ${b.cancelled_by === 'customer' ? 'the customer' : 'Encore'}` : ''}`}>
+          {b.cancel_reason && <div className="mb-1">Reason: <b>“{b.cancel_reason}”</b></div>}
+          Do not attend. Contact the dispatcher if you have questions.
+        </Banner>
+      )}
 
       {(b.accessibility_needs || b.special_instructions || b.sensitive_notes) && (
         <Panel title="Passenger requirements">

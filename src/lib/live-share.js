@@ -46,5 +46,23 @@ export function useShareLiveLocation() {
     return () => { stop(); clearInterval(beat); document.removeEventListener('visibilitychange', onVisible); lock?.release?.().catch?.(() => {}); };
   }, [key]);
 
-  return { ...state, active: active.length > 0 };
+  // On duty but between journeys: a light position update every 30 s for Encore's dispatch map.
+  const onDuty = useDutyPosition(!key);
+  return { ...state, active: active.length > 0, onDuty };
+}
+
+const DUTY_MS = 30000;
+function useDutyPosition(enabled) {
+  const { data: me } = useQuery({ queryKey: ['me-driver'], queryFn: () => api.get('/auth/me'), refetchInterval: 60000 });
+  const on = enabled && me?.role === 'driver' && me?.driver_availability === 'available';
+  const [sharing, setSharing] = useState(false);
+  useEffect(() => {
+    if (!on) { setSharing(false); return undefined; }
+    let lastAt = 0; let lastFix = null;
+    const send = (fix) => { lastAt = Date.now(); api.post('/driver/position', fix).then(() => setSharing(true)).catch(() => {}); };
+    const stop = watchPosition((fix) => { lastFix = fix; if (Date.now() - lastAt >= DUTY_MS) send(fix); }, () => setSharing(false));
+    const beat = setInterval(() => { if (lastFix && Date.now() - lastAt >= DUTY_MS) send(lastFix); }, DUTY_MS);
+    return () => { stop(); clearInterval(beat); };
+  }, [on]);
+  return on && sharing;
 }

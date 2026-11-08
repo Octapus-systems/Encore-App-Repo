@@ -8,41 +8,50 @@ import { ShineText, SplitText } from '@/components/motion-text';
 import { homeFor, useAuth, usePublicSettings } from '@/lib/auth';
 import { Banner, ErrorState, PageLoader, useAction } from '@/components/common';
 
-function Shell({ children, title, subtitle, eyebrow = 'Private client access' }) {
+function Shell({ children, title, subtitle, eyebrow = 'Executive Chauffeur Service' }) {
   return (
-    <div className="fixed inset-0 h-[100dvh] overflow-hidden overscroll-none bg-[#0b0b0c]">
-      <div className="encore-app relative mx-auto flex h-full w-full max-w-[480px] flex-col overflow-hidden !bg-[#0b0b0c]">
-        <Img k="loginBg" alt="" eager className="auth-kenburns absolute inset-0 h-full w-full object-cover object-[center_30%]" placeholderClassName="absolute inset-0 h-full w-full" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/75 via-black/35 to-[#0b0b0c]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_115%,rgba(255,113,15,0.35),transparent_60%)]" />
+    <div className="fixed inset-0 h-[100dvh] overflow-hidden overscroll-none bg-[#070708]">
+      <div className="encore-app relative mx-auto flex h-full w-full max-w-[480px] flex-col overflow-hidden !bg-[#070708]">
+        <Img k="loginBg" alt="" eager className="auth-kenburns absolute inset-0 h-full w-full object-cover object-[center_35%] scale-105 transition-transform duration-[10000ms]" placeholderClassName="absolute inset-0 h-full w-full" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/85 via-black/50 to-[#070708]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_110%,rgba(255,113,15,0.28),transparent_65%)]" />
+        <div className="absolute top-0 inset-x-0 h-40 bg-gradient-to-b from-black/60 to-transparent pointer-events-none" />
 
-        <div className="relative z-10 flex h-full min-h-0 flex-col px-margin pb-[max(12px,env(safe-area-inset-bottom))] safe-top">
-          <div className="flex shrink-0 items-center justify-between pt-3">
-            <Link to="/welcome" aria-label="Back" className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-md transition hover:bg-white/20">
+        <div className="relative z-10 flex h-full min-h-0 flex-col px-6 pb-[max(16px,env(safe-area-inset-bottom))] safe-top">
+          <div className="flex shrink-0 items-center justify-between pt-4">
+            <Link to="/welcome" aria-label="Back" className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-xl transition-all duration-300 hover:bg-white/25 active:scale-95 shadow-[0_4px_12px_rgba(0,0,0,0.3)]">
               <Icon name="arrow_back" className="!text-[20px]" />
             </Link>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-label-sm font-label-sm uppercase tracking-wider text-white/80 backdrop-blur-md">
-              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary-container" />24/7 · UK-wide
-            </span>
-          </div>
-
-          <div className="mt-5 flex shrink-0 items-center gap-3 [@media(max-height:720px)]:mt-2">
-            <Img k="logo" alt="Encore Chauffeurs" className="h-12 w-12 [@media(max-height:720px)]:h-10 [@media(max-height:720px)]:w-10 object-contain drop-shadow-[0_8px_20px_rgba(255,113,15,0.5)]" placeholderClassName="h-12 w-12 rounded-2xl" />
-            <div className="leading-tight">
-              <div className="text-body-lg font-bold uppercase tracking-[0.2em] text-white">Encore</div>
-              <div className="text-label-sm font-label-sm uppercase tracking-[0.35em] text-primary-fixed-dim">Chauffeurs</div>
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3.5 py-1.5 text-[11px] font-medium uppercase tracking-[0.2em] text-white/90 backdrop-blur-xl border border-white/10 shadow-[0_4px_12px_rgba(0,0,0,0.3)]">
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary-container" />24/7 Priority Fleet
+              </span>
             </div>
           </div>
 
-          <div className="mt-auto flex min-h-0 flex-col pt-3">
-            <span className="text-label-sm font-label-sm uppercase tracking-[0.3em] text-primary-container">{eyebrow}</span>
-            <h1 className="mt-1.5 text-[36px] [@media(max-height:720px)]:text-[28px] font-extrabold leading-[1.05] tracking-tight text-white">{title}</h1>
-            {subtitle && <p className="mt-2 max-w-sm text-body-md font-body-md text-white/70 [@media(max-height:720px)]:hidden">{subtitle}</p>}
+          <div className="mt-6 flex shrink-0 items-center gap-4 [@media(max-height:720px)]:mt-3">
+            <div>
+              <Img k="logo" alt="Encore Chauffeurs" className="h-14 w-14 [@media(max-height:720px)]:h-11 [@media(max-height:720px)]:w-11 object-contain drop-shadow-[0_4px_12px_rgba(255,113,15,0.6)]" placeholderClassName="h-14 w-14 rounded-xl" />
+            </div>
+            <div className="leading-tight">
+              <div className="text-[19px] font-bold uppercase tracking-[0.25em] text-white drop-shadow-md">Encore</div>
+              <div className="text-[11px] font-medium uppercase tracking-[0.4em] text-primary-fixed-dim">Executive Chauffeurs</div>
+            </div>
+          </div>
 
-            <div className="no-scrollbar mt-4 min-h-0 overflow-y-auto overscroll-contain rounded-[2rem] border border-white/10 bg-white/[0.07] p-4 shadow-[0_24px_60px_rgba(0,0,0,0.45)] backdrop-blur-2xl">
+          <div className="mt-auto flex min-h-0 flex-col pt-4 pb-2">
+            <div className="inline-flex items-center gap-2 mb-1">
+              <span className="h-px w-6 bg-primary-container/80" />
+              <span className="text-[11px] font-bold uppercase tracking-[0.35em] text-primary-container">{eyebrow}</span>
+            </div>
+            <h1 className="text-[34px] [@media(max-height:720px)]:text-[26px] font-extrabold leading-[1.08] tracking-tight text-white drop-shadow-sm">{title}</h1>
+            {subtitle && <p className="mt-2 max-w-sm text-[14px] leading-relaxed text-white/70 [@media(max-height:720px)]:hidden">{subtitle}</p>}
+
+            <div className="no-scrollbar mt-5 min-h-0 overflow-y-auto overscroll-contain rounded-[2.25rem] border border-white/15 bg-white/[0.08] p-5 shadow-[0_30px_70px_rgba(0,0,0,0.6)] backdrop-blur-3xl relative">
+              <div className="absolute top-0 inset-x-12 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
               {children}
-              <div className="mt-3 flex items-center justify-center gap-1.5 text-[12px] text-white/40">
-                <Icon name="lock" className="!text-[14px]" />Secure sign-in · Card details never stored
+              <div className="mt-4 flex items-center justify-center gap-2 text-[11px] font-medium text-white/40 tracking-wider">
+                <Icon name="lock" className="!text-[13px] text-primary-container/70" />SECURE ENCRYPTED PORTAL · PRIVACY GUARANTEED
               </div>
             </div>
           </div>
@@ -57,30 +66,30 @@ function GlassInput({ icon, label, error, type = 'text', ...props }) {
   const isPw = type === 'password';
   return (
     <label className="block">
-      <div className={`group flex items-center gap-3 rounded-2xl border bg-black/30 px-4 transition focus-within:border-primary-container focus-within:bg-black/40 focus-within:shadow-[0_0_0_4px_rgba(255,113,15,0.15)] ${error ? 'border-red-400/70' : 'border-white/10'}`}>
-        <Icon name={icon} className="!text-[20px] text-white/50 transition group-focus-within:text-primary-container" />
-        <div className="flex-1 py-2.5 [@media(max-height:720px)]:py-1.5">
-          <span className="block text-[11px] font-semibold uppercase tracking-wider text-white/50">{label}</span>
-          <input type={isPw && show ? 'text' : type} className="glass-input w-full bg-transparent text-body-lg font-body-lg text-white outline-none placeholder:text-white/30" {...props} />
+      <div className={`group flex items-center gap-3 rounded-2xl border bg-black/40 px-4 py-1 transition-all duration-300 focus-within:border-primary-container focus-within:bg-black/60 focus-within:shadow-[0_0_0_4px_rgba(255,113,15,0.18)] ${error ? 'border-red-400/80' : 'border-white/12'}`}>
+        <Icon name={icon} className="!text-[20px] text-white/45 transition-colors group-focus-within:text-primary-container" />
+        <div className="flex-1 py-2 [@media(max-height:720px)]:py-1">
+          <span className="block text-[10px] font-bold uppercase tracking-widest text-white/45">{label}</span>
+          <input type={isPw && show ? 'text' : type} className="glass-input w-full bg-transparent text-[15px] font-medium text-white outline-none placeholder:text-white/25" {...props} />
         </div>
         {isPw && (
-          <button type="button" onClick={() => setShow(!show)} aria-label={show ? 'Hide password' : 'Show password'} className="text-white/50 hover:text-white">
+          <button type="button" onClick={() => setShow(!show)} aria-label={show ? 'Hide password' : 'Show password'} className="text-white/45 hover:text-white transition-colors p-1">
             <Icon name={show ? 'visibility_off' : 'visibility'} className="!text-[20px]" />
           </button>
         )}
       </div>
-      {error && <span className="mt-1 block px-2 text-body-sm text-red-300">{error}</span>}
+      {error && <span className="mt-1 block px-2 text-[12px] font-medium text-red-300">{error}</span>}
     </label>
   );
 }
 
 function GlowButton({ loading, children }) {
   return (
-    <button type="submit" disabled={loading} className="group relative flex h-14 [@media(max-height:720px)]:h-12 w-full items-center justify-center gap-2 overflow-hidden rounded-full bg-gradient-to-r from-primary-container via-button-mid to-tertiary-container text-headline-sm font-headline-sm text-white shadow-[0_14px_34px_rgba(255,113,15,0.45)] transition active:scale-[0.98] disabled:opacity-70">
-      <span className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-1000 group-hover:translate-x-full" />
+    <button type="submit" disabled={loading} className="group relative flex h-13 [@media(max-height:720px)]:h-11 w-full items-center justify-center gap-2 overflow-hidden rounded-2xl bg-gradient-to-r from-primary-container via-[#ff8c38] to-tertiary-container text-[15px] font-bold text-white shadow-[0_12px_30px_rgba(255,113,15,0.45)] transition-all duration-300 hover:shadow-[0_16px_40px_rgba(255,113,15,0.6)] active:scale-[0.98] disabled:opacity-70">
+      <span className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-1000 group-hover:translate-x-full" />
       {loading && <Icon name="progress_activity" className="animate-spin" />}
       {children}
-      {!loading && <Icon name="arrow_forward" className="!text-[22px] transition-transform group-hover:translate-x-1" />}
+      {!loading && <Icon name="arrow_forward" className="!text-[20px] transition-transform duration-300 group-hover:translate-x-1" />}
     </button>
   );
 }

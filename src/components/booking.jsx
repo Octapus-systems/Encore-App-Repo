@@ -3,7 +3,7 @@ import { Armchair, ArrowDown, ArrowLeft, ArrowRight, Baby, Check, Luggage, Brief
 import { MapPicker, RouteMap, preloadMaps } from '@/components/lazy-maps';
 import { api } from '@/lib/api';
 import { haptic } from '@/lib/fx';
-import { VEHICLES } from '@/lib/showcase';
+import { FLEET as VEHICLES, useFleet } from '@/lib/fleet';
 import { Img } from '@/components/app-ui';
 import { SplitText } from '@/components/motion-text';
 import { usePublicSettings } from '@/lib/auth';
@@ -76,30 +76,85 @@ function CountUp({ to, decimals = 0, ms = 900 }) {
 }
 
 /** Route card: real map with both pins (when known), distance and drive time. */
-function RoutePreview({ from, to, fromAt, toAt, onRoute }) {
-  // Shows only once a real route is found, and keeps the last good route on screen while
-  // the addresses are being edited — so the card never flashes in and disappears.
+function RoutePreview({ from, to, stops = [], fromAt, toAt, onRoute }) {
   const [route, setRoute] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const validStops = useMemo(() => (stops || []).map((s) => String(s || '').trim()).filter((s) => s.length >= 3), [stops]);
+
   useEffect(() => {
-    if (!from || !to || from.length < 5 || to.length < 5) { setRoute(null); return undefined; }
+    if (!from || !to || from.length < 5 || to.length < 5) {
+      setRoute(null);
+      return undefined;
+    }
     let cancelled = false;
+    setLoading(true);
+    const stopsParam = validStops.length ? '&stops=' + encodeURIComponent(JSON.stringify(validStops)) : '';
     const t = setTimeout(() => {
-      api.get(`/places/route?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`)
-        .then((r) => { if (!cancelled && r) { setRoute(r); onRoute?.(r); } })
-        .catch(() => {});
-    }, 700);
-    return () => { cancelled = true; clearTimeout(t); };
-  }, [from, to]); // eslint-disable-line react-hooks/exhaustive-deps
+      api.get(`/places/route?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}${stopsParam}`)
+        .then((r) => {
+          if (!cancelled && r) {
+            setRoute(r);
+            onRoute?.(r);
+          }
+        })
+        .catch(() => {})
+        .finally(() => {
+          if (!cancelled) setLoading(false);
+        });
+    }, 600);
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+    };
+  }, [from, to, JSON.stringify(validStops)]); // eslint-disable-line react-hooks/exhaustive-deps
+
   if (!route) return null;
   const mi = route.distance_m / 1609.344;
   const mins = Math.round(route.duration_s / 60);
+
   return (
-    <div className="mt-4 overflow-hidden rounded-2xl border bg-white shadow-sm">
-      {(fromAt || toAt) && <RouteMap from={fromAt} to={toAt} className="h-40 w-full" />}
-      <div className="flex items-center gap-3 px-4 py-3 text-sm">
-        <span className="flex items-center gap-1.5 font-bold text-ink"><Car className="h-4 w-4 text-primary" />{mi.toFixed(mi < 10 ? 1 : 0)} mi</span>
-        <span className="h-1 w-1 rounded-full bg-neutral-300" />
-        <span className="flex items-center gap-1.5 font-semibold text-muted-foreground"><Clock className="h-4 w-4 text-primary" />~{mins >= 60 ? `${Math.floor(mins / 60)} h ${mins % 60} min` : `${mins} min`} drive</span>
+    <div className="mt-4 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm transition-all">
+      {(fromAt || toAt) && <RouteMap from={fromAt} to={toAt} className="h-44 w-full" />}
+
+      {/* Main distance & travel time metrics */}
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-neutral-100 bg-neutral-50/70 px-4 py-3 text-sm">
+        <div className="flex items-center gap-3">
+          <span className="flex items-center gap-1.5 font-bold text-ink">
+            <Car className="h-4 w-4 text-primary" />
+            {mi.toFixed(mi < 10 ? 1 : 0)} miles
+          </span>
+          <span className="h-1 w-1 rounded-full bg-neutral-300" />
+          <span className="flex items-center gap-1.5 font-semibold text-neutral-700">
+            <Clock className="h-4 w-4 text-primary" />
+            ~{mins >= 60 ? `${Math.floor(mins / 60)} h ${mins % 60} min` : `${mins} min`} drive
+          </span>
+        </div>
+        {validStops.length > 0 && (
+          <span className="inline-flex items-center gap-1 rounded-full bg-orange-100 px-2.5 py-0.5 text-[11px] font-bold text-orange-800">
+            {validStops.length} extra stop{validStops.length === 1 ? '' : 's'} included
+          </span>
+        )}
+      </div>
+
+      {/* Route stops sequence breakdown */}
+      <div className="space-y-2 p-3 text-xs">
+        <div className="flex items-start gap-2 text-neutral-700">
+          <span className="mt-0.5 h-2 w-2 rounded-full bg-emerald-500 shrink-0" />
+          <span className="font-semibold text-neutral-900 shrink-0">Pickup:</span>
+          <span className="truncate text-neutral-600">{from}</span>
+        </div>
+        {validStops.map((st, idx) => (
+          <div key={idx} className="flex items-start gap-2 text-neutral-700 pl-0.5">
+            <span className="mt-0.5 h-2 w-2 rounded-full bg-amber-500 shrink-0" />
+            <span className="font-semibold text-amber-900 shrink-0">Stop {idx + 1}:</span>
+            <span className="truncate text-neutral-600">{st}</span>
+          </div>
+        ))}
+        <div className="flex items-start gap-2 text-neutral-700">
+          <span className="mt-0.5 h-2 w-2 rounded-[2px] bg-[#FF710F] shrink-0" />
+          <span className="font-semibold text-neutral-900 shrink-0">Destination:</span>
+          <span className="truncate text-neutral-600">{to}</span>
+        </div>
       </div>
     </div>
   );
@@ -114,6 +169,7 @@ const recommended = (f) => [...VEHICLES].sort((a, b) => a.seats - b.seats || a.b
 
 /** Swipeable vehicle cards with seats, luggage and a "fits your party" badge. */
 function VehiclePicker({ f, value, onChange }) {
+  useFleet();
   const rec = recommended(f);
   const pax = Number(f.passenger_count || 1);
   const pick = (cat) => { onChange(cat); haptic('select'); };
@@ -220,6 +276,7 @@ function RoadProgress({ step, onJump, maxReached }) {
 
 /** Journey request as a 4-step builder (CUS-2). Same fields and payload as before. */
 export function RequestForm({ initial, onSubmit, submitting, fields = {}, submitLabel = 'Send request', beforeSections }) {
+  useFleet();
   const { data: s } = usePublicSettings();
   const [f, setF] = useState(initial);
   const [step, setStep] = useState(0);
@@ -377,7 +434,7 @@ export function RequestForm({ initial, onSubmit, submitting, fields = {}, submit
         <AddressInput placeholder={f.journey_type === 'hourly' ? 'As directed' : 'Search destination address'} {...addr('destination')} />
         {mapLink('destination', 'Choose on map')}
       </Field>
-      <RoutePreview from={f.pickup} to={f.destination} onRoute={setRouteInfo}
+      <RoutePreview from={f.pickup} to={f.destination} stops={f.stops} onRoute={setRouteInfo}
         fromAt={f.pickup_lat != null ? { lat: f.pickup_lat, lng: f.pickup_lng } : null} toAt={f.dest_lat != null ? { lat: f.dest_lat, lng: f.dest_lng } : null} />
       {picking && (
         <MapPicker

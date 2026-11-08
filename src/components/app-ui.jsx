@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { api } from '@/lib/api';
+import { API_BASE, api } from '@/lib/api';
+import { useAuth } from '@/lib/auth';
 import { IMAGES } from '@/lib/showcase';
 import { cn } from '@/lib/utils';
 
@@ -23,9 +24,9 @@ export function Img({ k, src, alt = '', className, placeholderClassName, style, 
   const [i, setI] = useState(0);
   if (i >= sources.length) {
     return (
-      <div className={cn('flex flex-col items-center justify-center gap-1 border-2 border-dashed border-outline-variant bg-surface-container-low text-center text-secondary', className, placeholderClassName)}>
-        <Icon name="image" className="!text-[22px]" />
-        <span className="px-2 text-[10px] font-medium leading-tight">{(entry?.src || 'image').replace('/images/', '')}</span>
+      // Missing or failed photo: a quiet placeholder (no file names or dashed boxes in front of customers).
+      <div role="img" aria-label={alt || undefined} className={cn('flex items-center justify-center bg-surface-container-low text-secondary/60', className, placeholderClassName, '!border-0')}>
+        <Icon name="directions_car" className="!text-[32px]" />
       </div>
     );
   }
@@ -35,6 +36,17 @@ export function Img({ k, src, alt = '', className, placeholderClassName, style, 
       onError={() => setI(i + 1)} className={className} style={style}
     />
   );
+}
+
+/** The signed-in customer's photo, or their initials on an orange circle. */
+export function UserAvatar({ user: given, className }) {
+  const { user: me } = useAuth();
+  const user = given || me;
+  const [broken, setBroken] = useState(false);
+  const src = user?.avatar_url && !broken ? `${API_BASE}${user.avatar_url}` : null;
+  const initials = String(user?.name || '').replace(/\(.*\)/, '').trim().split(/\s+/).map((w) => w[0]).slice(0, 2).join('').toUpperCase() || '?';
+  if (src) return <img src={src} alt="" onError={() => setBroken(true)} className={cn('rounded-full object-cover', className)} />;
+  return <span className={cn('grid place-items-center rounded-full bg-gradient-to-br from-[#FF8A3D] to-[#FF5A1F] font-extrabold leading-none tracking-tight text-white', className)}>{initials}</span>;
 }
 
 export function RoundButton({ children, className, label, ...props }) {
@@ -51,9 +63,32 @@ export function useUnread() {
 }
 
 /** Fixed app header from the Lovable design (logo, title, bell, profile). */
-export function EncoreHeader({ title, subtitle, back }) {
+export function EncoreHeader({ title, subtitle, back, overlay }) {
   const nav = useNavigate();
   const unread = useUnread();
+  // Floating variant for map-first screens: no bar, just dark glass buttons over the map.
+  if (overlay) {
+    const glass = 'h-10 w-10 bg-[#141416]/80 text-white ring-1 ring-white/10 shadow-lg backdrop-blur-md hover:bg-[#141416]';
+    return (
+      <header className="pointer-events-none absolute inset-x-0 top-0 z-30 safe-top">
+        <h1 className="sr-only">{title}</h1>
+        <div className="flex h-16 items-center justify-between px-margin">
+          <div className="pointer-events-auto">
+            {back && <RoundButton label="Go back" className={glass} onClick={() => (typeof back === 'string' ? nav(back) : nav(-1))}><Icon name="arrow_back" className="!text-[20px]" /></RoundButton>}
+          </div>
+          <div className="pointer-events-auto flex items-center gap-2">
+            <Link to="/app/notifications" className="relative">
+              <RoundButton label="Notifications" className={glass}><Icon name="notifications" className="!text-[19px]" /></RoundButton>
+              {unread > 0 && <span className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full bg-primary-container ring-2 ring-[#141416]" />}
+            </Link>
+            <Link to="/app/account" className="rounded-full bg-[#141416]/80 p-[2px] shadow-lg ring-1 ring-white/10 backdrop-blur-md">
+              <UserAvatar className="h-9 w-9 text-[15px]" />
+            </Link>
+          </div>
+        </div>
+      </header>
+    );
+  }
   return (
     <>
       <header className="animate-rise relative z-20 safe-top">
@@ -77,7 +112,7 @@ export function EncoreHeader({ title, subtitle, back }) {
               {unread > 0 && <span className="absolute right-2.5 top-2.5 h-2.5 w-2.5 rounded-full bg-primary-container ring-2 ring-surface-container-lowest" />}
             </Link>
             <Link to="/app/account" className="rounded-full bg-surface-container-lowest p-[2px] shadow-[0_4px_16px_var(--encore-shadow-0-06)]">
-              <Img k="profile" alt="Profile" className="h-8 w-8 rounded-full object-cover" placeholderClassName="h-8 w-8 rounded-full" />
+              <UserAvatar className="h-8 w-8 text-[13px]" />
             </Link>
           </div>
         </div>

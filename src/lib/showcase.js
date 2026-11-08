@@ -55,13 +55,13 @@ export const ITINERARIES = [
 export const VEHICLES = [
   {
     slug: 's-class', name: 'Mercedes-Benz S-Class', category: 'Luxury Saloon', label: 'First Class Saloon', variant: 'Executive Long Wheelbase (LWB)',
-    seats: '3', bags: '2', card: 'fleetS', gallery: ['fleetS', 'detail', 'confirmed'], glow: 'from-primary-container/35 via-tertiary-container/20',
+    seats: '3', bags: '2', card: 'fleetS', gallery: ['fleetS'], glow: 'from-primary-container/35 via-tertiary-container/20',
     summary: 'Acoustic privacy glass, heated rear seats, quiet cabin',
     description: 'The pinnacle of luxury, whispered acoustic comfort and state-of-the-art performance. Ideal for executive airport transfers, VIP delegations and discreet corporate engagements.',
   },
   {
     slug: 'v-class', name: 'Mercedes-Benz V-Class', category: 'Executive MPV (7-seat)', label: 'Executive Chauffeur Van', variant: 'Executive MPV · up to 7 guests',
-    seats: '7', bags: '7', card: 'fleetV', gallery: ['fleetV', 'vanDetail'], glow: 'from-tertiary-container/30',
+    seats: '7', bags: '7', card: 'fleetV', gallery: ['fleetV'], glow: 'from-tertiary-container/30',
     summary: 'Conference seating, generous luggage space, 7 passengers',
     description: 'Space for groups and luggage without compromising on comfort — perfect for families, delegations and airport runs with heavy luggage.',
   },

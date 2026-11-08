@@ -2,6 +2,7 @@ import { Suspense, lazy, useEffect } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { Toaster } from 'sonner';
+import { NativeBackButton } from '@/components/native-back';
 import { queryClientInstance } from '@/lib/query-client';
 import { AuthProvider, homeFor, useAuth } from '@/lib/auth';
 import { CustomerLayout, DriverLayout, RequireRole } from '@/components/layouts';
@@ -20,12 +21,16 @@ const loaders = {
   invoice: () => import('@/pages/InvoiceView'),
   driver: () => import('@/pages/driver'),
   guest: () => import('@/pages/guest'),
+  company: () => import('@/pages/app-company'),
+  corporate: () => import('@/pages/app-corporate'),
 };
 const page = (mod, name = 'default') => lazy(() => loaders[mod]().then((m) => ({ default: m[name] })));
 const NewRequest = page('customer', 'NewRequest');
 const Account = page('customer', 'Account');
 const Notifications = page('customer', 'Notifications');
 const CustomerInvoices = page('customer', 'CustomerInvoices');
+const CompanyTeam = page('company', 'CompanyTeam');
+const CorporateUpgrade = page('corporate', 'CorporateUpgrade');
 const InvoiceView = page('invoice');
 const JourneyDetails = page('journey', 'JourneyDetails');
 const RequestSent = page('journey', 'RequestSent');
@@ -61,6 +66,7 @@ export default function App() {
         <BrowserRouter>
           <ErrorBoundary>
           <Prefetch />
+          <NativeBackButton />
           <Suspense fallback={<PageLoader />}>
           <Routes>
             <Route path="/" element={<Home />} />
@@ -81,6 +87,8 @@ export default function App() {
                 <Route path="bookings/:id" element={<JourneyDetails />} />
                 <Route path="bookings/:id/sent" element={<RequestSent />} />
                 <Route path="invoices" element={<CustomerInvoices />} />
+                <Route path="company" element={<CompanyTeam />} />
+                <Route path="corporate" element={<CorporateUpgrade />} />
                 <Route path="invoices/:id" element={<InvoiceView back="/app/invoices" />} />
                 <Route path="notifications" element={<AppUpdates />} />
                 <Route path="account" element={<AppProfile />} />

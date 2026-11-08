@@ -45,4 +45,17 @@ export const api = {
   patch: (p, b = {}) => request('PATCH', p, b),
   put: (p, b = {}) => request('PUT', p, b),
   del: (p) => request('DELETE', p),
+  /** Send an image Blob as the raw request body (profile photo). */
+  upload: async (p, blob) => {
+    const headers = { 'Content-Type': blob.type || 'image/jpeg' };
+    const token = tokenStore.get();
+    if (token) headers.Authorization = `Bearer ${token}`;
+    let res;
+    try { res = await fetch(`${API_BASE}/api${p}`, { method: 'POST', headers, body: blob }); } catch {
+      throw new ApiError(0, { error: 'Could not reach Encore Executive. Check your connection — nothing was saved.' });
+    }
+    const data = await res.json().catch(() => null);
+    if (!res.ok) throw new ApiError(res.status, data);
+    return data;
+  },
 };

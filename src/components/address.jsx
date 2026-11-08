@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { lockPageScroll, useVisibleArea } from '@/lib/scroll-lock';
 import { createPortal } from 'react-dom';
 import { MapPin, Plane } from 'lucide-react';
 import { api } from '@/lib/api';
@@ -79,7 +80,8 @@ function PlaceRow({ it, q, icon, onPick, style }) {
 export function PlaceSearchSheet({ title = 'Where to?', initial = '', onPick, onClose }) {
   const [q, setQ] = useState(initial);
   const [mapOpen, setMapOpen] = useState(false);
-  const [vh, setVh] = useState(() => window.visualViewport?.height || window.innerHeight);
+  const sheetRef = useRef(null);
+  const { h: vh, y: vTop } = useVisibleArea(sheetRef, useState, useEffect);
   const input = useRef(null);
   const { items, loading } = useSuggestions(q, true);
   const typing = q.trim().length >= 3;
@@ -87,23 +89,21 @@ export function PlaceSearchSheet({ title = 'Where to?', initial = '', onPick, on
 
   useEffect(() => {
     preloadMaps();
-    const vv = window.visualViewport;
-    const fit = () => setVh(vv ? vv.height : window.innerHeight);
-    vv?.addEventListener('resize', fit);
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    const unlock = lockPageScroll();
     // Focus after the slide-in so Android opens the keyboard reliably.
     const t = setTimeout(() => input.current?.focus({ preventScroll: true }), 60);
     const onKey = (e) => e.key === 'Escape' && onClose();
     window.addEventListener('keydown', onKey);
-    return () => { vv?.removeEventListener('resize', fit); document.body.style.overflow = prev; clearTimeout(t); window.removeEventListener('keydown', onKey); };
+    return () => { unlock(); clearTimeout(t); window.removeEventListener('keydown', onKey); };
   }, [onClose]);
 
   const pick = (it) => { haptic('select'); remember(it); onPick(it); };
   const submitFree = () => { const t = q.trim(); if (t) pick({ id: `free-${t}`, text: t, main: t.split(',')[0], secondary: t.split(',').slice(1).join(',').trim() }); };
 
   return createPortal(
-    <div className="search-sheet fixed inset-x-0 top-0 z-[85] mx-auto flex max-w-[480px] flex-col overflow-hidden bg-white" style={{ height: vh }}>
+    <>
+    <div aria-hidden className="fixed inset-x-0 top-[-50vh] z-[84] mx-auto h-[200vh] max-w-[480px] bg-white" />
+    <div ref={sheetRef} className="search-sheet fixed inset-x-0 top-0 z-[85] mx-auto flex max-w-[480px] flex-col overflow-hidden bg-white" style={{ height: vh, top: vTop }}>
       <div className="flex-shrink-0 border-b border-neutral-100 px-4 pb-3 pt-[max(12px,env(safe-area-inset-top))] shadow-[0_6px_20px_rgba(0,0,0,0.04)]">
         <div className="mb-2.5 flex items-center gap-2">
           <button type="button" onClick={onClose} aria-label="Back" className="grid h-10 w-10 place-items-center rounded-full text-[#141416] active:bg-neutral-100"><Icon name="arrow_back" className="!text-[22px]" /></button>
@@ -153,7 +153,8 @@ export function PlaceSearchSheet({ title = 'Where to?', initial = '', onPick, on
         <MapPicker title={title} confirmLabel="Confirm location" onClose={() => setMapOpen(false)}
           onConfirm={(p) => { setMapOpen(false); pick({ ...p, id: `pin-${p.lat},${p.lng}` }); }} />
       )}
-    </div>,
+    </div>
+    </>,
     document.body,
   );
 }

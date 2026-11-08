@@ -312,13 +312,13 @@
 @keyframes encore-page { from { opacity: 0; transform: translateY(6px) scale(.995); } to { opacity: 1; transform: none; } }
 @keyframes encore-shine { from { transform: translateX(-120%) skewX(-20deg); } to { transform: translateX(220%) skewX(-20deg); } }
 
-.page-enter { animation: encore-page .38s cubic-bezier(.2,.8,.2,1) backwards; }
+.page-enter { animation: encore-page .24s cubic-bezier(.32,.72,0,1) backwards; }
 .animate-rise { animation: encore-rise .45s cubic-bezier(.2,.8,.2,1) backwards; }
-.page-enter > * { animation: encore-rise .5s cubic-bezier(.2,.8,.2,1) backwards; }
-.page-enter > *:nth-child(2) { animation-delay: .04s; }
-.page-enter > *:nth-child(3) { animation-delay: .08s; }
-.page-enter > *:nth-child(4) { animation-delay: .12s; }
-.page-enter > *:nth-child(n+5) { animation-delay: .16s; }
+.page-enter > * { animation: encore-rise .34s cubic-bezier(.32,.72,0,1) backwards; }
+.page-enter > *:nth-child(2) { animation-delay: .025s; }
+.page-enter > *:nth-child(3) { animation-delay: .05s; }
+.page-enter > *:nth-child(4) { animation-delay: .075s; }
+.page-enter > *:nth-child(n+5) { animation-delay: .1s; }
 
 /* Every button and link-button gets a tactile press and smooth hover. */
 button, a[role="button"], .press {
@@ -372,10 +372,10 @@ a.rounded-2xl, a.rounded-3xl, a[class*="rounded-[2rem]"] { transition: transform
 .hero-drift { animation: hero-drift 18s ease-in-out infinite alternate; }
 @keyframes hero-orb { 0%, 100% { transform: translate(0,0) scale(1); opacity: .9; } 50% { transform: translate(-24px, 18px) scale(1.15); opacity: .6; } }
 .hero-orb { animation: hero-orb 9s ease-in-out infinite; }
-.stagger > * { animation: encore-rise .6s cubic-bezier(.2,.8,.2,1) backwards; }
-.stagger > *:nth-child(2) { animation-delay: .05s; } .stagger > *:nth-child(3) { animation-delay: .1s; }
-.stagger > *:nth-child(4) { animation-delay: .15s; } .stagger > *:nth-child(5) { animation-delay: .2s; }
-.stagger > *:nth-child(6) { animation-delay: .25s; } .stagger > *:nth-child(n+7) { animation-delay: .3s; }
+.stagger > * { animation: encore-rise .4s cubic-bezier(.32,.72,0,1) backwards; }
+.stagger > *:nth-child(2) { animation-delay: .03s; } .stagger > *:nth-child(3) { animation-delay: .06s; }
+.stagger > *:nth-child(4) { animation-delay: .09s; } .stagger > *:nth-child(5) { animation-delay: .12s; }
+.stagger > *:nth-child(6) { animation-delay: .15s; } .stagger > *:nth-child(n+7) { animation-delay: .18s; }
 /* sticky children must not keep a transform after their entrance */
 .stagger > .sticky { animation-name: encore-fade; }
 @keyframes encore-fade { from { opacity: 0; } to { opacity: 1; } }
@@ -396,7 +396,6 @@ a.rounded-2xl, a.rounded-3xl, a[class*="rounded-[2rem]"] { transition: transform
 }
 
 /* ---------- customer dock ---------- */
-.dock-indicator { transition: left .45s cubic-bezier(.3,1.4,.5,1); }
 .dock-shell::before { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
   background: linear-gradient(180deg, rgba(255,255,255,.08), transparent 40%); }
 @keyframes dock-breathe { 0%, 100% { box-shadow: 0 12px 30px rgba(255,113,15,.5), 0 0 0 0 rgba(255,113,15,.35); } 50% { box-shadow: 0 14px 34px rgba(255,113,15,.65), 0 0 0 10px rgba(255,113,15,0); } }
@@ -404,7 +403,6 @@ a.rounded-2xl, a.rounded-3xl, a[class*="rounded-[2rem]"] { transition: transform
 .dock-fab::after { content: ''; position: absolute; inset: 0; border-radius: inherit; z-index: -1; pointer-events: none;
   box-shadow: 0 0 0 10px rgba(255,113,15,.22); opacity: 0; animation: cta-pulse 3s ease-in-out infinite; will-change: opacity, transform; }
 .dock-fab .material-symbols-outlined { transition: transform .35s cubic-bezier(.3,1.4,.5,1); }
-.dock-tab:active .material-symbols-outlined { transform: scale(.85); }
 
 /* ---------- section titles with a brand tick ---------- */
 .encore-app h2.section-title { position: relative; padding-left: 12px; }
@@ -482,12 +480,15 @@ a.rounded-2xl, a.rounded-3xl, a[class*="rounded-[2rem]"] { transition: transform
 .car-float { animation: car-float 9s ease-in-out infinite; will-change: transform; }
 @keyframes car-glint { 0%, 55% { transform: translateX(-130%) skewX(-18deg); } 82%, 100% { transform: translateX(380%) skewX(-18deg); } }
 .car-glint { overflow: hidden; }
-.car-glint::before { content: ''; position: absolute; top: -20%; bottom: -20%; left: 0; width: 38%;
+.car-glint::before { content: ''; position: absolute; top: -10%; bottom: -10%; left: 0; width: 45%;
   background: linear-gradient(105deg, transparent 0%, rgba(255,214,170,.0) 15%, rgba(255,230,205,.95) 50%, rgba(255,214,170,.0) 85%, transparent 100%);
-  transform: translateX(-130%) skewX(-18deg); animation: car-glint 6.5s cubic-bezier(.4,0,.2,1) infinite; animation-delay: inherit; opacity: .35; will-change: transform; }
+  transform: translateX(-130%) skewX(-18deg); animation: car-glint 6.5s cubic-bezier(.4,0,.2,1) infinite; animation-delay: inherit; opacity: .9; will-change: transform; }
 @keyframes car-floor { 0%, 100% { opacity: .55; transform: translateX(-50%) scaleX(.85); } 50% { opacity: 1; transform: translateX(-50%) scaleX(1.1); } }
 .car-floor { animation: car-floor 4.5s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { .car-float, .car-glint::before, .car-floor { animation: none; } }
+/* Car-only shine: the cut-out mask lines up with the photo (object-cover, centre 52%) */
+.car-glint-masked { -webkit-mask-image: var(--car-mask); mask-image: var(--car-mask);
+  -webkit-mask-size: cover; mask-size: cover; -webkit-mask-position: center 52%; mask-position: center 52%; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; }
 
 /* ---------- fluid press feel ---------- */
 html { touch-action: manipulation; }
@@ -564,7 +565,6 @@ input:focus-visible, select:focus-visible, textarea:focus-visible { outline: non
 .dock-tab .material-symbols-outlined { transition: transform .45s cubic-bezier(.34,1.6,.5,1), font-variation-settings .3s ease; }
 .dock-tab.active-pop .material-symbols-outlined { animation: dock-pop .55s cubic-bezier(.34,1.6,.5,1); }
 @keyframes dock-pop { 0% { transform: scale(1); } 35% { transform: scale(1.35) translateY(-3px); } 65% { transform: scale(.94); } 100% { transform: scale(1.1) translateY(-2px); } }
-.dock-tab:active .material-symbols-outlined { transform: scale(.82); transition-duration: .08s; }
 .dock-fab:not(.dock-fab-away):active { transform: scale(.88) rotate(-6deg); }
 
 /* ---- skeleton shimmer ---- */
@@ -634,10 +634,9 @@ a.rounded-2xl:active, a.rounded-3xl:active { transform: scale(.985); }
 @keyframes search-in { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
 .place-row { animation: encore-rise .3s cubic-bezier(.2,.85,.25,1) both; }
 @media (prefers-reduced-motion: reduce) { .search-sheet, .place-row { animation: none; } }
-.plan-sheet { animation: search-in .3s cubic-bezier(.2,.85,.25,1) both; }
 .plan-menu { animation: fx-pop .22s cubic-bezier(.2,.9,.3,1.2) both; transform-origin: top left; }
 @media (prefers-reduced-motion: reduce) { .plan-sheet, .plan-menu { animation: none; } }
-.plan-body { box-shadow: 0 -18px 40px rgba(0,0,0,.45); }
+.plan-body { box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.08); }
 .plan-pill { animation: encore-rise .5s .15s cubic-bezier(.2,.85,.25,1) both; }
 .plan-glow::after { content: ''; position: absolute; left: 14px; right: 14px; bottom: -1px; height: 2px; border-radius: 2px;
   background: linear-gradient(90deg, transparent, #FF710F, #FFC56B, #FF710F, transparent); background-size: 200% 100%; animation: plan-sweep 2.4s linear infinite; }
@@ -676,3 +675,75 @@ html.is-scrolling .car-floor, html.is-scrolling .hero-drift, html.is-scrolling .
   .seal-hero, .seal-hero.is-go { transform: none; visibility: visible; animation: none; }
   .seal-veil { display: none; } .seal-core, .seal-wave { animation: none; } .seal-ring, .seal-tick { animation: none; stroke-dashoffset: 0; }
 }
+
+/* Car page gallery: each photo eases in */
+.gallery-in { animation: gallery-in .35s ease both; }
+@keyframes gallery-in { from { opacity: 0; transform: scale(1.03); } to { opacity: 1; transform: none; } }
+
+/* Home: Express Travel tiles + journey tickets */
+.express-tile { animation: express-rise .6s cubic-bezier(.2,.85,.25,1) both; }
+@keyframes express-rise { from { opacity: 0; transform: translateY(14px) scale(.98); } to { opacity: 1; transform: none; } }
+.kenburns { animation: kenburns 14s ease-in-out infinite alternate; transform-origin: 60% 55%; }
+@keyframes kenburns { from { transform: scale(1.02); } to { transform: scale(1.14) translate(-2%, -1%); } }
+.sheen { background: linear-gradient(105deg, transparent 35%, rgba(255,255,255,.16) 50%, transparent 65%); background-size: 250% 100%; background-position: 130% 0; animation: sheen 6s ease-in-out infinite; }
+@keyframes sheen { 0%, 70% { background-position: 130% 0; } 100% { background-position: -30% 0; } }
+.route-glide { left: 0; animation: route-glide 5.5s cubic-bezier(.45,.05,.35,1) infinite; }
+@keyframes route-glide { 0% { left: 0; opacity: 0; } 8% { opacity: 1; } 85% { opacity: 1; } 100% { left: calc(100% - 20px); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .kenburns, .sheen, .route-glide, .express-tile { animation: none; } }
+/* Upcoming journey icon (only while the chauffeur is on the way): car bobbing on a road that scrolls past */
+.car-road { background: repeating-linear-gradient(90deg, currentColor 0 6px, transparent 6px 11px); opacity: .6; animation: car-road .6s linear infinite; }
+@keyframes car-road { from { background-position: 0 0; } to { background-position: -11px 0; } }
+.car-bob { animation: car-bob .6s ease-in-out infinite alternate; }
+@keyframes car-bob { from { transform: translate(-50%, 0); } to { transform: translate(-50%, -1.5px); } }
+@media (prefers-reduced-motion: reduce) { .car-road, .car-bob { animation: none; } }
+
+/* Phones: keep the page pinned to the screen width (no sideways drift) */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+html, body { overflow-x: clip; max-width: 100%; }
+html.sheet-open, html.sheet-open body { overscroll-behavior: none; }
+/* iPhone zooms into any text box under 16px: keep typing size at 16px on touch screens */
+@media (pointer: coarse) { input:not([type=checkbox]):not([type=radio]):not([type=range]), textarea, select { font-size: max(16px, 1em) !important; } }
+
+/* Planner open/close (opening motion is driven from plan-journey.jsx) */
+.plan-sheet { animation: none; }
+.plan-sheet.is-closing, .plan-backdrop.is-closing { animation: plan-out .17s cubic-bezier(.4,0,1,1) both; }
+@keyframes plan-out { to { opacity: 0; transform: translateY(14px) scale(.985); } }
+.plan-map-in { animation: plan-map-in .45s ease both; }
+@keyframes plan-map-in { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .plan-sheet.is-closing, .plan-backdrop.is-closing, .plan-map-in { animation: none; } }
+
+/* ---------- customer dock v2: glass pill glides between tabs, icons spring, Book button floats ---------- */
+.dock-pill { transition: transform .5s cubic-bezier(.32,.72,0,1), opacity .25s ease; will-change: transform; }
+.dock-tab .dock-icon { transition: transform .45s cubic-bezier(.34,1.56,.64,1); }
+.dock-tab .dock-label { opacity: .75; transform: translateY(1px); transition: opacity .3s ease, transform .45s cubic-bezier(.34,1.56,.64,1); }
+.dock-tab.is-active .dock-icon { transform: translateY(-2px); }
+.dock-tab.is-active .dock-label { opacity: 1; transform: none; }
+.dock-tab.is-active .material-symbols-outlined { animation: dock-tap .5s cubic-bezier(.34,1.56,.64,1); }
+@keyframes dock-tap { 0% { transform: scale(.8); } 55% { transform: scale(1.18); } 100% { transform: scale(1); } }
+.dock-tab:active .dock-icon { transform: scale(.86); transition-duration: .08s; }
+.dock-badge { animation: dock-badge .5s cubic-bezier(.34,1.56,.64,1); }
+@keyframes dock-badge { 0% { transform: scale(0); } 70% { transform: scale(1.2); } 100% { transform: scale(1); } }
+.dock-fab .material-symbols-outlined { transition: transform .4s cubic-bezier(.34,1.56,.64,1); }
+.dock-fab:hover .material-symbols-outlined { transform: rotate(90deg); }
+.dock-fab:not(.dock-fab-away):active { transform: scale(.9); transition-duration: .1s; }
+.dock-fab:not(.dock-fab-away):active .material-symbols-outlined { transform: rotate(90deg) scale(.9); }
+@media (prefers-reduced-motion: reduce) {
+  .dock-pill, .dock-tab .dock-icon, .dock-tab .dock-label { transition: none; }
+  .dock-tab.is-active .material-symbols-outlined, .dock-badge { animation: none; }
+}
+
+/* Journey rating stars pop as they fill */
+.rate-pop { animation: rate-pop .4s cubic-bezier(.34,1.56,.64,1) both; }
+@keyframes rate-pop { 0% { transform: scale(.7); } 60% { transform: scale(1.18); } 100% { transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) { .rate-pop { animation: none; } }
+
+/* Pickup date & time sheet */
+.pick-sheet { animation: pick-fade .2s ease both; }
+.pick-sheet .pick-panel { animation: pick-up .34s cubic-bezier(.32,.72,0,1) both; }
+.pick-sheet.is-closing { animation: pick-fade-out .18s ease both; }
+.pick-sheet.is-closing .pick-panel { animation: pick-down .18s cubic-bezier(.4,0,1,1) both; }
+@keyframes pick-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes pick-fade-out { to { opacity: 0; } }
+@keyframes pick-up { from { transform: translateY(100%); } to { transform: none; } }
+@keyframes pick-down { to { transform: translateY(100%); } }
+@media (prefers-reduced-motion: reduce) { .pick-sheet, .pick-sheet .pick-panel { animation: none; } }

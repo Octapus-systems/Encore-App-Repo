@@ -6,7 +6,8 @@ import { useAuth, usePublicSettings } from '@/lib/auth';
 import { JOURNEY_TYPES, gbp, relative, shortDateTime } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import { ErrorState, PageLoader, SkeletonList, StatusBadge, useAction } from '@/components/common';
-import { Icon, Img } from '@/components/app-ui';
+import { AvatarEditor } from '@/components/avatar-editor';
+import { Icon } from '@/components/app-ui';
 import { ReopenGuideRow } from '@/components/feature-guide';
 
 const card = 'rounded-[2rem] bg-surface-container-lowest shadow-[0_8px_24px_var(--encore-shadow-0-05)]';
@@ -144,7 +145,7 @@ export function AppProfile() {
       <div className="relative overflow-hidden rounded-[2rem] bg-inverse-surface p-space-lg text-inverse-on-surface shadow-[0_16px_36px_var(--encore-shadow-0-18)]">
         <div className="pointer-events-none absolute -right-12 -top-12 h-48 w-48 rounded-full bg-gradient-to-br from-primary-container/35 to-transparent blur-2xl" />
         <div className="relative flex items-center gap-space-md">
-          <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-full ring-2 ring-primary-container/40"><Img k="martin" alt="" className="h-full w-full object-cover" placeholderClassName="h-full w-full rounded-full" /></div>
+          <AvatarEditor user={user} onSaved={setUser} />
           <div className="min-w-0">
             <span className="inline-flex items-center gap-1 rounded-full bg-primary-fixed px-2.5 py-0.5 text-[11px] font-bold text-on-primary-fixed"><Icon name="verified" className="!text-[12px] text-primary" />{user.organisation ? 'CORPORATE' : 'PRIVATE CLIENT'}</span>
             <div className="mt-1 truncate font-headline-md text-headline-md text-white">{user.name}</div>
@@ -187,6 +188,8 @@ export function AppProfile() {
       <div className={cn(card, 'divide-y divide-surface-container overflow-hidden')}>
         <Row icon="notifications" label="Updates" sub="Quotes, confirmations and chauffeur updates" to="/app/notifications" />
         <Row icon="directions_car" label="Our fleet" to="/app/fleet" />
+        {user.role === 'customer' && <Row icon="business_center" label="Upgrade to corporate account" sub="Book for your company and pay monthly" to="/app/corporate" />}
+        {user.role === 'corporate' && <Row icon="groups" label="Company team" sub={user.org_role === 'admin' ? 'Invite colleagues and manage access' : 'Colleagues on your company account'} to="/app/company" />}
         {user.role === 'corporate' && <Row icon="receipt_long" label="Corporate invoices" sub="Consolidated invoices for your organisation" to="/app/invoices" />}
         <ReopenGuideRow Row={Row} />
         {s && <Row icon="support_agent" label="Call Encore" sub={`${s.dispatcher_phone} · 24/7`} href={`tel:${s.dispatcher_phone}`} />}

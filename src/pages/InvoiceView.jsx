@@ -38,7 +38,7 @@ export default function InvoiceView({ back }) {
         </div>
         <table className="mt-8 w-full text-sm">
           <thead className="border-b text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground"><tr><th className="py-2">Date</th><th className="py-2">Journey</th><th className="py-2 text-right">Amount</th></tr></thead>
-          <tbody className="divide-y">{inv.items.map((it) => <tr key={it.id}><td className="py-2.5">{shortDateTime(it.pickup_at)}</td><td className="py-2.5">{it.description}</td><td className="py-2.5 text-right">{gbp(it.amount)}</td></tr>)}</tbody>
+          <tbody className="divide-y">{inv.items.map((it) => <tr key={it.id}><td className="py-2.5">{shortDateTime(it.pickup_at)}</td><td className="py-2.5">{it.description}{(it.po_number || it.cost_centre) && <div className="text-xs text-muted-foreground">{[it.po_number && `PO ${it.po_number}`, it.cost_centre && `Cost centre ${it.cost_centre}`].filter(Boolean).join(' · ')}</div>}</td><td className="py-2.5 text-right">{gbp(it.amount)}</td></tr>)}</tbody>
           <tfoot><tr className="border-t-2 border-ink"><td colSpan={2} className="py-3 font-heading text-base font-bold">Total</td><td className="py-3 text-right font-heading text-base font-bold">{gbp(inv.total)}</td></tr></tfoot>
         </table>
         {inv.notes && <p className="mt-4 text-sm text-muted-foreground">{inv.notes}</p>}

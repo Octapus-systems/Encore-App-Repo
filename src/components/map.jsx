@@ -12,12 +12,31 @@ import { haptic } from '@/lib/fx';
 import { cn } from '@/lib/utils';
 import { Icon } from '@/components/app-ui';
 
-const STYLE = import.meta.env.VITE_MAP_STYLE || 'https://tiles.openfreemap.org/styles/positron';
+// The style ships with the app (public/map/positron.json = OpenFreeMap 'positron') — fetching it from
+// tiles.openfreemap.org took ~4 s before anything could draw. Tiles, fonts and sprites still come from there.
+const STYLE = import.meta.env.VITE_MAP_STYLE || '/map/positron.json';
+const LAST_AT = 'encore.lastMapAt';
+const lastAt = () => { try { return JSON.parse(localStorage.getItem(LAST_AT)); } catch { return null; } };
+const rememberAt = (c) => { try { localStorage.setItem(LAST_AT, JSON.stringify({ lat: c.lat, lng: c.lng })); } catch { /* storage off */ } };
 const UK = { lat: 52.806, lng: -2.117 }; // Stafford — Encore's home patch, used until GPS answers
+
+// Sprites and the label fonts also ship with the app (public/map/sprites, public/map/fonts), so labels and
+// icons draw without waiting on the tile host. Only the map tiles themselves are fetched remotely.
+const OFM = 'https://tiles.openfreemap.org/';
+const LOCAL = `${typeof window !== 'undefined' ? window.location.origin : ''}/map/`;
+const LOCAL_RANGES = new Set(['0-255', '256-511', '8192-8447']);
+function localAssets(url) {
+  if (import.meta.env.VITE_MAP_STYLE || !url.startsWith(OFM)) return { url };
+  const sprite = url.match(/sprites\/[^/]+\/(ofm(?:@2x)?\.(?:json|png))$/);
+  if (sprite) return { url: `${LOCAL}sprites/${sprite[1]}` };
+  const font = url.match(/fonts\/([^/]+)\/(\d+-\d+)\.pbf$/);
+  if (font && LOCAL_RANGES.has(font[2])) return { url: `${LOCAL}fonts/${font[1]}/${font[2]}.pbf` };
+  return { url };
+}
 
 function baseMap(el, center, zoom, style = STYLE) {
   const map = new maplibregl.Map({
-    container: el, style, center: [center.lng, center.lat], zoom,
+    container: el, style, center: [center.lng, center.lat], zoom, transformRequest: localAssets,
     attributionControl: false, dragRotate: false, pitchWithRotate: false, touchPitch: false, fadeDuration: 150,
   });
   map.touchZoomRotate.disableRotation();
@@ -79,6 +98,17 @@ const bearing = (a, b) => {
 // ---------------------------------------------------------------------------
 // Pin picker — Uber/Rapido style: the map moves under a fixed centre pin.
 // ---------------------------------------------------------------------------
+/** Is the map point drawn as water (sea, lake, river)? Uses the map's own water layer, so it is instant. */
+function waterAt(m, c) {
+  try {
+    const layers = ['water', 'waterway'].filter((id) => m.getLayer(id));
+    if (!layers.length) return false;
+    const p = m.project([c.lng, c.lat]);
+    return m.queryRenderedFeatures([[p.x - 2, p.y - 2], [p.x + 2, p.y + 2]], { layers }).length > 0;
+  } catch { return false; }
+}
+const WATER = { main: 'This spot is in the water', secondary: 'Move the pin onto a road or building we can reach by car.', water: true };
+
 export function MapPicker({ title = 'Set pickup point', confirmLabel = 'Confirm pickup', initial, onConfirm, onClose }) {
   const box = useRef(null);
   const map = useRef(null);
@@ -93,8 +123,9 @@ export function MapPicker({ title = 'Set pickup point', confirmLabel = 'Confirm 
     const n = ++seq.current;
     setLooking(true);
     const pin = `${c.lat.toFixed(5)}, ${c.lng.toFixed(5)}`;
+    if (map.current && waterAt(map.current, c)) { setPlace({ ...WATER, lat: c.lat, lng: c.lng }); setLooking(false); haptic('warning'); return; }
     reverse(c.lat, c.lng)
-      .then((p) => { if (n === seq.current) setPlace(p); })
+      .then((p) => { if (n === seq.current) setPlace(p?.water ? { ...WATER, lat: c.lat, lng: c.lng } : p); })
       .catch(() => { if (n === seq.current) setPlace({ text: pin, main: 'Dropped pin', secondary: pin, lat: c.lat, lng: c.lng }); })
       .finally(() => { if (n === seq.current) setLooking(false); });
   };
@@ -143,6 +174,7 @@ export function MapPicker({ title = 'Set pickup point', confirmLabel = 'Confirm 
   }, []);
 
   const confirm = () => {
+    if (place?.water) return;
     const c = map.current.getCenter();
     haptic('success');
     onConfirm({ ...(place || {}), text: place?.text || `${c.lat.toFixed(5)}, ${c.lng.toFixed(5)}`, lat: c.lat, lng: c.lng });
@@ -175,14 +207,14 @@ export function MapPicker({ title = 'Set pickup point', confirmLabel = 'Confirm 
         <div className="map-card absolute inset-x-0 bottom-0 z-20 rounded-t-[28px] bg-white px-5 pb-[max(18px,env(safe-area-inset-bottom))] pt-3 shadow-[0_-10px_40px_rgba(0,0,0,0.18)]">
           <div className="mx-auto mb-3 h-1.5 w-10 rounded-full bg-neutral-200" />
           <div className="flex items-start gap-3">
-            <span className="mt-0.5 grid h-10 w-10 flex-shrink-0 place-items-center rounded-full bg-emerald-50 text-emerald-600"><Icon name="location_on" fill /></span>
+            <span className={cn('mt-0.5 grid h-10 w-10 flex-shrink-0 place-items-center rounded-full', place?.water && !moving && !looking ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-600')}><Icon name={place?.water && !moving && !looking ? 'waves' : 'location_on'} fill /></span>
             <div className="min-w-0 flex-1">
               {looking || moving || !place ? (
                 <div className="space-y-2 pt-1"><div className="sk h-4 w-3/4 rounded" /><div className="sk h-3 w-1/2 rounded" /></div>
               ) : (
                 <>
-                  <div className="truncate text-[17px] font-bold text-[#141416]">{place.main || place.text}</div>
-                  <div className="truncate text-[13px] text-neutral-500">{place.secondary || place.text}</div>
+                  <div className={cn('truncate text-[17px] font-bold', place.water ? 'text-red-600' : 'text-[#141416]')}>{place.main || place.text}</div>
+                  <div className={cn('text-[13px]', place.water ? 'text-red-600/80' : 'truncate text-neutral-500')}>{place.secondary || place.text}</div>
                 </>
               )}
             </div>
@@ -192,9 +224,9 @@ export function MapPicker({ title = 'Set pickup point', confirmLabel = 'Confirm 
               : gps.fix?.accuracy ? `GPS accurate to about ${Math.round(gps.fix.accuracy)} m · drag the map to place the pin exactly`
                 : 'Drag the map to place the pin exactly where you will be'}
           </div>
-          <button type="button" disabled={!place || looking || moving} onClick={confirm}
+          <button type="button" disabled={!place || place.water || looking || moving} onClick={confirm}
             className="cta-glow mt-3 flex h-14 w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#FF710F] to-[#FF9A3D] text-[16px] font-bold text-white transition-opacity disabled:opacity-60">
-            {confirmLabel}<Icon name="check" className="!text-[20px]" />
+            {place?.water && !moving && !looking ? <>Move the pin onto land<Icon name="block" className="!text-[20px]" /></> : <>{confirmLabel}<Icon name="check" className="!text-[20px]" /></>}
           </button>
         </div>
       </div>
@@ -212,7 +244,7 @@ function etaLabel(s) {
   return m < 60 ? `${m} min` : `${Math.floor(m / 60)} h ${m % 60} min`;
 }
 
-export function LiveTrackMap({ bookingId, legId, className }) {
+export function LiveTrackMap({ bookingId, legId, className, chipTop = false }) {
   const box = useRef(null);
   const map = useRef(null);
   const marks = useRef({});
@@ -287,7 +319,7 @@ export function LiveTrackMap({ bookingId, legId, className }) {
         const b = new maplibregl.LngLatBounds();
         pts.forEach((p) => b.extend([p.lng, p.lat]));
         path.forEach((p) => b.extend(p));
-        m.fitBounds(b, { padding: { top: 90, bottom: 110, left: 50, right: 50 }, maxZoom: 16.5, duration: 900 });
+        m.fitBounds(b, { padding: chipTop ? { top: 90, bottom: 120, left: 50, right: 50 } : { top: 90, bottom: 110, left: 50, right: 50 }, maxZoom: 16.5, duration: 900 });
       }
     }
   }, [leg, follow]);
@@ -300,8 +332,21 @@ export function LiveTrackMap({ bookingId, legId, className }) {
     <div className={cn('live-map relative overflow-hidden bg-[#E9EAEC]', className)}>
       <div className="absolute inset-0"><div ref={box} className="h-full w-full" /></div>
       {leg && (
-        <div className="pointer-events-none absolute inset-x-3 bottom-6 z-10 flex items-end justify-between gap-2">
-          <div className="live-chip pointer-events-auto flex min-w-0 items-center gap-2.5 rounded-2xl bg-[#141416]/95 px-3.5 py-2.5 text-white shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
+        <>
+        {chipTop ? (
+          // Compact pill, centred low on the map just above the status card that overlaps the map's bottom edge.
+          <div className="pointer-events-none absolute inset-x-3 bottom-[52px] z-10 flex justify-center">
+            <div className="live-chip pointer-events-auto flex max-w-full items-center gap-1.5 rounded-full bg-[#141416]/90 px-3 py-1.5 text-white shadow-[0_6px_18px_rgba(0,0,0,0.28)] backdrop-blur-md">
+              <span className="relative flex h-2 w-2 flex-shrink-0"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#FF710F] opacity-75" /><span className="relative inline-flex h-2 w-2 rounded-full bg-[#FF710F]" /></span>
+              <span className="truncate text-[11.5px] font-semibold">
+                {!leg.driver ? 'Connecting to your chauffeur…'
+                  : leg.status === 'arrived' ? 'Your chauffeur has arrived'
+                  : <>{leg.heading_to === 'pickup' ? 'Arriving' : 'At destination'} {eta ? `in ${eta}` : 'soon'}{miles && <span className="text-white/60"> · {miles}</span>}</>}
+              </span>
+            </div>
+          </div>
+        ) : (
+        <div className="pointer-events-none absolute inset-x-3 bottom-6 z-10 flex items-end justify-between gap-2">          <div className="live-chip pointer-events-auto flex min-w-0 items-center gap-2.5 rounded-2xl bg-[#141416]/95 px-3.5 py-2.5 text-white shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
             <span className="relative flex h-2.5 w-2.5 flex-shrink-0"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#FF710F] opacity-75" /><span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[#FF710F]" /></span>
             <div className="min-w-0">
               {!leg.driver ? (
@@ -320,6 +365,11 @@ export function LiveTrackMap({ bookingId, legId, className }) {
             <button type="button" onClick={recenter} aria-label="Re-centre map" className="pointer-events-auto grid h-11 w-11 flex-shrink-0 place-items-center rounded-full bg-white text-[#141416] shadow-[0_8px_22px_rgba(0,0,0,0.2)] active:scale-95"><Icon name="center_focus_strong" className="!text-[22px]" /></button>
           )}
         </div>
+        )}
+        {chipTop && !follow && (
+          <button type="button" onClick={recenter} aria-label="Re-centre map" className="absolute bottom-[52px] right-3 z-10 grid h-9 w-9 place-items-center rounded-full bg-white text-[#141416] shadow-[0_6px_18px_rgba(0,0,0,0.2)] active:scale-95"><Icon name="center_focus_strong" className="!text-[19px]" /></button>
+        )}
+        </>
       )}
     </div>
   );
@@ -334,7 +384,9 @@ export function MiniMap({ center, className }) {
   const map = useRef(null);
   const pin = useRef(null);
   useEffect(() => {
-    const m = baseMap(box.current, center || UK, center ? 16 : 6);
+    // Open where the customer was last time (not zoomed out over the UK) so streets show at once.
+    const start = center || lastAt();
+    const m = baseMap(box.current, start || UK, start ? 15.5 : 6);
     m.scrollZoom.disable(); m.dragPan.disable(); m.touchZoomRotate.disable(); m.doubleClickZoom.disable(); m.keyboard.disable();
     map.current = m;
     return () => { map.current = null; pin.current = null; m.remove(); };
@@ -344,7 +396,8 @@ export function MiniMap({ center, className }) {
     const m = map.current; if (!m || !center) return;
     if (!pin.current) pin.current = new maplibregl.Marker({ element: el('<div><div class="mini-pin"><div class="map-pin-head"><span></span></div><div class="map-pin-stem"></div></div></div>'), anchor: 'bottom' }).setLngLat([center.lng, center.lat]).addTo(m);
     else pin.current.setLngLat([center.lng, center.lat]);
-    m.flyTo({ center: [center.lng, center.lat], zoom: 16, duration: 1400, essential: true, offset: [0, 20] });
+    rememberAt(center);
+    m.flyTo({ center: [center.lng, center.lat], zoom: 16, duration: 800, essential: true, offset: [0, 20] });
   }, [center?.lat, center?.lng]); // eslint-disable-line react-hooks/exhaustive-deps
   return <div className={cn('relative overflow-hidden', className)}><div ref={box} className="h-full w-full" /></div>;
 }
@@ -352,7 +405,7 @@ export function MiniMap({ center, className }) {
 // ---------------------------------------------------------------------------
 // Route preview — both ends pinned and joined by an arc, framed to fit (booking summary).
 // ---------------------------------------------------------------------------
-export function RouteMap({ from, to, className }) {
+export function RouteMap({ from, to, className, topInset = 0, bottomInset = 0 }) {
   const box = useRef(null);
   useEffect(() => {
     const pts = [from, to].filter((p) => p?.lat != null);
@@ -374,7 +427,7 @@ export function RouteMap({ from, to, className }) {
         m.addLayer({ id: 'arc', type: 'line', source: 'arc', layout: { 'line-cap': 'round' }, paint: { 'line-color': '#FF710F', 'line-width': 3.5, 'line-dasharray': [1.5, 1.5] } });
       });
       const bb = new maplibregl.LngLatBounds(); curve.forEach((c) => bb.extend(c));
-      m.fitBounds(bb, { padding: { top: 36, bottom: 84, left: 46, right: 46 }, maxZoom: 15, duration: 0 });
+      m.fitBounds(bb, { padding: { top: 36 + topInset, bottom: 84 + bottomInset, left: 46, right: 46 }, maxZoom: 15, duration: 0 });
     }
     return () => m.remove();
   }, [from?.lat, from?.lng, to?.lat, to?.lng]); // eslint-disable-line react-hooks/exhaustive-deps
