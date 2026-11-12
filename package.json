@@ -26,6 +26,7 @@
     "@capacitor/filesystem": "^7.1.9",
     "@capacitor/geolocation": "^7.1.8",
     "@capacitor/haptics": "^7.0.5",
+    "@capacitor/ios": "^7.6.10",
     "@capacitor/local-notifications": "^7.0.7",
     "@capacitor/push-notifications": "^7.0.7",
     "@capacitor/share": "^7.0.4",
